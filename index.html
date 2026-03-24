@@ -9,11 +9,20 @@
 <body>
     <div class="header">
         <h2 class="logo">GAJAN</h2>
-        <div class="token-box">🪙 <span id="balance">100</span> Tokens</div>
+        <div class="token-box" onclick="openRechargePopup()" style="cursor:pointer; background:#fff; color:#000; padding:5px 15px; border-radius:20px; font-weight:bold;">
+            🪙 <span id="user-balance">0</span> Tokens
+        </div>
     </div>
 
-    <div class="feed" id="feed">
-        </div>
+    <div style="text-align:center; padding:20px;">
+        <label for="upload-photo" style="cursor:pointer;">
+            <img id="display-dp" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:2px solid #E1306C; object-fit:cover;">
+            <p style="color:#E1306C; font-weight:bold;">Change Profile Photo</p>
+        </label>
+        <input type="file" id="upload-photo" hidden accept="image/*" onchange="uploadProfilePic(event)">
+    </div>
+
+    <div id="feed" class="feed"></div>
 
     <script src="script.js"></script>
 </body>
