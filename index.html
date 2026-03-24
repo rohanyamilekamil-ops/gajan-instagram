@@ -3,36 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Instagram</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Gajan App</title>
+    <style>
+        body { margin:0; font-family: sans-serif; background:#fafafa; }
+        .header { position:sticky; top:0; background:#fff; border-bottom:1px solid #dbdbdb; padding:10px; display:flex; justify-content:space-between; align-items:center; z-index:100; }
+        .token-btn { background:#000; color:#fff; padding:5px 15px; border-radius:20px; cursor:pointer; font-weight:bold; }
+        .profile { text-align:center; padding:20px; background:#fff; border-bottom:1px solid #dbdbdb; }
+        .dp { width:100px; height:100px; border-radius:50%; border:2px solid #E1306C; object-fit:cover; }
+        .nav { position:fixed; bottom:0; width:100%; background:#fff; border-top:1px solid #dbdbdb; display:flex; justify-content:space-around; padding:15px 0; }
+    </style>
 </head>
-<body style="margin:0; background:#fafafa; font-family:sans-serif;">
-    <div style="position:sticky; top:0; background:#fff; border-bottom:1px solid #dbdbdb; padding:10px; display:flex; justify-content:space-between; align-items:center; z-index:100;">
+<body>
+    <div class="header">
         <h2 style="margin:0; color:#E1306C;">GAJAN</h2>
-        <div onclick="openRechargePopup()" style="background:#000; color:#fff; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:14px;">
-            🪙 <span id="user-balance">0</span> Tokens
-        </div>
+        <div class="token-btn" onclick="openRecharge()">🪙 <span id="balance">0</span></div>
     </div>
-
-    <div style="text-align:center; padding:20px; background:#fff;">
-        <label for="upload-photo">
-            <img id="display-dp" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:2px solid #E1306C; object-fit:cover; cursor:pointer;">
-            <p style="color:#E1306C; font-size:12px; font-weight:bold;">Tap to Change Photo</p>
-        </label>
-        <input type="file" id="upload-photo" hidden accept="image/*" onchange="uploadProfilePic(event)">
+    <div class="profile">
+        <label for="dp-input"><img id="user-dp" src="https://via.placeholder.com/100" class="dp"></label>
+        <input type="file" id="dp-input" hidden onchange="updateDP(event)">
+        <h3 style="margin-top:10px;">@Gajan_User</h3>
+        <p style="color:#888; font-size:12px;">Tap photo to change</p>
     </div>
-
-    <div id="feed" style="max-width:500px; margin:auto; padding-bottom:70px;">
-        <div style="padding:20px; text-align:center; color:#888;">No posts yet. Use the + button to upload!</div>
+    <div id="feed" style="text-align:center; padding:50px; color:#999;">Abhi koi video nahi hai.</div>
+    <div class="nav">
+        <span>🏠</span><span>➕</span><span>🎬</span><span>👤</span>
     </div>
-
-    <div style="position:fixed; bottom:0; width:100%; background:#fff; border-top:1px solid #dbdbdb; display:flex; justify-content:space-around; padding:10px 0;">
-        <span>🏠</span>
-        <span onclick="alert('Video Upload coming soon!')" style="font-size:24px; cursor:pointer;">➕</span>
-        <span>🎬</span>
-        <span>👤</span>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
