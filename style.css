@@ -1,0 +1,7 @@
+body { background-color: #000; color: white; font-family: sans-serif; margin: 0; }
+.header { display: flex; justify-content: space-between; padding: 15px; background: #111; position: sticky; top: 0; z-index: 100; }
+.logo { color: #E1306C; letter-spacing: 2px; }
+.token-box { background: linear-gradient(45deg, #f09433, #e6683c); padding: 8px 15px; border-radius: 20px; font-weight: bold; }
+.post { background: #111; margin-bottom: 20px; border-radius: 10px; overflow: hidden; }
+.post img { width: 100%; height: auto; }
+.gift-btn { background: #E1306C; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
