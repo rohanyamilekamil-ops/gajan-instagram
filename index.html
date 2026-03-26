@@ -1,30 +1,92 @@
-// Auth State Observer - Isse refresh loop ruk jayega
-firebase.auth().onAuthStateChanged((user) => {
-    const loader = document.getElementById('loader');
-    const authScreen = document.getElementById('authScreen');
-    const mainApp = document.getElementById('mainApp');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan Premium | Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-    // Browser ko state update karne ka thoda time dein
-    setTimeout(() => {
-        if (user) {
-            // Agar login ho gaya toh app dikhao
-            authScreen.style.display = 'none';
-            mainApp.style.display = 'block';
-            if(loader) loader.style.display = 'none';
-            console.log("User active:", user.email);
-        } else {
-            // Agar login nahi hai toh login screen dikhao
-            authScreen.style.display = 'flex';
-            mainApp.style.display = 'none';
-            if(loader) loader.style.display = 'none';
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        #authScreen, #mainApp { display: none; width: 100%; padding: 20px; }
+        .card { background: #111; padding: 30px; border-radius: 25px; border: 1px solid #ff2d55; max-width: 400px; margin: auto; box-shadow: 0 0 30px rgba(255, 45, 85, 0.2); }
+        .token-box { color: #ffd700; font-size: 32px; font-weight: bold; margin: 20px 0; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .upi-box { background: #222; padding: 15px; border-radius: 12px; font-size: 14px; color: #aaa; border: 1px dashed #444; word-break: break-all; }
+        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><h2>GAJAN...</h2></div>
+
+    <div id="authScreen">
+        <div class="card">
+            <h1 style="color:#ff2d55; font-size: 45px; margin:0;">GAJAN</h1>
+            <button class="btn-google" onclick="login()">Continue with Google</button>
+        </div>
+    </div>
+
+    <div id="mainApp">
+        <div class="card">
+            <h2 style="margin:0; color:#888;">Available Balance</h2>
+            <div id="tokenDisplay" class="token-box">💎 Loading...</div>
+            
+            <p style="margin-bottom:10px; color:#fff;">Payment Details:</p>
+            <div id="upiDisplay" class="upi-box">Fetching UPI ID...</div>
+            
+            <button onclick="auth.signOut()" style="background:none; border:none; color:#555; margin-top:30px; cursor:pointer;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Aapki Real Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.appspot.com",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 1. LIVE DATA LOADER: Firestore se data lene ke liye
+        function loadLiveStock() {
+            // Document ka rasta: collection 'stock_info' aur doc 'stock_info'
+            db.collection("stock_info").doc("stock_info").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Database field names (total_tokens aur qr_link)
+                    document.getElementById('tokenDisplay').innerText = "💎 " + (data.total_tokens || "0").toLocaleString();
+                    document.getElementById('upiDisplay').innerText = data.qr_link || "No UPI Found";
+                }
+            });
         }
-    }, 1000); // 1 second ka delay loop todne ke liye
-});
 
-// POPUP Login Function
-function login() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).catch((error) => {
-        alert("Login Error: " + error.message);
-    });
-}
+        // 2. AUTH OBSERVER: Refresh loop ko rokne ke liye
+        auth.onAuthStateChanged((user) => {
+            document.getElementById('loader').style.display = 'none';
+            if (user) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadLiveStock(); // Login hote hi data load karo
+            } else {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        // 3. POPUP LOGIN: Taaki redirect refresh loop na bane
+        function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => alert(err.message));
+        }
+    </script>
+</body>
+</html>
