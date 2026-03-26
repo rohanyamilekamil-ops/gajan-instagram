@@ -1,138 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok - Payment</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
-        .gajan-neon { background: linear-gradient(90deg, #ff0050, #00f2ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .glass-ui { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2rem; }
-        #admin-panel { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.95); padding: 20px; }
-        .qr-frame { background: white; padding: 10px; border-radius: 1rem; display: inline-block; }
-    </style>
+  <meta charset="UTF-8">
+  <title>TikTok Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: black;
+      overflow: hidden;
+    }
+
+    .container {
+      height: 100vh;
+      width: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .video {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      scroll-snap-align: start;
+    }
+
+    video {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .sidebar {
+      position: absolute;
+      right: 10px;
+      bottom: 100px;
+      color: white;
+      text-align: center;
+    }
+
+    .sidebar div {
+      margin: 20px 0;
+      cursor: pointer;
+      font-size: 22px;
+    }
+
+    .bottom {
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      color: white;
+    }
+
+    .username {
+      font-weight: bold;
+    }
+
+    .desc {
+      font-size: 14px;
+    }
+
+    /* Top Bar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      color: white;
+      z-index: 10;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+    }
+
+    .topbar span {
+      cursor: pointer;
+    }
+
+  </style>
 </head>
-<body class="flex flex-col items-center">
 
-    <div class="max-w-md w-full px-6 pt-12 text-center h-screen flex flex-col justify-between pb-24">
-        <div>
-            <h1 class="text-4xl font-black gajan-neon mb-2">GAJAN TIKTOK</h1>
-            <p class="text-gray-400 text-sm italic">Premium Token Store</p>
-        </div>
+<body>
 
-        <div class="glass-ui p-8 shadow-2xl">
-            <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">Available Stock</p>
-            <h2 id="display-tokens" class="text-6xl font-bold text-white mb-6">0</h2>
-            
-            <div class="qr-frame mb-4 shadow-lg shadow-cyan-500/20">
-                <img id="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=loading" alt="QR Code" class="w-48 h-48">
-            </div>
-            
-            <p class="text-xs text-gray-500 mb-4">Scan QR to Pay via PhonePe/GPay/Paytm</p>
-            <p id="display-upi" class="text-sm font-medium text-cyan-400 truncate px-4">UPI: loading...</p>
-        </div>
+<div class="topbar">
+  <span>Following</span>
+  <span><b>For You</b></span>
+</div>
 
-        <button onclick="toggleAdmin()" class="text-[10px] text-gray-900 self-center opacity-20">Settings</button>
+<div class="container">
+
+  <!-- Video 1 -->
+  <div class="video">
+    <video src="https://www.w3schools.com/html/mov_bbb.mp4" autoplay loop muted></video>
+
+    <div class="sidebar">
+      <div>❤️</div>
+      <div>💬</div>
+      <div>🔗</div>
     </div>
 
-    <div id="admin-panel" class="overflow-y-auto">
-        <div class="max-w-md mx-auto py-10">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-4 mb-8">
-                <h2 class="text-2xl font-bold text-pink-500">Admin Control</h2>
-                <button onclick="toggleAdmin()" class="bg-red-500/20 text-red-500 px-4 py-1 rounded-full text-sm">EXIT</button>
-            </div>
+    <div class="bottom">
+      <div class="username">@user1</div>
+      <div class="desc">Amazing video 🔥</div>
+    </div>
+  </div>
 
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">New UPI ID / Payment Link</label>
-                    <input id="input-upi" type="text" placeholder="e.g. gajan@ybl" class="w-full bg-gray-900 p-4 rounded-xl border border-gray-700 focus:border-cyan-500 outline-none text-cyan-400">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">Total Tokens to Show</label>
-                    <input id="input-tokens" type="number" placeholder="1000000" class="w-full bg-gray-900 p-4 rounded-xl border border-gray-700 focus:border-cyan-500 outline-none">
-                </div>
-                
-                <button id="save-btn" class="w-full bg-gradient-to-r from-pink-500 to-cyan-500 p-5 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-all mt-4">
-                    UPDATE LIVE APP
-                </button>
-                
-                <p id="status-msg" class="text-center text-green-400 font-bold hidden pt-4">Data Updated Successfully!</p>
-            </div>
-        </div>
+  <!-- Video 2 -->
+  <div class="video">
+    <video src="https://www.w3schools.com/html/movie.mp4" autoplay loop muted></video>
+
+    <div class="sidebar">
+      <div>❤️</div>
+      <div>💬</div>
+      <div>🔗</div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div class="bottom">
+      <div class="username">@user2</div>
+      <div class="desc">Dance reel 💃</div>
+    </div>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228",
-            measurementId: "G-10SC7W9EDZ"
-        };
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const stockRef = doc(db, "stock_info", "stock_info");
+<script>
+  const videos = document.querySelectorAll("video");
 
-        // 1. Fetch Real-time Data & Generate QR
-        onSnapshot(stockRef, (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                const upi = data.qr_link || "gajan@ybl";
-                const tokens = data.total_tokens || 0;
+  videos.forEach(video => {
+    video.addEventListener("click", () => {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+  });
+</script>
 
-                // Update UI
-                document.getElementById('display-tokens').innerText = tokens.toLocaleString();
-                document.getElementById('display-upi').innerText = "UPI: " + upi;
-                
-                // Update QR Image (Using QR Server API)
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=${upi}&pn=GajanTikTok&cu=INR`;
-                document.getElementById('qr-image').src = qrUrl;
-
-                // Fill Admin Fields
-                document.getElementById('input-upi').value = upi;
-                document.getElementById('input-tokens').value = tokens;
-            }
-        });
-
-        // 2. Update Firebase
-        document.getElementById('save-btn').onclick = async () => {
-            const upiValue = document.getElementById('input-upi').value;
-            const tokenValue = parseInt(document.getElementById('input-tokens').value);
-            
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "UPDATING...";
-            btn.disabled = true;
-
-            try {
-                await updateDoc(stockRef, {
-                    qr_link: upiValue,
-                    total_tokens: tokenValue
-                });
-                
-                document.getElementById('status-msg').classList.remove('hidden');
-                setTimeout(() => document.getElementById('status-msg').classList.add('hidden'), 3000);
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.innerText = "UPDATE LIVE APP";
-                btn.disabled = false;
-            }
-        };
-    </script>
-
-    <script>
-        function toggleAdmin() {
-            const panel = document.getElementById('admin-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
-    </script>
 </body>
 </html>
