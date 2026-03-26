@@ -5,61 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gajan TikTok Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // --- Admin Login Logic ---
+        window.login = async () => {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            
+            if(user === "MRGAJAN" && pass === "Abdul6353738585@") {
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                alert("Welcome Gajan! Token Stock: 1M Active.");
+            } else {
+                alert("Galat Password!");
+            }
+        };
+
+        // --- Video Upload Logic ---
+        window.uploadVideo = async () => {
+            const file = document.getElementById('videoFile').files[0];
+            if(!file) return alert("Video select karo!");
+
+            const storageRef = ref(storage, 'videos/' + file.name);
+            alert("Uploading... Thoda ruko.");
+            
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            
+            // Save to Firestore (6 month delete logic ke liye date bhi save hogi)
+            await setDoc(doc(db, "videos", Date.now().toString()), {
+                url: url,
+                uploader: "MRGAJAN",
+                createdAt: Date.now()
+            });
+            
+            alert("Video Upload Ho Gaya! 🚀");
+        };
+    </script>
     <style>
-        body { background-color: black; color: white; margin: 0; overflow: hidden; }
-        .video-container { height: 100vh; width: 100vw; scroll-snap-type: y mandatory; overflow-y: scroll; }
-        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
-        .sidebar { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; align-items: center; }
-        .bottom-info { position: absolute; bottom: 30px; left: 15px; }
-        .admin-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 5px; font-size: 12px; }
+        body { background: black; color: white; font-family: sans-serif; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; }
     </style>
 </head>
 <body>
 
     <div id="loginModal" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-        <h1 class="text-2xl font-bold mb-5">Admin Login</h1>
-        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-800 p-2 rounded mb-3 w-64">
-        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-800 p-2 rounded mb-3 w-64">
-        <button onclick="login()" class="bg-red-500 px-10 py-2 rounded font-bold">Login</button>
+        <h1 class="text-3xl font-bold mb-8 text-red-500">GAJAN TIKTOK</h1>
+        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-900 border border-gray-700 p-3 rounded mb-4 w-72">
+        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-900 border border-gray-700 p-3 rounded mb-6 w-72">
+        <button onclick="login()" class="bg-white text-black font-bold px-12 py-3 rounded-full">Enter App</button>
     </div>
 
-    <div id="mainApp" class="hidden">
-        <div class="video-container" id="feed">
-            <div class="video-card">
-                <video src="https://www.w3schools.com/html/mov_bbb.mp4" class="h-full w-full object-cover" loop autoplay muted></video>
-                <div class="sidebar">
-                    <div class="mb-5 text-2xl">❤️<p class="text-xs text-center">1.2M</p></div>
-                    <div class="mb-5 text-2xl">💬<p class="text-xs text-center">40k</p></div>
-                    <div class="mb-5 text-2xl">🎁<p class="text-xs text-center text-yellow-400">Gift</p></div>
-                    <div class="text-2xl">🔗</div>
-                </div>
-                <div class="bottom-info">
-                    <h3 class="font-bold">@MRGAJAN</h3>
-                    <p class="text-sm">Welcome to my TikTok Pro App! 🚀</p>
-                    <p class="text-xs mt-2">🎵 Original Sound - Gajan</p>
-                </div>
-            </div>
+    <div id="adminPanel" class="hidden p-5">
+        <h2 class="text-xl font-bold border-b border-gray-800 pb-2">Admin Dashboard</h2>
+        <div class="mt-8 bg-gray-900 p-5 rounded-lg">
+            <p class="text-yellow-400">Token Inventory: 1,000,000</p>
+            <p class="text-sm text-gray-400 mt-2">Status: Real Money Buyer Mode ON</p>
         </div>
         
-        <div class="fixed bottom-0 w-full h-16 bg-black border-t border-gray-800 flex justify-around items-center text-xl">
-            <span>🏠</span><span>🔍</span><span class="bg-white text-black px-3 rounded-md font-bold">+</span><span>📩</span><span>👤</span>
+        <div class="mt-10">
+            <h3 class="mb-3">Upload New Video (Saves for 6 Months)</h3>
+            <input type="file" id="videoFile" accept="video/*" class="block w-full text-sm text-gray-400 mb-4">
+            <button onclick="uploadVideo()" class="bg-red-600 w-full py-3 rounded font-bold">POST VIDEO</button>
         </div>
     </div>
 
-    <script>
-        function login() {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
-            
-            // Aapki details
-            if(user === "MRGAJAN" && pass === "Abdul6353738585@") {
-                document.getElementById('loginModal').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                alert("Welcome Admin Gajan! Stock: 1,000,000 Tokens Active.");
-            } else {
-                alert("Access Denied!");
-            }
-        }
-    </script>
+    <div class="nav-bar">
+        <span>🏠</span><span>🔍</span><span class="text-2xl font-bold">+</span><span>📩</span><span>👤</span>
+    </div>
+
 </body>
 </html>
