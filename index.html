@@ -3,69 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <title>Gajan Instagram - Token Shop</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; background: #000; color: #fff; text-align: center; }
+        .card { background: #111; padding: 20px; border-radius: 15px; margin: 20px auto; width: 90%; max-width: 400px; border: 1px solid #333; }
+        #qrcode { background: white; padding: 10px; display: inline-block; margin: 10px; border-radius: 10px; }
+        input, button { padding: 10px; margin: 10px; width: 80%; border-radius: 5px; border: none; }
+        button { background: #E1306C; color: white; font-weight: bold; cursor: pointer; }
+        .stock-info { font-size: 1.5rem; color: #ffd700; margin: 10px; }
+    </style>
+</head>
+<body>
 
+    <h2>💎 Gajan Token Shop</h2>
+
+    <div class="card">
+        <p>Current Token Stock:</p>
+        <div id="tokenStock" class="stock-info">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h3>Scan to Buy Tokens</h3>
+        <div id="qrcode"></div>
+        <p id="upiText">UPI: Loading...</p>
+    </div>
+
+    <div id="adminPanel" style="display:none;" class="card">
+        <h3>Admin: Update UPI ID</h3>
+        <input type="text" id="newUpi" placeholder="Enter new UPI ID (e.g. gajan@upi)">
+        <button onclick="updateUpiInDb()">Update QR Now</button>
+    </div>
+
+    <button onclick="showAdmin()">Admin Login</button>
+
+    <script>
+        // Copy your Firebase Config from settings
         const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            apiKey: "YOUR_API_KEY",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
             projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+            storageBucket: "tiktok-clone-gajan.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.login = async () => {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
-            
-            if(user === "MRGAJAN" && pass === "Abdul6353738585@") {
-                const docSnap = await getDoc(doc(db, "admin_data", "stock_info"));
-                const tokens = docSnap.exists() ? docSnap.data().total_tokens : 0;
+        // 1. Database se Tokens aur UPI ID fetch karna
+        db.collection("stock_info").doc("admin_data").onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById("tokenStock").innerText = data.total_tokens + " GJN";
                 
-                document.getElementById('loginModal').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('tokenDisplay').innerText = tokens.toLocaleString();
-            } else { alert("Galat Details!"); }
-        };
+                // QR Code Generate karna
+                const upiId = data.qr_link || "gajan@upi";
+                document.getElementById("upiText").innerText = "UPI ID: " + upiId;
+                
+                document.getElementById("qrcode").innerHTML = ""; // Clear old QR
+                new QRCode(document.getElementById("qrcode"), {
+                    text: `upi://pay?pa=${upiId}&pn=GajanInstagram&cu=INR`,
+                    width: 200,
+                    height: 200
+                });
+            }
+        });
 
-        window.showQR = () => {
-            const upi = "abdul6353@okicici"; // <--- Yahan apna real UPI ID daalein
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upi}&am=500&cu=INR`;
-            document.getElementById('qrCode').src = qrUrl;
-            document.getElementById('qrModal').classList.remove('hidden');
-        };
+        // 2. UPI ID badalne ka function
+        async function updateUpiInDb() {
+            const upi = document.getElementById("newUpi").value;
+            if(!upi) return alert("UPI ID likho!");
+            
+            try {
+                await db.collection("stock_info").doc("admin_data").update({
+                    qr_link: upi
+                });
+                alert("UPI QR badal gaya!");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        function showAdmin() {
+            const pass = prompt("Enter Admin Password:");
+            if(pass === "Abdul6353738585@") {
+                document.getElementById("adminPanel").style.display = "block";
+            } else { alert("Wrong Password!"); }
+        }
     </script>
-</head>
-<body class="bg-black text-white">
-    <div id="loginModal" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-5">
-        <h1 class="text-4xl font-bold mb-10 text-red-600">GAJAN TIKTOK</h1>
-        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-900 border border-gray-700 p-4 rounded-xl mb-4 w-full max-w-sm">
-        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-900 border border-gray-700 p-4 rounded-xl mb-6 w-full max-w-sm">
-        <button onclick="login()" class="bg-white text-black font-bold px-16 py-4 rounded-full w-full max-w-sm">LOGIN ADMIN</button>
-    </div>
-
-    <div id="adminPanel" class="hidden p-6">
-        <div class="bg-gray-900 p-6 rounded-3xl border border-red-900">
-            <h2 class="text-gray-400 uppercase text-xs font-bold tracking-widest">Available Stock</h2>
-            <div class="text-5xl font-extrabold mt-2"><span id="tokenDisplay">0</span></div>
-            <p class="text-red-500 text-sm mt-1">Tokens Ready for Sale</p>
-        </div>
-
-        <button onclick="showQR()" class="w-full bg-red-600 mt-10 py-5 rounded-2xl font-bold text-xl">GET PAYMENT QR CODE</button>
-    </div>
-
-    <div id="qrModal" class="hidden fixed inset-0 bg-black/90 flex flex-col items-center justify-center p-10">
-        <div class="bg-white p-4 rounded-2xl">
-            <img id="qrCode" src="" alt="QR">
-        </div>
-        <p class="mt-5 text-center font-bold text-lg text-white">Scan to Pay ₹500 for Tokens</p>
-        <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="mt-10 text-gray-400">Close</button>
-    </div>
 </body>
 </html>
