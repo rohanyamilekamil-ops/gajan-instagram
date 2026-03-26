@@ -3,85 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok</title>
+    <title>Gajan TikTok | Premium</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* Login Screen (Pehle ye dikhega) */
-        #authScreen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 1000; position: fixed; width: 100%; }
-        .login-card { text-align: center; padding: 30px; border: 1px solid #333; border-radius: 20px; width: 85%; }
+        /* 1. LOGIN SCREEN (Strictly First) */
+        #authScreen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; z-index: 9999; position: fixed; width: 100%; }
+        .login-box { text-align: center; padding: 40px; border-radius: 30px; background: #111; border: 1px solid #333; width: 85%; max-width: 400px; }
+        .btn-google { background: #ff2d55; color: white; padding: 15px 25px; border: none; border-radius: 10px; font-weight: bold; width: 100%; font-size: 16px; cursor: pointer; }
 
-        /* Main App (Login ke baad) */
+        /* 2. MAIN FEED */
         #mainApp { display: none; height: 100vh; }
-        .video-container { height: calc(100vh - 60px); scroll-snap-type: y mandatory; overflow-y: scroll; scrollbar-width: none; }
-        .video-post { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; }
+        .video-feed { height: 100vh; scroll-snap-type: y mandatory; overflow-y: scroll; scrollbar-width: none; }
+        .video-card { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* UI elements */
-        .top-bar { position: fixed; top: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .side-bar { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .user-pic { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff; }
-        .icon { width: 45px; height: 45px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        /* UI Overlays */
+        .top-header { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .token-badge { background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 20px; color: #ffd700; font-weight: bold; border: 1px solid #ffd700; }
+        
+        .side-actions { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .action-icon { width: 50px; height: 50px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
+        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
-        .add-btn { background: linear-gradient(to right, #2af5ff, #ff2d55); padding: 5px 15px; border-radius: 8px; color: #000; font-weight: bold; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; }
+        .upload-plus { background: linear-gradient(to right, #2af5ff, #ff2d55); padding: 6px 18px; border-radius: 10px; color: #000; font-size: 20px; font-weight: bold; }
 
         /* Modals */
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 20px; width: 90%; z-index: 2000; border: 1px solid #ff2d55; text-align: center; }
-        .btn-red { background: #ff2d55; color: #fff; padding: 12px; width: 100%; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; z-index: 10000; border: 1px solid #ff2d55; text-align: center; }
+        #qrcode { background: white; padding: 10px; border-radius: 10px; margin: 15px auto; width: 150px; }
+        .close-btn { background: #333; color: #fff; padding: 10px; width: 100%; border: none; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <div class="login-card">
-            <h1 style="color: #ff2d55; margin-bottom: 10px;">Gajan TikTok</h1>
-            <p style="color: #888; margin-bottom: 30px;">Login to start watching and earning</p>
-            <button class="btn-red" onclick="gmailLogin()">Continue with Google</button>
+        <div class="login-box">
+            <h2 style="color:#ff2d55; margin-bottom:10px;">Gajan TikTok</h2>
+            <p style="color:#888; margin-bottom:30px;">Login to start watching and earning</p>
+            <button class="btn-google" onclick="googleSignIn()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
-        <div class="top-bar">
-            <div style="color:#ffd700; font-weight:bold;" onclick="openModal('shopModal')">💎 <span id="myTokens">0</span></div>
-            <img id="myPic" class="user-pic" src="" onclick="openModal('profileModal')">
+        <div class="top-header">
+            <div class="token-badge" onclick="openModal('shopModal')">💎 <span id="userTokenBal">0</span></div>
+            <img id="userAvatar" class="profile-btn" src="" onclick="openModal('profileModal')">
         </div>
 
-        <div class="video-container" id="videoFeed">
-            <div class="video-post"><p style="width:100%; text-align:center;">Loading Videos...</p></div>
+        <div class="video-feed" id="feed">
+            <div class="video-card"><p style="width:100%; text-align:center;">Discovering Videos...</p></div>
         </div>
 
-        <div class="bottom-nav">
-            <span onclick="location.reload()">🏠</span>
-            <div class="add-btn" onclick="openModal('uploadModal')">+</div>
-            <span onclick="openModal('profileModal')">👤</span>
+        <div class="nav-bar">
+            <span style="font-size:24px;" onclick="location.reload()">🏠</span>
+            <div class="upload-plus" onclick="openModal('uploadModal')">+</div>
+            <span style="font-size:24px;" onclick="openModal('profileModal')">👤</span>
         </div>
     </div>
 
     <div id="shopModal" class="modal">
-        <h3>Buy Gajan Tokens</h3>
-        <div id="qrcode" style="background:white; padding:10px; margin:15px auto; width:150px;"></div>
-        <p id="upiText" style="font-size:12px;">UPI: Loading...</p>
-        <button class="btn-red" onclick="closeModal('shopModal')">Close</button>
+        <h3>Gajan Shop</h3>
+        <div id="qrcode"></div>
+        <p id="upiIdDisplay" style="font-size:12px; color:#aaa;">UPI: Loading...</p>
+        <button class="close-btn" onclick="closeModal('shopModal')">Cancel</button>
     </div>
 
     <div id="profileModal" class="modal">
-        <img id="profPic" style="width:80px; height:80px; border-radius:50%; margin-bottom:10px;">
-        <h3 id="profName">User Name</h3>
-        <p id="profEmail" style="color:#888; font-size:12px; margin-bottom:20px;"></p>
-        <button class="btn-red" style="background:#333;" onclick="auth.signOut()">Logout</button>
-        <button class="btn-red" onclick="closeModal('profileModal')">Back</button>
+        <img id="pModalPic" style="width:80px; height:80px; border-radius:50%; margin-bottom:10px;">
+        <h3 id="pModalName">User</h3>
+        <p id="pModalEmail" style="color:#777; font-size:12px; margin-bottom:20px;"></p>
+        <button class="btn-google" style="background:#444;" onclick="auth.signOut()">Logout</button>
+        <button class="close-btn" onclick="closeModal('profileModal')">Back</button>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <h3>Post Video</h3>
+        <input type="file" id="vFile" accept="video/*" style="margin:20px 0; color:white;">
+        <button id="upBtn" class="btn-google" onclick="startUpload()">Upload Now</button>
+        <button class="close-btn" onclick="closeModal('uploadModal')">Close</button>
     </div>
 
     <script>
         // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-PASTE-REAL-KEY-HERE",
+            apiKey: "AIzaSyAs-Aapki-Real-Key-Yahan-Dalein",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
             projectId: "tiktok-clone-gajan",
             storageBucket: "tiktok-clone-gajan.appspot.com",
@@ -92,61 +103,86 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // 1. AUTO-LOGIN CHECK
+        // 1. AUTH LOGIC (Auto-Login Check)
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                setupUser(user);
+                initUserAccount(user);
             } else {
                 document.getElementById('authScreen').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
             }
         });
 
-        async function setupUser(user) {
-            document.getElementById('myPic').src = user.photoURL;
-            document.getElementById('profPic').src = user.photoURL;
-            document.getElementById('profName').innerText = user.displayName;
-            document.getElementById('profEmail').innerText = user.email;
+        async function initUserAccount(user) {
+            document.getElementById('userAvatar').src = user.photoURL;
+            document.getElementById('pModalPic').src = user.photoURL;
+            document.getElementById('pModalName').innerText = user.displayName;
+            document.getElementById('pModalEmail').innerText = user.email;
 
-            // Har user ka apna token data
-            const userDoc = await db.collection("users").doc(user.uid).get();
-            if(!userDoc.exists) {
-                await db.collection("users").doc(user.uid).set({ tokens: 0, name: user.displayName });
-            }
-            db.collection("users").doc(user.uid).onSnapshot(doc => {
-                document.getElementById('myTokens').innerText = doc.data().tokens || 0;
+            // User-Specific Tokens
+            const userRef = db.collection("users").doc(user.uid);
+            const doc = await userRef.get();
+            if(!doc.exists) await userRef.set({ tokens: 0, email: user.email });
+            
+            userRef.onSnapshot(d => {
+                document.getElementById('userTokenBal').innerText = d.data().tokens || 0;
             });
         }
 
-        function gmailLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider);
+        function googleSignIn() {
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
         }
 
-        // 2. VIDEO FEED & QR SYSTEM
+        // 2. LIVE VIDEO FEED
         db.collection("videos").orderBy("timestamp", "desc").onSnapshot(snap => {
-            const feed = document.getElementById('videoFeed');
+            const feed = document.getElementById('feed');
             feed.innerHTML = "";
             snap.forEach(doc => {
-                const d = doc.data();
-                feed.innerHTML += `<div class="video-post">
-                    <video loop onclick="this.paused?this.play():this.pause()" autoplay muted playsinline src="${d.url}"></video>
-                    <div class="side-bar">
-                        <div class="icon">❤️</div>
-                        <div class="icon" onclick="openModal('shopModal')">🎁</div>
-                    </div>
-                </div>`;
+                const data = doc.data();
+                feed.innerHTML += `
+                    <div class="video-card">
+                        <video loop onclick="this.paused?this.play():this.pause()" autoplay muted playsinline src="${data.url}"></video>
+                        <div class="side-actions">
+                            <div class="action-icon">❤️</div>
+                            <div class="action-icon" onclick="openModal('shopModal')">🎁</div>
+                        </div>
+                    </div>`;
             });
         });
 
+        // 3. FREE UPLOAD SYSTEM
+        async function startUpload() {
+            const file = document.getElementById('vFile').files[0];
+            const btn = document.getElementById('upBtn');
+            if(!file) return alert("Select Video!");
+            
+            btn.innerText = "Processing..."; btn.disabled = true;
+            const formData = new FormData(); formData.append('file', file);
+
+            try {
+                const res = await fetch('https://file.io', { method: 'POST', body: formData });
+                const json = await res.json();
+                if(json.success) {
+                    await db.collection("videos").add({
+                        url: json.link,
+                        uid: auth.currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert("Video Live!"); closeModal('uploadModal');
+                }
+            } catch(e) { alert("Upload Failed"); }
+            btn.innerText = "Upload Now"; btn.disabled = false;
+        }
+
+        // 4. ADMIN SHOP & QR
         db.collection("admin_data").doc("stock_info").onSnapshot(doc => {
             if(doc.exists) {
                 const upi = doc.data().qr_link || "gajan@upi";
-                document.getElementById('upiText').innerText = "UPI: " + upi;
+                document.getElementById('upiIdDisplay').innerText = "UPI: " + upi;
                 document.getElementById('qrcode').innerHTML = "";
-                new QRCode(document.getElementById('qrcode'), { text: `upi://pay?pa=${upi}&pn=Gajan`, width: 130, height: 130 });
+                new QRCode(document.getElementById('qrcode'), { text: `upi://pay?pa=${upi}&pn=Gajan`, width: 140, height: 140 });
             }
         });
 
