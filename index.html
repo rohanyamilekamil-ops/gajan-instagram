@@ -3,81 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok | Fixed</title>
+    <title>Gajan TikTok | Premium</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
         
-        /* Smooth Loading Overlay */
-        #loader {
-            position: fixed; top: 0; width: 100%; height: 100%; background: #000;
-            display: flex; align-items: center; justify-content: center; z-index: 10000;
-        }
+        /* Loader taaki login refresh na dikhe */
+        #loader { position: fixed; top: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
 
-        /* Stylish Login */
-        #authScreen { height: 100vh; display: none; align-items: center; justify-content: center; text-align: center; }
-        .login-card { background: #111; padding: 40px; border-radius: 25px; border: 1px solid #ff2d55; width: 85%; max-width: 400px; box-shadow: 0 0 30px rgba(255, 45, 85, 0.3); }
-        .btn-google { background: #ff2d55; color: #fff; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 25px; }
+        /* Login Screen */
+        #authScreen { height: 100vh; display: none; align-items: center; justify-content: center; }
+        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; text-align: center; width: 90%; max-width: 400px; }
+        .btn-red { background: #ff2d55; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 20px; }
 
-        /* Main App Layout */
+        /* Main App */
         #mainApp { display: none; height: 100vh; position: relative; }
-        .top-nav { position: absolute; top: 20px; width: 100%; padding: 0 20px; display: flex; justify-content: space-between; z-index: 10; }
-        .tokens { color: #ffd700; font-weight: bold; font-size: 18px; }
-        .bottom-nav { position: absolute; bottom: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .video-container { height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; background: #050505; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .plus-icon { background: linear-gradient(to right, #00f2fe, #ff2d55); padding: 5px 20px; border-radius: 10px; color: #000; font-weight: bold; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="loader"><h2>GAJAN...</h2></div>
+    <div id="loader"><h2 style="color:#ff2d55">GAJAN...</h2></div>
 
     <div id="authScreen">
         <div class="login-card">
-            <h1 style="color: #ff2d55; font-size: 35px;">Gajan TikTok</h1>
-            <p style="color: #888; margin-top: 10px;">Login to start watching and earning</p>
-            <button class="btn-google" onclick="login()">Continue with Google</button>
+            <h1 style="color:#ff2d55">GAJAN</h1>
+            <p>Continue to watch videos</p>
+            <button class="btn-red" onclick="login()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
-        <div class="top-nav">
-            <div class="tokens">💎 1000000</div>
-            <div onclick="auth.signOut()" style="cursor:pointer">Logout</div>
+        <div class="video-container" id="videoFeed">
+            <p style="color:#444">No videos yet. Click + to upload.</p>
         </div>
-        <div style="height: 100%; display: flex; align-items: center; justify-content: center;">
-            <p>Video Feed Loading...</p>
-        </div>
-        <div class="bottom-nav">
+
+        <div class="nav-bar">
             <span>🏠</span>
-            <span style="background: #ff2d55; padding: 5px 15px; border-radius: 8px;">+</span>
-            <span>🎁</span>
+            <label for="videoUpload" class="plus-icon">+</label>
+            <input type="file" id="videoUpload" accept="video/*" style="display:none" onchange="uploadVideo(this)">
+            <span onclick="auth.signOut()">👤</span>
         </div>
     </div>
 
     <script>
-        // Aapki Real API Key
+        // Aapki Real Config
         const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1...", // Ise maine aapke screenshot se liya hai
+            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
             projectId: "tiktok-clone-gajan",
             storageBucket: "tiktok-clone-gajan.appspot.com",
             messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c..."
+            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
         };
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
 
-        // REFRESH PROBLEM FIX: Auth state check
+        // Refresh Fix Logic
         auth.onAuthStateChanged(user => {
             document.getElementById('loader').style.display = 'none';
             if (user) {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
+                loadVideos();
             } else {
                 document.getElementById('authScreen').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
@@ -86,7 +84,48 @@
 
         function login() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(alert);
+            auth.signInWithPopup(provider);
+        }
+
+        // --- VIDEO UPLOAD FEATURE ---
+        async function uploadVideo(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            alert("Uploading started... Please wait.");
+            const storageRef = storage.ref('videos/' + Date.now() + "_" + file.name);
+            
+            try {
+                // 1. Storage mein video save karein
+                const snapshot = await storageRef.put(file);
+                const url = await snapshot.ref.getDownloadURL();
+
+                // 2. Firestore mein link save karein
+                await db.collection("videos").add({
+                    url: url,
+                    user: auth.currentUser.displayName,
+                    time: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("Video Uploaded Successfully!");
+            } catch (err) {
+                alert("Upload failed: " + err.message);
+            }
+        }
+
+        // --- LOAD VIDEOS ON FEED ---
+        function loadVideos() {
+            db.collection("videos").orderBy("time", "desc").onSnapshot(snap => {
+                const feed = document.getElementById('videoFeed');
+                if (snap.empty) return;
+                feed.innerHTML = "";
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    feed.innerHTML += `
+                        <video src="${data.url}" style="width:100%; height:100vh; object-fit:cover" loop autoplay muted></video>
+                    `;
+                });
+            });
         }
     </script>
 </body>
