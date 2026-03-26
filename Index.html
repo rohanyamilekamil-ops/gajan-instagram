@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan Premium</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; text-align: center; width: 320px; }
+        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #tokenDisplay { color: #ffd700; font-size: 28px; font-weight: bold; margin: 20px 0; }
+        #upiDisplay { color: #888; font-size: 14px; background: #222; padding: 10px; border-radius: 10px; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+    <div id="authScreen" style="display:none;">
+        <div class="card">
+            <h1 style="color:#ff2d55; margin:0;">GAJAN</h1>
+            <button class="btn-google" onclick="login()">Login with Google</button>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display:none;">
+        <div class="card">
+            <h2 style="margin:0; color:#555;">Token Balance</h2>
+            <div id="tokenDisplay">💎 Loading...</div>
+            <div id="upiDisplay">UPI: Loading...</div>
+            <button onclick="firebase.auth().signOut()" style="background:none; border:none; color:#444; margin-top:20px; cursor:pointer;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.appspot.com",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                // Firestore Data Load
+                db.collection("stock_info").doc("stock_info").onSnapshot((doc) => {
+                    if (doc.exists) {
+                        document.getElementById('tokenDisplay').innerText = "💎 " + doc.data().total_tokens;
+                        document.getElementById('upiDisplay').innerText = "UPI: " + doc.data().qr_link;
+                    }
+                });
+            } else {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => alert(err.message));
+        }
+    </script>
+</body>
+</html>
