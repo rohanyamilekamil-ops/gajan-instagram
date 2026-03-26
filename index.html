@@ -9,33 +9,32 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #authScreen, #mainApp { display: none; text-align: center; width: 100%; }
-        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; margin: auto; max-width: 350px; box-shadow: 0 0 20px rgba(255, 45, 85, 0.2); }
-        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; font-size: 16px; }
-        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        #authScreen, #mainApp { display: none; text-align: center; }
+        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; max-width: 350px; }
+        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
     </style>
 </head>
 <body>
 
-    <div id="loader"><h2 style="color:#ff2d55; letter-spacing:2px;">GAJAN...</h2></div>
+    <div id="loader"><h2>LOADING...</h2></div>
 
     <div id="authScreen">
         <div class="login-card">
-            <h1 style="color:#ff2d55; margin:0; font-size: 40px;">GAJAN</h1>
-            <p style="color:#666;">Premium Short Videos</p>
+            <h1 style="color:#ff2d55;">GAJAN</h1>
             <button class="btn-google" onclick="login()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
         <h1 style="color:#ffd700;">Welcome to Gajan App</h1>
-        <p id="userEmail" style="color:#888;"></p>
-        <button onclick="logout()" style="background:#222; color:#fff; border:1px solid #444; padding:10px 20px; border-radius:10px; margin-top:20px; cursor:pointer;">Logout</button>
+        <p id="userEmail"></p>
+        <button onclick="logout()" style="background:#222; color:#fff; border:none; padding:10px 20px; border-radius:10px; margin-top:20px; cursor:pointer;">Logout</button>
     </div>
 
     <script>
-        // Aapki Real Config
+        // Verified Config from your screenshots
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -45,42 +44,45 @@
             appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
         };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // REFRESH PROBLEM SOLUTION: Yeh part loop ko rokta hai
-        auth.onAuthStateChanged((user) => {
-            const loader = document.getElementById('loader');
-            const authScreen = document.getElementById('authScreen');
-            const mainApp = document.getElementById('mainApp');
-
-            if (user) {
-                // User login hai -> App dikhao
-                authScreen.style.display = 'none';
-                mainApp.style.display = 'block';
-                document.getElementById('userEmail').innerText = user.email;
-            } else {
-                // User login nahi hai -> Login screen dikhao
-                authScreen.style.display = 'block';
-                mainApp.style.display = 'none';
+        // --- REFRESH FIX LOGIC ---
+        // Yeh function check karega ki kya hum abhi login karke wapas aaye hain
+        auth.getRedirectResult().then((result) => {
+            if (result.user) {
+                console.log("Login Success via Redirect");
             }
-            // Loader hata do
-            loader.style.display = 'none';
+        }).catch((error) => {
+            console.error("Login Error:", error.message);
         });
 
-        // Use Popup instead of Redirect to avoid loop
+        // Auth State Listener
+        auth.onAuthStateChanged((user) => {
+            document.getElementById('loader').style.display = 'none';
+            if (user) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userEmail').innerText = user.email;
+            } else {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        // POPUP use karein, isse loop nahi banta
         function login() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            // popup mode mobile aur desktop dono par loop khatam kar deta hai
             auth.signInWithPopup(provider).catch((error) => {
                 alert("Login Error: " + error.message);
             });
         }
 
         function logout() {
-            auth.signOut();
+            auth.signOut().then(() => {
+                window.location.reload();
+            });
         }
     </script>
 </body>
