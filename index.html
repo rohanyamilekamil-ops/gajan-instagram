@@ -1,89 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok | Fixed</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+// Auth State Observer - Isse refresh loop ruk jayega
+firebase.auth().onAuthStateChanged((user) => {
+    const loader = document.getElementById('loader');
+    const authScreen = document.getElementById('authScreen');
+    const mainApp = document.getElementById('mainApp');
 
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        #authScreen, #mainApp { display: none; text-align: center; }
-        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; max-width: 350px; }
-        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
-        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-    </style>
-</head>
-<body>
-
-    <div id="loader"><h2>LOADING...</h2></div>
-
-    <div id="authScreen">
-        <div class="login-card">
-            <h1 style="color:#ff2d55;">GAJAN</h1>
-            <button class="btn-google" onclick="login()">Continue with Google</button>
-        </div>
-    </div>
-
-    <div id="mainApp">
-        <h1 style="color:#ffd700;">Welcome to Gajan App</h1>
-        <p id="userEmail"></p>
-        <button onclick="logout()" style="background:#222; color:#fff; border:none; padding:10px 20px; border-radius:10px; margin-top:20px; cursor:pointer;">Logout</button>
-    </div>
-
-    <script>
-        // Verified Config from your screenshots
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.appspot.com",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // --- REFRESH FIX LOGIC ---
-        // Yeh function check karega ki kya hum abhi login karke wapas aaye hain
-        auth.getRedirectResult().then((result) => {
-            if (result.user) {
-                console.log("Login Success via Redirect");
-            }
-        }).catch((error) => {
-            console.error("Login Error:", error.message);
-        });
-
-        // Auth State Listener
-        auth.onAuthStateChanged((user) => {
-            document.getElementById('loader').style.display = 'none';
-            if (user) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('userEmail').innerText = user.email;
-            } else {
-                document.getElementById('authScreen').style.display = 'block';
-                document.getElementById('mainApp').style.display = 'none';
-            }
-        });
-
-        // POPUP use karein, isse loop nahi banta
-        function login() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // popup mode mobile aur desktop dono par loop khatam kar deta hai
-            auth.signInWithPopup(provider).catch((error) => {
-                alert("Login Error: " + error.message);
-            });
+    // Browser ko state update karne ka thoda time dein
+    setTimeout(() => {
+        if (user) {
+            // Agar login ho gaya toh app dikhao
+            authScreen.style.display = 'none';
+            mainApp.style.display = 'block';
+            if(loader) loader.style.display = 'none';
+            console.log("User active:", user.email);
+        } else {
+            // Agar login nahi hai toh login screen dikhao
+            authScreen.style.display = 'flex';
+            mainApp.style.display = 'none';
+            if(loader) loader.style.display = 'none';
         }
+    }, 1000); // 1 second ka delay loop todne ke liye
+});
 
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.reload();
-            });
-        }
-    </script>
-</body>
-</html>
+// POPUP Login Function
+function login() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch((error) => {
+        alert("Login Error: " + error.message);
+    });
+}
