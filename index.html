@@ -1,148 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>TikTok Clone</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+<title>GAJAN TIKTOK</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    body {
-      background: black;
-      overflow: hidden;
-    }
+<style>
+body {
+  margin:0;
+  background:black;
+  color:white;
+  font-family:sans-serif;
+}
 
-    .container {
-      height: 100vh;
-      width: 100%;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-    }
+.top {
+  position:fixed;
+  top:0;
+  width:100%;
+  text-align:center;
+  padding:10px;
+  background:rgba(0,0,0,0.5);
+}
 
-    .video {
-      height: 100vh;
-      width: 100%;
-      position: relative;
-      scroll-snap-align: start;
-    }
+video {
+  width:100%;
+  height:100vh;
+  object-fit:cover;
+}
 
-    video {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-    }
+.controls {
+  position:fixed;
+  right:10px;
+  bottom:100px;
+}
 
-    .sidebar {
-      position: absolute;
-      right: 10px;
-      bottom: 100px;
-      color: white;
-      text-align: center;
-    }
+.controls div {
+  margin:15px 0;
+  font-size:22px;
+  cursor:pointer;
+}
 
-    .sidebar div {
-      margin: 20px 0;
-      cursor: pointer;
-      font-size: 22px;
-    }
-
-    .bottom {
-      position: absolute;
-      bottom: 20px;
-      left: 10px;
-      color: white;
-    }
-
-    .username {
-      font-weight: bold;
-    }
-
-    .desc {
-      font-size: 14px;
-    }
-
-    /* Top Bar */
-    .topbar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      color: white;
-      z-index: 10;
-      padding: 10px;
-      background: rgba(0,0,0,0.3);
-    }
-
-    .topbar span {
-      cursor: pointer;
-    }
-
-  </style>
+.form {
+  position:fixed;
+  top:50px;
+  left:10px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="topbar">
-  <span>Following</span>
-  <span><b>For You</b></span>
+<div class="top">
+  <h3>GAJAN TIKTOK</h3>
 </div>
 
-<div class="container">
+<div class="form">
+  <input id="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+  <button onclick="login()">Login</button><br><br>
 
-  <!-- Video 1 -->
-  <div class="video">
-    <video src="https://www.w3schools.com/html/mov_bbb.mp4" autoplay loop muted></video>
-
-    <div class="sidebar">
-      <div>❤️</div>
-      <div>💬</div>
-      <div>🔗</div>
-    </div>
-
-    <div class="bottom">
-      <div class="username">@user1</div>
-      <div class="desc">Amazing video 🔥</div>
-    </div>
-  </div>
-
-  <!-- Video 2 -->
-  <div class="video">
-    <video src="https://www.w3schools.com/html/movie.mp4" autoplay loop muted></video>
-
-    <div class="sidebar">
-      <div>❤️</div>
-      <div>💬</div>
-      <div>🔗</div>
-    </div>
-
-    <div class="bottom">
-      <div class="username">@user2</div>
-      <div class="desc">Dance reel 💃</div>
-    </div>
-  </div>
-
+  <input type="file" id="file"><br><br>
+  <input id="desc" placeholder="Description"><br><br>
+  <button onclick="upload()">Upload</button>
 </div>
+
+<div id="feed"></div>
 
 <script>
-  const videos = document.querySelectorAll("video");
 
-  videos.forEach(video => {
-    video.addEventListener("click", () => {
-      if (video.paused) {
-        video.play();
-      } else {
-        video.pause();
-      }
-    });
+// Fake database (demo)
+let users = [];
+let videos = [];
+
+function login(){
+  const email = emailInput();
+  const pass = passwordInput();
+
+  let user = users.find(u=>u.email===email);
+
+  if(!user){
+    users.push({email,password:pass});
+    alert("Signup Done ✅");
+  } else {
+    if(user.password===pass){
+      alert("Login Success ✅");
+      loadVideos();
+    } else {
+      alert("Wrong Password ❌");
+    }
+  }
+}
+
+function upload(){
+  const file = document.getElementById("file").files[0];
+  const desc = document.getElementById("desc").value;
+
+  if(!file) return alert("Select video");
+
+  const url = URL.createObjectURL(file);
+
+  videos.push({url,desc,likes:0});
+
+  alert("Video Uploaded 🎥");
+  loadVideos();
+}
+
+function loadVideos(){
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
+
+  videos.forEach((v,i)=>{
+    feed.innerHTML += `
+      <div>
+        <video src="${v.url}" autoplay loop controls></video>
+        <p>${v.desc}</p>
+        <button onclick="like(${i})">❤️ ${v.likes}</button>
+      </div>
+    `;
   });
+}
+
+function like(i){
+  videos[i].likes++;
+  loadVideos();
+}
+
+function emailInput(){
+  return document.getElementById("email").value;
+}
+
+function passwordInput(){
+  return document.getElementById("password").value;
+}
+
 </script>
 
 </body>
