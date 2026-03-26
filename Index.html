@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan TikTok Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: black; color: white; margin: 0; overflow: hidden; }
+        .video-container { height: 100vh; width: 100vw; scroll-snap-type: y mandatory; overflow-y: scroll; }
+        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
+        .sidebar { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; align-items: center; }
+        .bottom-info { position: absolute; bottom: 30px; left: 15px; }
+        .admin-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div id="loginModal" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
+        <h1 class="text-2xl font-bold mb-5">Admin Login</h1>
+        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-800 p-2 rounded mb-3 w-64">
+        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-800 p-2 rounded mb-3 w-64">
+        <button onclick="login()" class="bg-red-500 px-10 py-2 rounded font-bold">Login</button>
+    </div>
+
+    <div id="mainApp" class="hidden">
+        <div class="video-container" id="feed">
+            <div class="video-card">
+                <video src="https://www.w3schools.com/html/mov_bbb.mp4" class="h-full w-full object-cover" loop autoplay muted></video>
+                <div class="sidebar">
+                    <div class="mb-5 text-2xl">❤️<p class="text-xs text-center">1.2M</p></div>
+                    <div class="mb-5 text-2xl">💬<p class="text-xs text-center">40k</p></div>
+                    <div class="mb-5 text-2xl">🎁<p class="text-xs text-center text-yellow-400">Gift</p></div>
+                    <div class="text-2xl">🔗</div>
+                </div>
+                <div class="bottom-info">
+                    <h3 class="font-bold">@MRGAJAN</h3>
+                    <p class="text-sm">Welcome to my TikTok Pro App! 🚀</p>
+                    <p class="text-xs mt-2">🎵 Original Sound - Gajan</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="fixed bottom-0 w-full h-16 bg-black border-t border-gray-800 flex justify-around items-center text-xl">
+            <span>🏠</span><span>🔍</span><span class="bg-white text-black px-3 rounded-md font-bold">+</span><span>📩</span><span>👤</span>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            
+            // Aapki details
+            if(user === "MRGAJAN" && pass === "Abdul6353738585@") {
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                alert("Welcome Admin Gajan! Stock: 1,000,000 Tokens Active.");
+            } else {
+                alert("Access Denied!");
+            }
+        }
+    </script>
+</body>
+</html>
