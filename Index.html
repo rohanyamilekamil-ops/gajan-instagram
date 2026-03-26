@@ -7,88 +7,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
             projectId: "tiktok-clone-gajan",
             storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
             appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        // --- Admin Login Logic ---
         window.login = async () => {
             const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPass').value;
             
             if(user === "MRGAJAN" && pass === "Abdul6353738585@") {
+                const docSnap = await getDoc(doc(db, "admin_data", "stock_info"));
+                const tokens = docSnap.exists() ? docSnap.data().total_tokens : 0;
+                
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
-                alert("Welcome Gajan! Token Stock: 1M Active.");
-            } else {
-                alert("Galat Password!");
-            }
+                document.getElementById('tokenDisplay').innerText = tokens.toLocaleString();
+            } else { alert("Galat Details!"); }
         };
 
-        // --- Video Upload Logic ---
-        window.uploadVideo = async () => {
-            const file = document.getElementById('videoFile').files[0];
-            if(!file) return alert("Video select karo!");
-
-            const storageRef = ref(storage, 'videos/' + file.name);
-            alert("Uploading... Thoda ruko.");
-            
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
-            
-            // Save to Firestore (6 month delete logic ke liye date bhi save hogi)
-            await setDoc(doc(db, "videos", Date.now().toString()), {
-                url: url,
-                uploader: "MRGAJAN",
-                createdAt: Date.now()
-            });
-            
-            alert("Video Upload Ho Gaya! 🚀");
+        window.showQR = () => {
+            const upi = "abdul6353@okicici"; // <--- Yahan apna real UPI ID daalein
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upi}&am=500&cu=INR`;
+            document.getElementById('qrCode').src = qrUrl;
+            document.getElementById('qrModal').classList.remove('hidden');
         };
     </script>
-    <style>
-        body { background: black; color: white; font-family: sans-serif; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; }
-    </style>
 </head>
-<body>
-
-    <div id="loginModal" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-        <h1 class="text-3xl font-bold mb-8 text-red-500">GAJAN TIKTOK</h1>
-        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-900 border border-gray-700 p-3 rounded mb-4 w-72">
-        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-900 border border-gray-700 p-3 rounded mb-6 w-72">
-        <button onclick="login()" class="bg-white text-black font-bold px-12 py-3 rounded-full">Enter App</button>
+<body class="bg-black text-white">
+    <div id="loginModal" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-5">
+        <h1 class="text-4xl font-bold mb-10 text-red-600">GAJAN TIKTOK</h1>
+        <input type="text" id="adminUser" placeholder="Username" class="bg-gray-900 border border-gray-700 p-4 rounded-xl mb-4 w-full max-w-sm">
+        <input type="password" id="adminPass" placeholder="Password" class="bg-gray-900 border border-gray-700 p-4 rounded-xl mb-6 w-full max-w-sm">
+        <button onclick="login()" class="bg-white text-black font-bold px-16 py-4 rounded-full w-full max-w-sm">LOGIN ADMIN</button>
     </div>
 
-    <div id="adminPanel" class="hidden p-5">
-        <h2 class="text-xl font-bold border-b border-gray-800 pb-2">Admin Dashboard</h2>
-        <div class="mt-8 bg-gray-900 p-5 rounded-lg">
-            <p class="text-yellow-400">Token Inventory: 1,000,000</p>
-            <p class="text-sm text-gray-400 mt-2">Status: Real Money Buyer Mode ON</p>
+    <div id="adminPanel" class="hidden p-6">
+        <div class="bg-gray-900 p-6 rounded-3xl border border-red-900">
+            <h2 class="text-gray-400 uppercase text-xs font-bold tracking-widest">Available Stock</h2>
+            <div class="text-5xl font-extrabold mt-2"><span id="tokenDisplay">0</span></div>
+            <p class="text-red-500 text-sm mt-1">Tokens Ready for Sale</p>
         </div>
-        
-        <div class="mt-10">
-            <h3 class="mb-3">Upload New Video (Saves for 6 Months)</h3>
-            <input type="file" id="videoFile" accept="video/*" class="block w-full text-sm text-gray-400 mb-4">
-            <button onclick="uploadVideo()" class="bg-red-600 w-full py-3 rounded font-bold">POST VIDEO</button>
+
+        <button onclick="showQR()" class="w-full bg-red-600 mt-10 py-5 rounded-2xl font-bold text-xl">GET PAYMENT QR CODE</button>
+    </div>
+
+    <div id="qrModal" class="hidden fixed inset-0 bg-black/90 flex flex-col items-center justify-center p-10">
+        <div class="bg-white p-4 rounded-2xl">
+            <img id="qrCode" src="" alt="QR">
         </div>
+        <p class="mt-5 text-center font-bold text-lg text-white">Scan to Pay ₹500 for Tokens</p>
+        <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="mt-10 text-gray-400">Close</button>
     </div>
-
-    <div class="nav-bar">
-        <span>🏠</span><span>🔍</span><span class="text-2xl font-bold">+</span><span>📩</span><span>👤</span>
-    </div>
-
 </body>
 </html>
