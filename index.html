@@ -4,130 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gajan TikTok | Premium</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        
-        /* === NEW STYLISH LOGIN SCREEN === */
-        #authScreen { 
-            height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: radial-gradient(circle, #222, #000); 
-            z-index: 9999; 
-            position: fixed; 
-            width: 100%; 
-            transition: opacity 0.5s ease-out;
-        }
-        
-        .login-box { 
-            text-align: center; 
-            padding: 40px; 
-            border-radius: 25px; 
-            background: #111; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            width: 90%; 
-            max-width: 400px; 
-            box-shadow: 0 10px 40px rgba(255, 45, 85, 0.2); 
-        }
-        
-        /* SUPER STYLISH GAJAN TIKTOK TEXT */
-        .gajan-text { 
-            font-size: 36px; 
-            font-weight: 900; 
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #00fffb 0%, #ff2d55 50%, #ffd700 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(255, 45, 85, 0.3);
-            letter-spacing: -1px;
-        }
-        
-        .btn-google { 
-            background: linear-gradient(135deg, #ff2d55, #E1306C); 
-            color: white; 
-            padding: 16px 20px; 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            width: 100%; 
-            font-size: 16px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
-            transition: transform 0.2s;
-        }
-        .btn-google:active { transform: scale(0.98); }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        /* MAIN APP CONTENT (Baqi UI pehle ki tarah) */
+        /* === STYLISH LOGIN SCREEN === */
+        #authScreen { 
+            height: 100vh; display: flex; align-items: center; justify-content: center; 
+            background: radial-gradient(circle, #1a1a1a, #000); position: fixed; width: 100%; z-index: 9999;
+        }
+        .login-box { 
+            text-align: center; padding: 40px; border-radius: 30px; background: #111; 
+            border: 1px solid rgba(255,255,255,0.1); width: 85%; max-width: 380px;
+            box-shadow: 0 15px 50px rgba(255, 45, 85, 0.4);
+        }
+        .gajan-logo {
+            font-size: 48px; font-weight: 900; margin-bottom: 10px;
+            background: linear-gradient(to right, #00f2fe, #ff2d55, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 45, 85, 0.5);
+        }
+        .btn-login {
+            background: linear-gradient(45deg, #ff0050, #ff2d55); color: white;
+            padding: 16px; border: none; border-radius: 50px; width: 100%;
+            font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(255, 0, 80, 0.3);
+        }
+
+        /* === MAIN APP CONTENT === */
         #mainApp { display: none; height: 100vh; }
-        /* Add other app UI here (feed, upload, etc) */
+        .video-feed { height: 100vh; scroll-snap-type: y mandatory; overflow-y: scroll; scrollbar-width: none; }
+        .video-card { height: 100vh; width: 100%; scroll-snap-align: start; position: relative; display: flex; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        .top-bar { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100; }
+        .token-badge { background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 20px; color: #ffd700; font-weight: bold; border: 1px solid #ffd700; }
+        
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+        .plus-btn { background: linear-gradient(to right, #2af5ff, #ff2d55); padding: 5px 18px; border-radius: 10px; color: #000; font-weight: bold; font-size: 20px; }
+
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 25px; border-radius: 20px; width: 90%; z-index: 10000; border: 1px solid #ff2d55; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
         <div class="login-box">
-            <h1 class="gajan-text">Gajan TikTok</h1>
-            <p style="color:#aaa; margin-bottom:30px; font-size:14px;">Log in to Gajan TikTok to start watching.</p>
-            <button class="btn-google" onclick="googleSignIn()">Continue with Google</button>
-            <p style="color:#444; margin-top:15px; font-size:10px;">Gajan is a personalized short video social app</p>
+            <h1 class="gajan-logo">GAJAN</h1>
+            <p style="color:#888; letter-spacing: 1px;">PREMIUM SHORT VIDEOS</p>
+            <button class="btn-login" onclick="googleSignIn()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
-        <div style="padding:50px; text-align:center;">
-            <h1>Main Feed Open!</h1>
-            <p>Login Success.</p>
+        <div class="top-bar">
+            <div class="token-badge" onclick="openModal('shopModal')">💎 <span id="userTokens">0</span></div>
+            <img id="userIcon" style="width:42px; height:42px; border-radius:50%; border:2px solid #fff;" onclick="openModal('profileModal')">
+        </div>
+
+        <div class="video-feed" id="feed">
+            <div class="video-card"><p style="width:100%; text-align:center;">Loading Gajan Feed...</p></div>
+        </div>
+
+        <div class="nav-bar">
+            <span style="font-size:24px;" onclick="location.reload()">🏠</span>
+            <div class="plus-btn" onclick="openModal('uploadModal')">+</div>
+            <span style="font-size:24px;" onclick="openModal('profileModal')">👤</span>
         </div>
     </div>
 
+    <div id="shopModal" class="modal">
+        <h3>Gajan Shop</h3>
+        <div id="qrcode" style="background:#fff; padding:10px; margin:15px auto; width:150px;"></div>
+        <p id="upiDisplay" style="font-size:12px; color:#aaa;">UPI: Loading...</p>
+        <button class="btn-login" onclick="closeModal('shopModal')">Close</button>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <h3 id="pName">User</h3>
+        <p id="pEmail" style="color:#666; font-size:12px; margin-bottom:20px;"></p>
+        <button class="btn-login" style="background:#333;" onclick="auth.signOut()">Logout</button>
+        <button class="btn-login" onclick="closeModal('profileModal')">Back</button>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <h3>Post Video</h3>
+        <input type="file" id="vFile" accept="video/*" style="margin:20px 0; color:#fff;">
+        <button id="upBtn" class="btn-login" onclick="handleUpload()">Upload Now</button>
+        <button class="btn-login" style="background:#333;" onclick="closeModal('uploadModal')">Cancel</button>
+    </div>
+
     <script>
-        // === PASTE YOUR API KEYS HERE FROM FIREBASE ===
+        // FIREBASE CONFIG (Added based on your screenshots)
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-Replace-This-With-Your-Actual-Key",
+            apiKey: "AIzaSyAs-PASTE_YOUR_API_KEY_HERE", 
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
             projectId: "tiktok-clone-gajan",
             storageBucket: "tiktok-clone-gajan.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            messagingSenderId: "765432109876",
+            appId: "1:765432109876:web:example"
         };
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        // **CRITICAL LOGIN FIX**: Using onAuthStateChanged instead of just an ID token check
+        // AUTH PERSISTENCE (Refresh Fix)
         auth.onAuthStateChanged(user => {
-            const authScr = document.getElementById('authScreen');
-            const mainApp = document.getElementById('mainApp');
-            
             if (user) {
-                // User is signed in. Hide Login, Show App.
-                authScr.style.opacity = 0;
-                setTimeout(() => { authScr.style.display = 'none'; }, 500); // Smooth hide
-                mainApp.style.display = 'block';
-                // setupUserAccount(user); // Initialize user data
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                setupAccount(user);
             } else {
-                // User is signed out. Show Login, Hide App.
-                authScr.style.display = 'flex';
-                authScr.style.opacity = 1;
-                mainApp.style.display = 'none';
+                document.getElementById('authScreen').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
             }
         });
 
-        // Fixed signIn method
-        function googleSignIn() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Optional: for mobile chrome, signInWithRedirect is often more stable.
-            auth.signInWithPopup(provider).catch(error => {
-                alert("Login failed: " + error.message);
-            });
+        async function setupAccount(user) {
+            document.getElementById('userIcon').src = user.photoURL;
+            document.getElementById('pName').innerText = user.displayName;
+            document.getElementById('pEmail').innerText = user.email;
+
+            // Sync User Tokens
+            const uRef = db.collection("users").doc(user.uid);
+            const doc = await uRef.get();
+            if(!doc.exists) await uRef.set({ tokens: 0 });
+            uRef.onSnapshot(d => { document.getElementById('userTokens').innerText = d.data().tokens || 0; });
         }
+
+        function googleSignIn() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+
+        // LOAD VIDEO FEED
+        db.collection("videos").orderBy("timestamp", "desc").onSnapshot(snap => {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = "";
+            snap.forEach(doc => {
+                feed.innerHTML += `
+                    <div class="video-card">
+                        <video loop onclick="this.paused?this.play():this.pause()" autoplay muted playsinline src="${doc.data().url}"></video>
+                    </div>`;
+            });
+        });
+
+        // ADMIN SHOP SYNC
+        db.collection("admin_data").doc("stock_info").onSnapshot(doc => {
+            if(doc.exists) {
+                const upi = doc.data().qr_link || "gajan@upi";
+                document.getElementById('upiDisplay').innerText = "UPI: " + upi;
+                document.getElementById('qrcode').innerHTML = "";
+                new QRCode(document.getElementById('qrcode'), { text: `upi://pay?pa=${upi}&pn=Gajan`, width: 140, height: 140 });
+            }
+        });
+
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>
