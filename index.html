@@ -3,64 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan TikTok | Premium</title>
+    <title>Gajan TikTok | Fixed</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        
-        /* 1. Loader taaki login refresh na dikhe */
-        #loader {
-            position: fixed; top: 0; width: 100%; height: 100%; background: #000;
-            display: flex; align-items: center; justify-content: center; z-index: 10000;
-        }
-
-        /* 2. Login Screen Styling */
-        #authScreen { height: 100vh; display: none; align-items: center; justify-content: center; }
-        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 40px rgba(255, 45, 85, 0.3); }
-        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 25px; font-size: 16px; }
-
-        /* 3. Main App UI */
-        #mainApp { display: none; height: 100vh; position: relative; }
-        .top-bar { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 100; }
-        .video-feed { height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
-        .plus-btn { background: linear-gradient(to right, #00f2fe, #ff2d55); padding: 5px 20px; border-radius: 10px; color: #000; font-weight: bold; font-size: 20px; cursor: pointer; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
+        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #authScreen { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .login-card { background: #111; padding: 30px; border-radius: 20px; border: 1px solid #ff2d55; text-align: center; }
+        .btn-google { background: #ff2d55; color: #fff; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        #mainApp { display: none; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="loader"><h2 style="color: #ff2d55;">GAJAN...</h2></div>
+    <div id="loader"><h2>LOADING...</h2></div>
 
     <div id="authScreen">
         <div class="login-card">
-            <h1 style="color: #ff2d55; font-size: 40px;">GAJAN</h1>
-            <p style="color: #888; margin-top: 10px;">Continue to watch videos</p>
+            <h1 style="color:#ff2d55">GAJAN</h1>
             <button class="btn-google" onclick="login()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
-        <div class="top-bar">
-            <div style="color: #ffd700; font-weight: bold;">💎 1,000,000</div>
-            <div onclick="auth.signOut()" style="color: #888; cursor: pointer;">Logout</div>
-        </div>
-        
-        <div class="video-feed" id="videoContainer">
-            <p style="color: #444;">No videos yet. Click + to upload.</p>
-        </div>
-
-        <div class="nav-bar">
-            <span style="font-size:24px;">🏠</span>
-            <label for="videoFile" class="plus-btn">+</label>
-            <input type="file" id="videoFile" accept="video/*" style="display:none" onchange="uploadVideo(this)">
-            <span style="font-size:24px;">👤</span>
-        </div>
+        <h1>Welcome to Gajan TikTok</h1>
+        <p id="userEmail"></p>
+        <button onclick="firebase.auth().signOut()" style="background:#333; color:#fff; border:none; padding:10px; border-radius:5px;">Logout</button>
     </div>
 
     <script>
@@ -71,55 +43,30 @@
             projectId: "tiktok-clone-gajan",
             storageBucket: "tiktok-clone-gajan.appspot.com",
             messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7cc447600efbaf",
-            measurementId: "G-10SC7W9EDZ"
+            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
         };
 
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
 
-        // Refresh Loop Fix: Auth state observer
-        auth.onAuthStateChanged((user) => {
+        // REFRESH FIX: Yeh check karega user login hai ya nahi
+        firebase.auth().onAuthStateChanged((user) => {
             document.getElementById('loader').style.display = 'none';
             if (user) {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                console.log("Welcome:", user.email);
+                document.getElementById('userEmail').innerText = "Logged in as: " + user.email;
             } else {
                 document.getElementById('authScreen').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'none';
             }
         });
 
-        // Login Function using Popup taaki redirect loop na bane
+        // POPUP LOGIN: Isse loop nahi banega
         function login() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(err => alert("Error: " + err.message));
-        }
-
-        // Simple Video Upload Function
-        async function uploadVideo(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            alert("Uploading started...");
-            const ref = storage.ref('videos/' + Date.now() + "_" + file.name);
-            
-            try {
-                const snapshot = await ref.put(file);
-                const url = await snapshot.ref.getDownloadURL();
-                await db.collection("videos").add({
-                    url: url,
-                    userId: auth.currentUser.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Upload Success!");
-                location.reload(); 
-            } catch (err) {
-                alert("Upload failed: " + err.message);
-            }
+            firebase.auth().signInWithPopup(provider).catch(err => {
+                alert("Error: " + err.message);
+            });
         }
     </script>
 </body>
