@@ -5,131 +5,207 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
+body{
   margin:0;
   background:black;
   color:white;
   font-family:sans-serif;
+  overflow:hidden;
 }
 
-.top {
+/* TOP BAR */
+.top{
   position:fixed;
   top:0;
   width:100%;
   text-align:center;
   padding:10px;
   background:rgba(0,0,0,0.5);
+  z-index:10;
 }
 
-video {
-  width:100%;
+/* LOGIN BOX */
+.login-box{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#111;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+}
+
+input{
+  width:200px;
+  padding:8px;
+  margin:5px;
+  border:none;
+  border-radius:5px;
+}
+
+button{
+  padding:8px 15px;
+  border:none;
+  border-radius:5px;
+  background:red;
+  color:white;
+  cursor:pointer;
+}
+
+/* FEED */
+.feed{
   height:100vh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+}
+
+.video-box{
+  height:100vh;
+  scroll-snap-align:start;
+  position:relative;
+}
+
+video{
+  width:100%;
+  height:100%;
   object-fit:cover;
 }
 
-.controls {
-  position:fixed;
+/* SIDEBAR */
+.sidebar{
+  position:absolute;
   right:10px;
   bottom:100px;
 }
 
-.controls div {
+.sidebar div{
   margin:15px 0;
   font-size:22px;
   cursor:pointer;
 }
 
-.form {
+/* UPLOAD BTN */
+.upload-btn{
   position:fixed;
-  top:50px;
-  left:10px;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  color:black;
+  padding:10px;
+  border-radius:50%;
+  font-size:20px;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="top">
-  <h3>GAJAN TIKTOK</h3>
+<div class="top">GAJAN TIKTOK</div>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h3>Login / Signup</h3>
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Enter</button>
 </div>
 
-<div class="form">
-  <input id="email" placeholder="Email"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login</button><br><br>
+<!-- FEED -->
+<div class="feed" id="feed" style="display:none;"></div>
 
-  <input type="file" id="file"><br><br>
-  <input id="desc" placeholder="Description"><br><br>
-  <button onclick="upload()">Upload</button>
-</div>
-
-<div id="feed"></div>
+<!-- UPLOAD -->
+<input type="file" id="file" style="display:none;">
+<button class="upload-btn" onclick="selectVideo()">+</button>
 
 <script>
 
-// Fake database (demo)
-let users = [];
-let videos = [];
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let videos = JSON.parse(localStorage.getItem("videos")) || [];
+let currentUser = null;
 
+/* LOGIN FIXED */
 function login(){
-  const email = emailInput();
-  const pass = passwordInput();
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
+
+  if(!email || !password){
+    alert("Fill all fields");
+    return;
+  }
 
   let user = users.find(u=>u.email===email);
 
   if(!user){
-    users.push({email,password:pass});
-    alert("Signup Done ✅");
+    users.push({email,password});
+    localStorage.setItem("users", JSON.stringify(users));
+    alert("Signup Success ✅");
   } else {
-    if(user.password===pass){
-      alert("Login Success ✅");
-      loadVideos();
-    } else {
+    if(user.password!==password){
       alert("Wrong Password ❌");
+      return;
     }
+    alert("Login Success ✅");
   }
-}
 
-function upload(){
-  const file = document.getElementById("file").files[0];
-  const desc = document.getElementById("desc").value;
+  currentUser = email;
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("feed").style.display="block";
 
-  if(!file) return alert("Select video");
-
-  const url = URL.createObjectURL(file);
-
-  videos.push({url,desc,likes:0});
-
-  alert("Video Uploaded 🎥");
   loadVideos();
 }
 
+/* SELECT VIDEO */
+function selectVideo(){
+  if(!currentUser){
+    alert("Login first ❌");
+    return;
+  }
+  document.getElementById("file").click();
+}
+
+/* UPLOAD FIXED */
+document.getElementById("file").addEventListener("change", function(){
+  let file = this.files[0];
+  if(!file) return;
+
+  let url = URL.createObjectURL(file);
+
+  videos.push({
+    url,
+    likes:0
+  });
+
+  localStorage.setItem("videos", JSON.stringify(videos));
+
+  loadVideos();
+});
+
+/* LOAD VIDEOS */
 function loadVideos(){
-  const feed = document.getElementById("feed");
-  feed.innerHTML = "";
+  let feed = document.getElementById("feed");
+  feed.innerHTML="";
 
   videos.forEach((v,i)=>{
     feed.innerHTML += `
-      <div>
-        <video src="${v.url}" autoplay loop controls></video>
-        <p>${v.desc}</p>
-        <button onclick="like(${i})">❤️ ${v.likes}</button>
+    <div class="video-box">
+      <video src="${v.url}" autoplay loop></video>
+
+      <div class="sidebar">
+        <div onclick="like(${i})">❤️ ${v.likes}</div>
       </div>
+    </div>
     `;
   });
 }
 
+/* LIKE */
 function like(i){
   videos[i].likes++;
+  localStorage.setItem("videos", JSON.stringify(videos));
   loadVideos();
-}
-
-function emailInput(){
-  return document.getElementById("email").value;
-}
-
-function passwordInput(){
-  return document.getElementById("password").value;
 }
 
 </script>
