@@ -1,92 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Premium | Dashboard</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TikTok Clone</title>
 
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        #authScreen, #mainApp { display: none; width: 100%; padding: 20px; }
-        .card { background: #111; padding: 30px; border-radius: 25px; border: 1px solid #ff2d55; max-width: 400px; margin: auto; box-shadow: 0 0 30px rgba(255, 45, 85, 0.2); }
-        .token-box { color: #ffd700; font-size: 32px; font-weight: bold; margin: 20px 0; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .upi-box { background: #222; padding: 15px; border-radius: 12px; font-size: 14px; color: #aaa; border: 1px dashed #444; word-break: break-all; }
-        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
-    </style>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .video-card {
+      height: 100vh;
+      position: relative;
+      scroll-snap-align: start;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      color: white;
+    }
+
+    .username {
+      font-weight: bold;
+    }
+
+    .actions {
+      position: absolute;
+      right: 10px;
+      bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    .actions div {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      color: white;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 0;
+    }
+  </style>
 </head>
+
 <body>
 
-    <div id="loader"><h2>GAJAN...</h2></div>
+<div class="top-bar">TikTok</div>
 
-    <div id="authScreen">
-        <div class="card">
-            <h1 style="color:#ff2d55; font-size: 45px; margin:0;">GAJAN</h1>
-            <button class="btn-google" onclick="login()">Continue with Google</button>
-        </div>
+<div class="container">
+
+  <!-- Video 1 -->
+  <div class="video-card">
+    <video src="https://www.w3schools.com/html/mov_bbb.mp4" autoplay loop muted></video>
+
+    <div class="overlay">
+      <div class="username">@user1</div>
+      <div>Awesome video 🔥</div>
     </div>
 
-    <div id="mainApp">
-        <div class="card">
-            <h2 style="margin:0; color:#888;">Available Balance</h2>
-            <div id="tokenDisplay" class="token-box">💎 Loading...</div>
-            
-            <p style="margin-bottom:10px; color:#fff;">Payment Details:</p>
-            <div id="upiDisplay" class="upi-box">Fetching UPI ID...</div>
-            
-            <button onclick="auth.signOut()" style="background:none; border:none; color:#555; margin-top:30px; cursor:pointer;">Logout</button>
-        </div>
+    <div class="actions">
+      <div>❤️<br>1.2K</div>
+      <div>💬<br>200</div>
+      <div>🔗<br>Share</div>
+    </div>
+  </div>
+
+  <!-- Video 2 -->
+  <div class="video-card">
+    <video src="https://www.w3schools.com/html/movie.mp4" autoplay loop muted></video>
+
+    <div class="overlay">
+      <div class="username">@user2</div>
+      <div>Another clip 🎥</div>
     </div>
 
-    <script>
-        // Aapki Real Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.appspot.com",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
-        };
+    <div class="actions">
+      <div>❤️<br>3K</div>
+      <div>💬<br>500</div>
+      <div>🔗<br>Share</div>
+    </div>
+  </div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+</div>
 
-        // 1. LIVE DATA LOADER: Firestore se data lene ke liye
-        function loadLiveStock() {
-            // Document ka rasta: collection 'stock_info' aur doc 'stock_info'
-            db.collection("stock_info").doc("stock_info").onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    // Database field names (total_tokens aur qr_link)
-                    document.getElementById('tokenDisplay').innerText = "💎 " + (data.total_tokens || "0").toLocaleString();
-                    document.getElementById('upiDisplay').innerText = data.qr_link || "No UPI Found";
-                }
-            });
-        }
+<div class="bottom-bar">
+  <div>🏠 Home</div>
+  <div>🔍 Search</div>
+  <div>➕ Upload</div>
+  <div>❤️ Likes</div>
+  <div>👤 Profile</div>
+</div>
 
-        // 2. AUTH OBSERVER: Refresh loop ko rokne ke liye
-        auth.onAuthStateChanged((user) => {
-            document.getElementById('loader').style.display = 'none';
-            if (user) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadLiveStock(); // Login hote hi data load karo
-            } else {
-                document.getElementById('authScreen').style.display = 'block';
-                document.getElementById('mainApp').style.display = 'none';
-            }
-        });
+<script>
+  const videos = document.querySelectorAll("video");
 
-        // 3. POPUP LOGIN: Taaki redirect refresh loop na bane
-        function login() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(err => alert(err.message));
-        }
-    </script>
+  videos.forEach(video => {
+    video.addEventListener("click", () => {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
