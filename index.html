@@ -7,36 +7,32 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
-        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        #authScreen { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .login-card { background: #111; padding: 30px; border-radius: 20px; border: 1px solid #ff2d55; text-align: center; }
-        .btn-google { background: #ff2d55; color: #fff; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        #mainApp { display: none; padding: 20px; text-align: center; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        #authScreen, #mainApp { display: none; text-align: center; width: 100%; }
+        .login-card { background: #111; padding: 40px; border-radius: 30px; border: 1px solid #ff2d55; margin: auto; max-width: 350px; }
+        .btn-google { background: #ff2d55; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div id="loader"><h2>LOADING...</h2></div>
-
     <div id="authScreen">
         <div class="login-card">
-            <h1 style="color:#ff2d55">GAJAN</h1>
+            <h1 style="color:#ff2d55; margin:0;">GAJAN</h1>
+            <p style="color:#666;">Premium Short Videos</p>
             <button class="btn-google" onclick="login()">Continue with Google</button>
         </div>
     </div>
 
     <div id="mainApp">
-        <h1>Welcome to Gajan TikTok</h1>
-        <p id="userEmail"></p>
-        <button onclick="firebase.auth().signOut()" style="background:#333; color:#fff; border:none; padding:10px; border-radius:5px;">Logout</button>
+        <h1 style="color:#ffd700;">Welcome to Gajan</h1>
+        <p id="userEmail" style="color:#888;"></p>
+        <button onclick="logout()" style="background:#333; color:#fff; border:none; padding:10px 20px; border-radius:5px; margin-top:20px; cursor:pointer;">Logout</button>
     </div>
 
     <script>
-        // Aapki Real Config
+        // Aapki Verified Config
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB50TL4_KyiU1XF6e2PZ0mE4",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -46,26 +42,35 @@
             appId: "1:838023307513:web:e40efbaf7cc447600efbaf"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
 
-        // REFRESH FIX: Yeh check karega user login hai ya nahi
-        firebase.auth().onAuthStateChanged((user) => {
-            document.getElementById('loader').style.display = 'none';
+        // REFRESH LOOP FIX: Logic to handle UI display
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
                 document.getElementById('userEmail').innerText = "Logged in as: " + user.email;
             } else {
-                document.getElementById('authScreen').style.display = 'flex';
+                document.getElementById('authScreen').style.display = 'block';
                 document.getElementById('mainApp').style.display = 'none';
             }
         });
 
-        // POPUP LOGIN: Isse loop nahi banega
+        // POPUP LOGIN: To prevent redirect loops
         function login() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).catch(err => {
-                alert("Error: " + err.message);
+            auth.signInWithPopup(provider).catch((error) => {
+                console.error("Login Error:", error.message);
+                alert("Login failed! Make sure you are using HTTPS or Localhost.");
+            });
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                location.reload(); 
             });
         }
     </script>
