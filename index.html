@@ -1,26 +1,142 @@
-// --- IS CODE KO REPLACRE KAREIN ---
-
-function signIn() {
-    document.getElementById('loader').style.display = 'block';
-    const provider = new firebase.auth.GoogleAuthProvider();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan Pro System</title>
     
-    // Sabse pakka tarika mobile ke liye
-    auth.signInWithPopup(provider).then((result) => {
-        // Agar popup kaam kar gaya
-        console.log("Logged in!");
-    }).catch((error) => {
-        console.log("Popup blocked, trying redirect...");
-        // Agar popup block hua toh automatic redirect karega
-        auth.signInWithRedirect(provider);
-    });
-}
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --neon: #fe2c55; --bg: #000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-// Redirect hone ke baad data pakadne ke liye ye zaroori hai
-auth.getRedirectResult().then((result) => {
-    if (result && result.user) {
-        document.getElementById('authScreen').style.display = 'none';
-        loadVideos();
-    }
-}).catch((error) => {
-    console.error("Auth Error:", error.message);
-});
+        /* Modern Glass Login */
+        #loginScreen {
+            position: fixed; inset: 0; z-index: 5000; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .logo { font-size: 55px; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px rgba(254,44,85,0.5); }
+        .g-btn {
+            background: #fff; color: #000; padding: 15px 35px; border-radius: 50px;
+            border: none; font-weight: bold; cursor: pointer; display: flex;
+            align-items: center; gap: 10px; margin-top: 30px; font-size: 16px;
+        }
+        .guest-link { margin-top: 20px; color: #555; text-decoration: underline; cursor: pointer; font-size: 14px; }
+
+        /* Feed System */
+        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; display: flex; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Overlays */
+        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; text-align: center; }
+        .sidebar i { font-size: 30px; }
+        .info { position: absolute; bottom: 90px; left: 15px; width: 70%; }
+
+        /* Navbar */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav i { font-size: 22px; }
+        .plus { background: linear-gradient(to right, #25f4ee, #fe2c55); padding: 5px 15px; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen">
+        <div class="logo">GAJAN</div>
+        <p style="opacity:0.6;">Next-Gen TikTok Clone</p>
+        <button class="g-btn" onclick="login()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
+            Google Se Start Karein
+        </button>
+        <div class="guest-link" onclick="guestMode()">Bina Login Ke Dekhein (Guest)</div>
+        <div id="stat" style="margin-top:20px; color: #25f4ee; font-size: 12px;"></div>
+    </div>
+
+    <div class="feed" id="mainFeed"></div>
+
+    <div class="nav">
+        <i class="fas fa-home" onclick="location.reload()"></i>
+        <i class="fas fa-search"></i>
+        <div class="plus" onclick="alert('Upload system ready!')">+</div>
+        <i class="fas fa-comment"></i>
+        <i class="fas fa-user"></i>
+    </div>
+
+    <script>
+        // FIREBASE SETUP
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // LOGIN LOGIC
+        function login() {
+            document.getElementById('stat').innerText = "Connecting...";
+            const provider = new firebase.auth.GoogleAuthProvider();
+            // Redirect is best for mobile
+            auth.signInWithRedirect(provider);
+        }
+
+        function guestMode() {
+            document.getElementById('loginScreen').style.display = 'none';
+            loadFeed();
+        }
+
+        // Check Login Status
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                loadFeed();
+            }
+        });
+
+        // LOAD VIDEOS
+        async function loadFeed() {
+            const feed = document.getElementById('mainFeed');
+            try {
+                const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
+                feed.innerHTML = "";
+                if(snap.empty) {
+                    feed.innerHTML = "<div style='padding:100px; text-align:center;'>No videos found. Post first!</div>";
+                    return;
+                }
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    feed.innerHTML += `
+                    <div class="post">
+                        <video loop src="${d.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
+                        <div class="sidebar">
+                            <i class="fas fa-heart"></i><br><small>${d.likes || 0}</small>
+                            <br><br><i class="fas fa-share"></i>
+                        </div>
+                        <div class="info">
+                            <b>@${d.userName || 'gajan_user'}</b>
+                            <p>${d.caption || 'No caption'}</p>
+                        </div>
+                    </div>`;
+                });
+
+                // Auto play
+                const obs = new IntersectionObserver(ents => {
+                    ents.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
+                }, {threshold: 0.8});
+                document.querySelectorAll('video').forEach(v => obs.observe(v));
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    </script>
+</body>
+</html>
