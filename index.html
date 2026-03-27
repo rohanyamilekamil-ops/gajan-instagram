@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Supreme System</title>
+    <title>Gajan | The Ultimate System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,65 +11,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; --glass: rgba(255,255,255,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #000; color: #fff; overflow: hidden; }
 
-        /* --- LATEST GAJAN LOGIN --- */
-        #authScreen { 
-            position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://source.unsplash.com/random/900x1600/?neon,abstract');
-            background-size: cover;
-        }
-        .gajan-bg-text { 
-            position: absolute; font-size: 15vw; font-weight: 900; color: rgba(255,255,255,0.03); 
-            text-transform: uppercase; z-index: -1; animation: float 10s infinite alternate;
-        }
-        @keyframes float { from { transform: translateY(-20px); } to { transform: translateY(20px); } }
+        /* --- 2027 SUPREME LOGIN --- */
+        #authScreen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .gajan-bg { position: absolute; font-size: 20vw; font-weight: 900; color: rgba(255,255,255,0.03); white-space: nowrap; z-index: -1; animation: slide 20s linear infinite; }
+        @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        .login-card { background: var(--glass); backdrop-filter: blur(20px); padding: 40px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; max-width: 400px; text-align: center; }
+        .btn-g { background: #fff; color: #000; padding: 15px; border-radius: 50px; border: none; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; }
 
-        .login-card { 
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px; 
-            border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; 
-        }
-        .btn-google { 
-            background: #fff; color: #000; padding: 15px; border-radius: 50px; border: none; 
-            font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
+        /* --- NAVIGATION --- */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 0.5px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: #fff; }
+        .nav-item i { font-size: 24px; margin-bottom: 4px; display: block; }
+        .plus-btn { background: #fff; color: #000; padding: 4px 15px; border-radius: 8px; font-weight: bold; font-size: 22px; }
 
-        /* --- FEED SYSTEM --- */
+        /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; overflow-y: auto; padding-bottom: 80px; }
         .active-screen { display: flex; }
+
+        /* Feed */
         #feedContainer { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* SIDEBAR */
         .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .user-link { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
-        .user-link img { width: 100%; height: 100%; object-fit: cover; }
+        .user-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
 
-        /* --- ADMIN PANEL --- */
-        #adminPanel { position: fixed; inset: 0; background: #050505; z-index: 10000; display: none; padding: 20px; overflow-y: auto; border: 3px solid var(--gold); }
-        .admin-card { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
-        .del-btn { background: var(--neon); color: #fff; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
-
-        /* NAV */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
-        .nav-item { color: #555; text-align: center; font-size: 10px; cursor: pointer; }
-        .nav-item.active { color: #fff; }
-        .nav-item i { font-size: 24px; display: block; }
+        /* --- ADMIN MASTER --- */
+        #adminPanel { position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 25px; border: 2px solid var(--gold); overflow-y: auto; }
+        .admin-box { background: #111; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #222; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <div class="gajan-bg-text">GAJAN GAJAN GAJAN</div>
+        <div class="gajan-bg">GAJAN GAJAN GAJAN</div>
         <div class="login-card">
-            <h1 style="color:var(--neon); font-size: 50px; margin-bottom: 10px; letter-spacing: 5px;">GAJAN</h1>
-            <p style="color:gray; margin-bottom: 30px;">Next Generation Viral System</p>
-            <button class="btn-google" onclick="googleLogin()">
+            <h1 style="color:var(--neon); font-size: 50px; letter-spacing: 5px;">GAJAN</h1>
+            <p style="opacity:0.5; font-size: 12px;">Original TikTok Clone V2027</p>
+            <button class="btn-g" onclick="googleLogin()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
-                START WITH GOOGLE
+                Start with Google
             </button>
         </div>
     </div>
@@ -80,44 +66,46 @@
 
     <div id="meScreen" class="screen">
         <div style="text-align: center; padding: 50px 20px;">
-            <div onclick="adminTaps()" style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; position: relative;">
-                <img id="uPic" src="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
-                <i class="fas fa-camera" onclick="upProfile()" style="position:absolute; bottom:5px; right:5px; background:var(--neon); padding:8px; border-radius:50%; font-size:12px;"></i>
+            <div onclick="checkAdmin()" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; position: relative;">
+                <img id="myPhoto" src="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                <i class="fas fa-camera" onclick="upProfile()" style="position:absolute; bottom:5px; right:5px; background:var(--neon); padding:8px; border-radius:50%; font-size:12px; cursor:pointer;"></i>
             </div>
-            <h2 id="uName" style="margin-top:15px;">User Name</h2>
-            <p id="uEmail" style="color:gray; font-size:12px;"></p>
-            <div style="display:flex; justify-content:center; gap:25px; margin-top:20px;">
-                <div>🪙 <b id="uT">0</b><br><small>Tokens</small></div>
-                <button onclick="document.getElementById('buyBox').style.bottom='0'; loadQRs();" style="background:var(--gold); color:#000; padding:10px 20px; border:none; border-radius:10px; font-weight:bold;">BUY TOKENS</button>
+            <h2 id="myName" style="margin-top:15px;">User</h2>
+            <p id="myEmail" style="color:gray; font-size:12px;"></p>
+            <div style="display:flex; justify-content:center; gap:25px; margin-top:25px;">
+                <div>🪙 <b id="myTkn">0</b><br><small>Tokens</small></div>
+                <button onclick="document.getElementById('buyBox').style.bottom='0'; loadQRs();" style="background:var(--gold); color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">BUY TOKENS</button>
             </div>
         </div>
         <div id="myGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;"></div>
     </div>
 
     <div id="adminPanel">
-        <h2 style="color:var(--gold); margin-bottom: 20px;">MASTER CONTROL</h2>
-        <div class="admin-card">
-            <h4>Transfer Tokens</h4>
-            <input type="text" id="targetE" placeholder="User Email" style="width:100%; padding:10px; margin-top:10px; background:#222; border:none; color:#fff;">
-            <input type="number" id="targetA" placeholder="Amount" style="width:100%; padding:10px; margin-top:10px; background:#222; border:none; color:#fff;">
-            <button onclick="distribute()" style="width:100%; margin-top:15px; padding:12px; background:var(--gold); border:none; font-weight:bold;">SEND</button>
+        <h2 style="color:var(--gold);">MRGAJAN MASTER CONTROL</h2>
+        <div class="admin-box">
+            <h4>Transfer Tokens (Stock: 10M)</h4>
+            <input type="text" id="targetE" placeholder="User Email">
+            <input type="number" id="targetA" placeholder="Amount">
+            <button onclick="distribute()" style="width:100%; margin-top:10px; padding:12px; background:var(--gold); border:none; font-weight:bold;">SEND TOKENS</button>
         </div>
-        <div class="admin-card" id="adminPostList">
-            <h4>Manage Viral Feed (Delete Anytime)</h4>
+        <div class="admin-box" id="adminPosts">
+            <h4>Manage Viral Feed (Delete)</h4>
         </div>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; border:none; color:#fff; border-radius:10px;">EXIT</button>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:10px;">EXIT</button>
     </div>
 
     <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:75%; background:#111; z-index:3000; transition:0.5s; padding:25px; border-radius:40px 40px 0 0;">
-        <h3>Scan to Pay</h3>
+        <h3>Deposit System</h3>
         <div id="qrList" style="display:flex; gap:15px; overflow-x:auto; margin-top:20px; height:350px;"></div>
         <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; margin-top:20px; padding:15px; background:var(--neon); border:none; font-weight:bold; border-radius:10px;">CLOSE</button>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="showS('feedScreen', this)"><i class="fas fa-play"></i>Feed</div>
-        <div class="nav-item" onclick="upV()"><i class="fas fa-plus-square" style="font-size:30px;"></i></div>
-        <div class="nav-item" onclick="showS('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
+        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="alert('Discover coming soon')"><i class="fas fa-search"></i>Discover</div>
+        <div class="nav-item" onclick="upVideo()"><div class="plus-btn">+</div></div>
+        <div class="nav-item"><i class="fas fa-comment-dots"></i>Inbox</div>
+        <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user"></i>Me</div>
     </div>
 
     <script>
@@ -133,7 +121,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- LOGIN & USER DATA ---
+        // --- AUTH ---
         function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
         auth.onAuthStateChanged(async user => {
@@ -144,21 +132,21 @@
                 if(!doc.exists) await ref.set({ name: user.displayName, email: user.email, photo: user.photoURL, tokens: 0 });
                 ref.onSnapshot(s => {
                     const d = s.data();
-                    document.getElementById('uName').innerText = d.name;
-                    document.getElementById('uEmail').innerText = d.email;
-                    document.getElementById('uPic').src = d.photo;
-                    document.getElementById('uT').innerText = d.tokens || 0;
+                    document.getElementById('myName').innerText = d.name;
+                    document.getElementById('myEmail').innerText = d.email;
+                    document.getElementById('myPhoto').src = d.photo;
+                    document.getElementById('myTkn').innerText = d.tokens || 0;
                 });
                 loadFeed();
             } else { document.getElementById('authScreen').style.display='flex'; }
         });
 
-        // --- UPLOAD VIDEO ---
-        async function upV() {
+        // --- FEED & UPLOAD ---
+        async function upVideo() {
             let i = document.createElement('input'); i.type='file'; i.accept='video/*';
             i.onchange = async (e) => {
                 const f = e.target.files[0];
-                alert("CONGRATULATIONS! System is uploading your viral video...");
+                alert("CONGRATULATIONS! Video is uploading to Gajan System...");
                 const formData = new FormData(); formData.append('file', f); formData.append('upload_preset', 'ml_default');
                 const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", { method:'POST', body:formData });
                 const d = await res.json();
@@ -171,7 +159,6 @@
             }; i.click();
         }
 
-        // --- LOAD FEED & ADMIN CONTROL ---
         async function loadFeed() {
             const container = document.getElementById('feedContainer');
             const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
@@ -182,7 +169,7 @@
                     <div class="v-post">
                         <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
                         <div class="sidebar">
-                            <div class="user-link"><img src="${d.uPic}"></div>
+                            <div class="user-pic"><img src="${d.uPic}"></div>
                             <i class="fas fa-heart"></i><b>${d.likes}</b>
                             <i class="fas fa-share" onclick="alert('Gmail: ${d.uEmail}')"></i>
                         </div>
@@ -196,23 +183,9 @@
             document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
 
-        async function loadAdminPosts() {
-            const list = document.getElementById('adminPostList');
-            const snap = await db.collection('posts').get();
-            list.innerHTML = "<h4>Manage Viral Feed</h4>";
-            snap.forEach(doc => {
-                list.innerHTML += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-top:5px; border-radius:10px;">
-                    <span>@${doc.data().uName}</span>
-                    <button class="del-btn" onclick="adminDelete('${doc.id}')">Delete</button>
-                </div>`;
-            });
-        }
-
-        async function adminDelete(id) { if(confirm("Delete this video forever?")) { await db.collection('posts').doc(id).delete(); loadAdminPosts(); } }
-
-        // --- ADMIN TRIGGER ---
+        // --- ADMIN ---
         let taps = 0;
-        function adminTaps() {
+        function checkAdmin() {
             taps++; if(taps >= 5) {
                 let p = prompt("Master Key:");
                 if(p === "Abdul6353738585@") {
@@ -223,7 +196,21 @@
             }
         }
 
-        function showS(id, btn) {
+        async function loadAdminPosts() {
+            const list = document.getElementById('adminPosts');
+            const snap = await db.collection('posts').get();
+            list.innerHTML = "<h4>Manage Viral Feed</h4>";
+            snap.forEach(doc => {
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; background:#222; margin-top:5px; border-radius:10px;">
+                    <span>@${doc.data().uName}</span>
+                    <button onclick="adminDelete('${doc.id}')" style="background:red; border:none; color:#fff; padding:5px 10px; border-radius:5px;">Delete</button>
+                </div>`;
+            });
+        }
+
+        async function adminDelete(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminPosts(); } }
+
+        function showScreen(id, btn) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
             document.getElementById(id).classList.add('active-screen');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
