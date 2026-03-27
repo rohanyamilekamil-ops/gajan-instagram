@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan TikTok | Ultimate System</title>
+    <title>Gajan TikTok | V11 Master</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -15,96 +15,91 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body { background: #000; color: #fff; overflow: hidden; }
 
-        /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; overflow-y: auto; padding-bottom: 80px; }
         .active-screen { display: flex; }
 
-        /* --- HOME (POSTS ONLY) & FEED (VIDEO ONLY) --- */
-        .post-card { background: #111; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #222; }
-        .post-card img { width: 100%; border-radius: 10px; }
-        
+        /* Feed Snap */
         #videoFeed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
+        .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- SIDEBAR & WATERMARK --- */
-        .watermark { position: absolute; top: 20px; left: 20px; font-weight: 900; color: rgba(255,255,255,0.4); text-shadow: 0 0 10px var(--neon); z-index: 100; }
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 500; }
-        .user-circ { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); padding: 2px; }
-        .user-circ img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        /* Admin UI */
+        #adminPanel { position: fixed; inset: 0; background: #0a0a0a; z-index: 9999; display: none; padding: 20px; overflow-y: auto; }
+        .admin-section { background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
+        .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .admin-post { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #1a1a1a; margin-top: 5px; border-radius: 8px; }
 
-        /* --- NAVIGATION --- */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 2000; border-top: 0.5px solid #333; }
-        .nav-item { text-align: center; color: #777; font-size: 11px; }
+        /* Nav */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-item { text-align: center; color: #666; font-size: 11px; }
         .nav-item.active { color: #fff; }
-        .nav-item i { font-size: 22px; display: block; margin-bottom: 2px; }
-
-        /* --- MODALS --- */
-        .modal { position: fixed; bottom: -100%; width: 100%; background: #151515; border-radius: 20px 20px 0 0; z-index: 3000; transition: 0.3s; padding: 20px; border-top: 2px solid var(--neon); }
-        .input-g { width: 100%; padding: 15px; background: #222; border: none; color: #fff; border-radius: 10px; margin: 10px 0; }
-        .btn-action { width: 100%; padding: 15px; background: var(--neon); border: none; color: #fff; font-weight: bold; border-radius: 10px; cursor: pointer; }
+        .nav-item i { font-size: 24px; margin-bottom: 2px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="homeScreen" class="screen active-screen">
-        <div style="padding: 15px; border-bottom: 1px solid #222;"><h3>Gajan Home</h3></div>
-        <div id="imageGrid"></div>
-    </div>
-
-    <div id="feedScreen" class="screen">
+    <div id="feedScreen" class="screen active-screen">
         <div id="videoFeed"></div>
     </div>
 
-    <div id="inboxScreen" class="screen">
-        <div style="padding: 20px;"><h3>Inbox & Gifts</h3></div>
-        <div id="notifList" style="padding: 15px;">No gift notifications yet.</div>
+    <div id="homeScreen" class="screen">
+        <div style="padding: 15px;"><h3>Home Posts</h3></div>
+        <div id="imageGrid" style="padding: 10px;"></div>
     </div>
 
     <div id="meScreen" class="screen">
-        <div style="text-align: center; padding: 40px 20px;">
-            <div id="adminSecret" onclick="triggerAdmin()" class="user-circ" style="width:100px; height:100px; margin: 0 auto;">
-                <img id="myPic" src="">
+        <div style="text-align: center; padding: 50px 20px;">
+            <div onclick="adminCheck()" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; overflow: hidden;">
+                <img id="myPic" src="" style="width:100%; height:100%; object-fit:cover;">
             </div>
-            <h2 id="myName" style="margin-top:15px;">Loading...</h2>
-            <div style="display:flex; justify-content:center; gap:30px; margin-top:20px;">
-                <div onclick="openBuyer()"><b id="myTokens">0</b><br><small style="color:var(--gold);">Buy Tokens</small></div>
-            </div>
+            <h2 id="myName" style="margin-top:10px;">User</h2>
+            <p>🪙 Tokens: <b id="myTokens">0</b></p>
+            <button onclick="openDeposit()" style="margin-top:15px; background:var(--gold); border:none; padding:10px 20px; border-radius:8px; font-weight:bold;">BUY TOKENS</button>
         </div>
-        <div id="myPosts" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;"></div>
+        <div id="myGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;"></div>
     </div>
 
-    <div id="adminPanel" style="display:none; position:fixed; inset:0; background:#080808; z-index:9999; padding:20px;">
-        <h2 style="color:var(--gold);">Admin: MRGAJAN</h2>
-        <div style="background:#111; padding:15px; border-radius:10px; margin-top:20px;">
-            <p>Master Stock: <b id="adminStockDisplay">10M</b></p>
-            <input type="text" id="targetUser" class="input-g" placeholder="User Email">
-            <input type="number" id="tokenQty" class="input-g" placeholder="Tokens to Send">
-            <button class="btn-action" onclick="transferTokens()" style="background:var(--gold); color:#000;">SEND TOKENS</button>
+    <div id="adminPanel">
+        <h2 style="color:var(--gold); margin-bottom:20px;">MRGAJAN Master Control</h2>
+        
+        <div class="admin-section">
+            <h4>Token Distribution</h4>
+            <input type="text" id="targetEmail" placeholder="User Email" style="width:100%; padding:10px; margin-top:10px; background:#222; border:none; color:#fff;">
+            <input type="number" id="tokenAmt" placeholder="Amount" style="width:100%; padding:10px; margin-top:10px; background:#222; border:none; color:#fff;">
+            <button onclick="adminTransfer()" style="width:100%; margin-top:10px; padding:12px; background:var(--gold); color:#000; font-weight:bold; border:none; border-radius:5px;">TRANSFER TOKENS</button>
         </div>
-        <div id="adminPostList" style="margin-top:20px;">
-            <p>Manage All Posts:</p>
-            </div>
-        <button onclick="this.parentElement.style.display='none'" class="btn-action" style="margin-top:20px; background:#333;">CLOSE</button>
+
+        <div class="admin-section">
+            <h4>Manage QR Codes (Max 10)</h4>
+            <input type="text" id="qrUrl" placeholder="QR Image Link" style="width:100%; padding:10px; margin-top:10px; background:#222; border:none; color:#fff;">
+            <button onclick="addQR()" style="width:100%; margin-top:10px; padding:10px; background:#fff; color:#000; font-weight:bold; border:none;">ADD QR</button>
+            <div id="adminQRList" class="qr-grid"></div>
+        </div>
+
+        <div class="admin-section">
+            <h4>Manage All Posts</h4>
+            <div id="adminPostList"></div>
+        </div>
+
+        <button onclick="this.parentElement.style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:8px;">EXIT ADMIN</button>
     </div>
 
-    <div id="buyerModal" class="modal">
-        <h3>Deposit Tokens</h3>
-        <p>Send payment to any QR and send screenshot to Admin.</p>
-        <div id="qrContainer" style="display:flex; overflow-x:auto; gap:10px; margin:15px 0;"></div>
-        <button class="btn-action" onclick="this.parentElement.style.bottom='-100%'">Close</button>
+    <div id="depositModal" style="position:fixed; bottom:-100%; width:100%; height:70%; background:#111; z-index:3000; transition:0.3s; padding:20px; border-radius:20px 20px 0 0;">
+        <h3>Deposit System</h3>
+        <p style="font-size:12px; color:gray;">Choose a QR to Pay</p>
+        <div id="userQRList" style="display:flex; overflow-x:auto; gap:10px; margin-top:20px;"></div>
+        <button onclick="this.parentElement.style.bottom='-100%'" style="width:100%; margin-top:30px; padding:15px; background:var(--neon); border:none; color:#fff; font-weight:bold;">Close</button>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="showScreen('homeScreen', this)"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="showScreen('feedScreen', this)"><i class="fas fa-play-circle"></i>Feed</div>
-        <div class="nav-item" onclick="openUpload()"><div class="plus-btn" style="background:#fff; color:#000; padding:5px 15px; border-radius:8px;">+</div></div>
-        <div class="nav-item" onclick="showScreen('inboxScreen', this)"><i class="fas fa-comment-dots"></i>Inbox</div>
+        <div class="nav-item" onclick="showScreen('homeScreen', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-play-circle"></i>Feed</div>
+        <div class="nav-item" onclick="startUpload()"><i class="fas fa-plus-square" style="font-size:30px; color:#fff;"></i></div>
+        <div class="nav-item"><i class="fas fa-comment-dots"></i>Inbox</div>
         <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user"></i>Me</div>
     </div>
 
     <script>
-        // --- CONFIG & AUTH ---
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -123,61 +118,56 @@
             document.getElementById(id).classList.add('active-screen');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
-            if(id==='feedScreen') loadVideos();
-            if(id==='homeScreen') loadImages();
+            if(id === 'feedScreen') loadFeed();
+            if(id === 'meScreen') loadMyStuff();
         }
 
-        // --- ADMIN TRIGGER (CLICK 5 TIMES ON PIC) ---
+        // --- ADMIN TRIGGER (5 Taps on Profile Pic) ---
         let taps = 0;
-        function triggerAdmin() {
+        function adminCheck() {
             taps++;
             if(taps >= 5) {
-                let p = prompt("Enter Master Password:");
+                let p = prompt("Admin Password:");
                 if(p === "Abdul6353738585@") {
                     document.getElementById('adminPanel').style.display = 'block';
-                    loadAdminData();
+                    loadAdminControls();
                 }
                 taps = 0;
             }
         }
 
-        // --- 1. UPLOAD FIX (PERCENTAGE & DATA) ---
-        async function openUpload() {
-            let fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'video/*,image/*';
-            fileInput.onchange = async (e) => {
+        // --- 1. FIXED UPLOAD & FEED ---
+        async function startUpload() {
+            let input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*,image/*';
+            input.onchange = async (e) => {
                 const file = e.target.files[0];
-                const isVideo = file.type.includes('video');
-                const user = auth.currentUser;
-
-                alert("Uploading starting... Please wait.");
+                alert("Processing... Do not close.");
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', 'ml_default');
-
-                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/${isVideo?'video':'image'}/upload`, {
-                    method: 'POST', body: formData
-                });
+                
+                const type = file.type.includes('video') ? 'video' : 'image';
+                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/${type}/upload`, { method:'POST', body:formData });
                 const data = await res.json();
 
                 await db.collection('posts').add({
                     url: data.secure_url,
-                    type: isVideo ? 'video' : 'image',
-                    uid: user.uid,
-                    userName: user.displayName || "Gajan User",
-                    userPic: user.photoURL || "https://via.placeholder.com/50",
+                    type: type,
+                    uid: auth.currentUser.uid,
+                    userName: auth.currentUser.displayName,
+                    userPic: auth.currentUser.photoURL,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0
                 });
-                alert("CONGRATULATIONS! Post is LIVE.");
+                alert("CONGRATULATIONS! Upload Success.");
                 location.reload();
             };
-            fileInput.click();
+            input.click();
         }
 
-        // --- 2. LOAD FEED & HOME ---
-        async function loadVideos() {
+        async function loadFeed() {
             const feed = document.getElementById('videoFeed');
             const snap = await db.collection('posts').where('type', '==', 'video').orderBy('timestamp', 'desc').get();
             feed.innerHTML = "";
@@ -185,70 +175,84 @@
                 const d = doc.data();
                 feed.innerHTML += `
                     <div class="v-post">
-                        <div class="watermark">GAJAN</div>
                         <video loop src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
-                        <div class="sidebar">
-                            <div class="user-circ"><img src="${d.userPic}"></div>
-                            <div onclick="doLike('${doc.id}', this)"><i class="fas fa-heart"></i><b>${d.likes}</b></div>
-                            <div onclick="openGift('${d.uid}')"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
+                        <div style="position:absolute; right:15px; bottom:120px; text-align:center;">
+                            <img src="${d.userPic}" style="width:45px; height:45px; border-radius:50%; border:2px solid #fff;">
+                            <br><br><i class="fas fa-heart" style="font-size:30px;"></i><br><small>${d.likes}</small>
                         </div>
                     </div>`;
             });
         }
 
-        async function loadImages() {
-            const grid = document.getElementById('imageGrid');
-            const snap = await db.collection('posts').where('type', '==', 'image').orderBy('timestamp', 'desc').get();
-            grid.innerHTML = "";
+        // --- 2. ADMIN FULL CONTROL (QR & DELETE) ---
+        async function loadAdminControls() {
+            // Load Posts for Deletion
+            const postList = document.getElementById('adminPostList');
+            const snap = await db.collection('posts').get();
+            postList.innerHTML = "";
             snap.forEach(doc => {
-                const d = doc.data();
-                grid.innerHTML += `<div class="post-card"><img src="${d.url}"><p>@${d.userName}</p></div>`;
+                postList.innerHTML += `
+                    <div class="admin-post">
+                        <span>@${doc.data().userName} (${doc.data().type})</span>
+                        <button onclick="adminDelete('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button>
+                    </div>`;
             });
-        }
 
-        // --- 3. LIKE SYSTEM (1 USER = 1 LIKE) ---
-        async function doLike(id, btn) {
-            const user = auth.currentUser;
-            const ref = db.collection('posts').doc(id);
-            const likeDoc = await ref.collection('likedBy').doc(user.uid).get();
-            if(!likeDoc.exists) {
-                await ref.collection('likedBy').doc(user.uid).set({liked:true});
-                await ref.update({ likes: firebase.firestore.FieldValue.increment(1) });
-                btn.style.color = 'var(--neon)';
+            // Load QRs
+            const qrList = document.getElementById('adminQRList');
+            const qrSnap = await db.collection('admin_config').doc('qrs').get();
+            qrList.innerHTML = "";
+            if(qrSnap.exists) {
+                qrSnap.data().urls.forEach((url, i) => {
+                    qrList.innerHTML += `<img src="${url}" style="width:100%; border:1px solid #fff;">`;
+                });
             }
         }
 
-        // --- 4. ADMIN TOKEN TRANSFER ---
-        async function transferTokens() {
-            const email = document.getElementById('targetUser').value;
-            const qty = parseInt(document.getElementById('tokenQty').value);
-            const userSnap = await db.collection('users').where('email', '==', email).get();
-            if(userSnap.empty) return alert("User not found!");
-            
-            const userRef = db.collection('users').doc(userSnap.docs[0].id);
-            await userRef.update({ tokens: firebase.firestore.FieldValue.increment(qty) });
-            alert(`Sent ${qty} Tokens to ${email}`);
+        async function adminDelete(id) {
+            if(confirm("Delete this post?")) {
+                await db.collection('posts').doc(id).delete();
+                loadAdminControls();
+            }
         }
 
-        // --- AUTH SYNC ---
+        async function addQR() {
+            const url = document.getElementById('qrUrl').value;
+            const ref = db.collection('admin_config').doc('qrs');
+            const doc = await ref.get();
+            let urls = doc.exists ? doc.data().urls : [];
+            if(urls.length < 10) urls.push(url);
+            await ref.set({ urls: urls });
+            loadAdminControls();
+        }
+
+        // --- AUTH & TOKENS ---
         auth.onAuthStateChanged(user => {
             if(user) {
-                db.collection('users').doc(user.uid).set({
-                    email: user.email,
-                    name: user.displayName,
-                    tokens: firebase.firestore.FieldValue.increment(0)
-                }, {merge:true});
-                document.getElementById('myName').innerText = user.displayName;
                 document.getElementById('myPic').src = user.photoURL;
+                document.getElementById('myName').innerText = user.displayName;
                 db.collection('users').doc(user.uid).onSnapshot(d => {
-                    document.getElementById('myTokens').innerText = d.data().tokens || 0;
+                    document.getElementById('myTokens').innerText = d.data()?.tokens || 0;
                 });
-            } else {
-                auth.signInAnonymously();
-            }
+                loadFeed();
+            } else { auth.signInAnonymously(); }
         });
 
-        function openBuyer() { document.getElementById('buyerModal').style.bottom = '0'; }
+        function openDeposit() { 
+            document.getElementById('depositModal').style.bottom = '0';
+            loadUserQRs();
+        }
+
+        async function loadUserQRs() {
+            const container = document.getElementById('userQRList');
+            const snap = await db.collection('admin_config').doc('qrs').get();
+            container.innerHTML = "";
+            if(snap.exists) {
+                snap.data().urls.forEach(url => {
+                    container.innerHTML += `<img src="${url}" style="height:200px; border-radius:10px;">`;
+                });
+            }
+        }
     </script>
 </body>
 </html>
