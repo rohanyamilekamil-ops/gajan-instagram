@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | 2026 Next-Gen System</title>
+    <title>Gajan | Official System 2026</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,117 +11,96 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; --glass: rgba(255, 255, 255, 0.1); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #000; color: #fff; overflow: hidden; }
 
-        /* --- 2026 NEON LOGIN DESIGN --- */
-        #authScreen { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a1a1a, #000); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-card { background: var(--glass); backdrop-filter: blur(20px); padding: 40px 30px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; max-width: 360px; text-align: center; box-shadow: 0 0 50px rgba(254,44,85,0.2); }
-        .gajan-logo { font-size: 60px; font-weight: 900; background: linear-gradient(45deg, #25f4ee, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
-        .btn-main { width: 100%; padding: 16px; border-radius: 50px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 15px; }
-        .btn-google { background: #fff; color: #000; }
-        .btn-neon { background: var(--neon); color: #fff; box-shadow: 0 0 20px var(--neon); }
+        /* --- 2026 GLASS LOGIN --- */
+        #authScreen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 40px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; }
+        .g-btn { background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: none; font-weight: bold; margin-top: 20px; width: 100%; cursor: pointer; }
 
-        /* --- SYSTEM SCREENS --- */
+        /* --- SCREENS --- */
         .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; overflow-y: auto; padding-bottom: 80px; }
         .active-screen { display: flex; }
 
         /* Feed */
-        #feedContainer { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        #feedScroll { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 100; }
-        .gold-dice { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); padding: 2px; background: #000; }
-        .gold-dice img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .watermark { position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.3); font-weight: 900; letter-spacing: 2px; }
+
+        /* Sidebar */
+        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .p-ring { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); padding: 2px; }
+        .p-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
         /* --- ADMIN MASTER --- */
         #adminPanel { position: fixed; inset: 0; background: #050505; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 2px solid var(--gold); }
-        .admin-card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; border: none; background: #222; color: #fff; outline: none; }
+        .admin-card { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #222; color: #fff; }
 
-        /* Bottom Nav */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; z-index: 2000; border-top: 1px solid #222; }
-        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        /* Nav Bar */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-item { text-align: center; color: #666; font-size: 11px; }
         .nav-item.active { color: #fff; }
-        .nav-item i { font-size: 26px; margin-bottom: 4px; display: block; }
+        .nav-item i { font-size: 24px; display: block; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <div class="login-card">
-            <div class="gajan-logo">GAJAN</div>
-            <p style="color: #888; margin-bottom: 30px;">Viral The World with Gajan</p>
-            
-            <button class="btn-main btn-google" onclick="loginWithGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18" style="vertical-align: middle; margin-right: 10px;">
-                Login with Google
-            </button>
-            <div style="margin: 20px 0; color: #555;">OR</div>
-            <input type="email" id="emailLogin" placeholder="Email Address">
-            <input type="password" id="passLogin" placeholder="Password">
-            <button class="btn-main btn-neon" onclick="loginWithEmail()">Register / Login</button>
+        <div class="login-box">
+            <h1 style="color:var(--neon); font-size: 50px; margin-bottom: 10px;">GAJAN</h1>
+            <p style="opacity:0.5;">Master System Login</p>
+            <button class="g-btn" onclick="googleLogin()">Login with Google</button>
         </div>
     </div>
 
     <div id="feedScreen" class="screen active-screen">
-        <div id="feedContainer"></div>
+        <div id="feedScroll"></div>
     </div>
 
     <div id="meScreen" class="screen">
         <div style="text-align: center; padding: 50px 20px;">
-            <div onclick="adminTaps()" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; overflow: hidden; position: relative;">
-                <img id="profilePic" src="https://via.placeholder.com/100" style="width:100%; height:100%; object-fit:cover;">
-                <label for="picUpload" style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.5); font-size:10px;">Edit</label>
-                <input type="file" id="picUpload" style="display:none;" onchange="updateProfilePic(this)">
+            <div onclick="adminCheck()" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; overflow: hidden;">
+                <img id="uPic" src="" style="width:100%; height:100%; object-fit:cover;">
             </div>
-            <h2 id="profileNameDisplay" style="margin-top:15px; font-size: 24px;">Gajan User</h2>
-            <div id="nameEditBox" style="display:none; margin-top:10px;">
-                <input type="text" id="newNameInput" placeholder="New Username">
-                <button onclick="saveNewName()" style="color:var(--neon); background:none; border:none; margin-top:5px;">Save (9 Days Limit)</button>
-            </div>
-            <button onclick="document.getElementById('nameEditBox').style.display='block'" style="font-size:12px; opacity:0.6; background:none; border:none; color:white;">Change Name</button>
-            
-            <div style="display:flex; justify-content:center; gap:30px; margin-top:30px;">
-                <div><b id="tokenBalance">0</b><br><small style="color:var(--gold);">Tokens</small></div>
-                <button onclick="document.getElementById('buyModal').style.bottom='0'" style="background:var(--gold); border:none; padding:10px 25px; border-radius:10px; color:#000; font-weight:bold;">BUY TOKENS</button>
-            </div>
+            <h2 id="uName" style="margin-top:15px; font-size: 24px;">User</h2>
+            <p>🪙 Tokens: <b id="uTokens">0</b></p>
+            <button onclick="document.getElementById('buyBox').style.bottom='0'" style="margin-top:20px; background:var(--gold); border:none; padding:10px 25px; border-radius:10px; font-weight:bold;">BUY TOKENS</button>
         </div>
-        <div id="userPostsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;"></div>
+        <div id="userGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;"></div>
     </div>
 
     <div id="adminPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="color:var(--gold);">MRGAJAN MASTER</h2>
-            <i class="fas fa-times" onclick="document.getElementById('adminPanel').style.display='none'"></i>
-        </div>
+        <h2 style="color:var(--gold);">MRGAJAN MASTER CONTROL</h2>
         <div class="admin-card">
-            <h4>Token Distribution</h4>
+            <h4>Transfer Tokens</h4>
             <input type="text" id="targetEmail" placeholder="User Email">
             <input type="number" id="targetAmt" placeholder="Amount">
-            <button class="btn-main btn-neon" onclick="sendTokens()">TRANSFER TOKENS</button>
+            <button onclick="distributeTokens()" style="width:100%; margin-top:10px; padding:12px; background:var(--gold); border:none; font-weight:bold; border-radius:5px;">TRANSFER</button>
         </div>
         <div class="admin-card">
-            <h4>QR Manager (Latest 2)</h4>
-            <input type="text" id="qrLinkInput" placeholder="Paste QR Image URL">
-            <button class="btn-main" style="background:#fff; color:#000;" onclick="updateQR()">UPDATE QR</button>
+            <h4>Update QR Image Link</h4>
+            <input type="text" id="qrLink" placeholder="Paste Image URL">
+            <button onclick="saveQR()" style="width:100%; margin-top:10px; padding:10px; background:#fff; border:none; font-weight:bold; border-radius:5px;">SAVE QR</button>
         </div>
-        <div class="admin-card">
-            <h4>Manage Viral Posts</h4>
-            <div id="adminPostList"></div>
+        <div class="admin-card" id="postManager">
+            <h4>Manage All Posts</h4>
         </div>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:10px;">EXIT ADMIN</button>
     </div>
 
-    <div id="buyModal" style="position:fixed; bottom:-100%; width:100%; height:75%; background:#111; z-index:3000; transition:0.4s; padding:25px; border-radius:30px 30px 0 0;">
-        <h3>Select QR to Deposit</h3>
-        <div id="qrDisplay" style="display:flex; gap:15px; margin-top:25px; overflow-x:auto; padding-bottom:10px;"></div>
-        <button class="btn-main btn-neon" onclick="document.getElementById('buyModal').style.bottom='-100%'">Close System</button>
+    <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:75%; background:#111; z-index:3000; transition:0.3s; padding:25px; border-radius:30px 30px 0 0;">
+        <h3>Deposit System</h3>
+        <div id="qrDisplay" style="display:flex; gap:15px; margin-top:25px; overflow-x:auto;"></div>
+        <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; margin-top:30px; padding:15px; background:var(--neon); border:none; color:#fff; font-weight:bold; border-radius:10px;">Close</button>
     </div>
 
     <div class="nav">
         <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-play"></i>Feed</div>
-        <div class="nav-item" onclick="startSystemUpload()"><i class="fas fa-plus-square" style="font-size:32px;"></i></div>
+        <div class="nav-item" onclick="startUpload()"><i class="fas fa-plus-square" style="font-size:32px;"></i></div>
         <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
     </div>
 
@@ -138,42 +117,22 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- AUTH & USER DATA (FIXED REFRESH) ---
-        function loginWithGoogle() {
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-        }
+        // --- AUTH & SYNC ---
+        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
-        async function loginWithEmail() {
-            const e = document.getElementById('emailLogin').value;
-            const p = document.getElementById('passLogin').value;
-            try { await auth.signInWithEmailAndPassword(e, p); }
-            catch { await auth.createUserWithEmailAndPassword(e, p); }
-        }
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
+        auth.onAuthStateChanged(async user => {
+            if(user) {
                 document.getElementById('authScreen').style.display = 'none';
-                await syncUserToDB(user);
-                loadMainFeed();
-            } else {
-                document.getElementById('authScreen').style.display = 'flex';
-            }
+                const ref = db.collection('users').doc(user.uid);
+                await ref.set({ name: user.displayName, email: user.email, photo: user.photoURL }, {merge:true});
+                ref.onSnapshot(d => {
+                    document.getElementById('uTokens').innerText = d.data()?.tokens || 0;
+                    document.getElementById('uName').innerText = d.data()?.name || "User";
+                    document.getElementById('uPic').src = d.data()?.photo || "";
+                });
+                loadFeed();
+            } else { document.getElementById('authScreen').style.display = 'flex'; }
         });
-
-        async function syncUserToDB(u) {
-            const ref = db.collection('users').doc(u.uid);
-            const doc = await ref.get();
-            if(!doc.exists) {
-                await ref.set({ name: u.displayName || "New User", email: u.email, photo: u.photoURL || "https://via.placeholder.com/100", tokens: 0, lastChange: 0 });
-            }
-            // Live Update Profile
-            ref.onSnapshot(snap => {
-                const data = snap.data();
-                document.getElementById('profileNameDisplay').innerText = data.name;
-                document.getElementById('profilePic').src = data.photo;
-                document.getElementById('tokenBalance').innerText = data.tokens || 0;
-            });
-        }
 
         // --- NAVIGATION ---
         function showScreen(id, btn) {
@@ -181,56 +140,51 @@
             document.getElementById(id).classList.add('active-screen');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
-            if(id === 'meScreen') loadUserGrid();
+            if(id === 'feedScreen') loadFeed();
         }
 
-        // --- UPLOAD & FEED (FIXED) ---
-        async function startSystemUpload() {
+        // --- UPLOAD & FEED ---
+        async function startUpload() {
             let input = document.createElement('input');
             input.type = 'file'; input.accept = 'video/*';
             input.onchange = async (e) => {
                 const file = e.target.files[0];
-                alert("CONGRATULATIONS! Uploading started. Wait for 100%");
-                
+                alert("CONGRATULATIONS! Uploading started. Stay on page.");
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", { method: 'POST', body: formData });
+                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", { method:'POST', body:formData });
                 const data = await res.json();
 
                 const u = auth.currentUser;
-                const userDoc = await db.collection('users').doc(u.uid).get();
-                const uData = userDoc.data();
-
                 await db.collection('posts').add({
                     url: data.secure_url,
                     uid: u.uid,
-                    userName: uData.name,
-                    userPic: uData.photo,
+                    userName: u.displayName,
+                    userPic: u.photoURL,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0
                 });
-                alert("Viral! Video is LIVE.");
-                loadMainFeed();
+                alert("Viral Success!");
+                loadFeed();
             };
             input.click();
         }
 
-        async function loadMainFeed() {
-            const container = document.getElementById('feedContainer');
+        async function loadFeed() {
+            const container = document.getElementById('feedScroll');
             const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
             container.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
                 container.innerHTML += `
                     <div class="v-post">
-                        <div style="position:absolute; top:20px; left:20px; font-weight:bold; color:rgba(255,255,255,0.4);">GAJAN</div>
+                        <div class="watermark">GAJAN</div>
                         <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
                         <div class="sidebar">
-                            <div class="gold-dice"><img src="${d.userPic}"></div>
-                            <i class="fas fa-heart" style="font-size:35px; color:#fff;" onclick="this.style.color='#fe2c55'"></i>
+                            <div class="p-ring"><img src="${d.userPic}"></div>
+                            <i class="fas fa-heart" style="font-size:35px;" onclick="alert('Liked!')"></i>
                             <b>${d.likes}</b>
-                            <i class="fas fa-share" style="font-size:30px;" onclick="alert('Link Copied!')"></i>
                         </div>
                         <div style="position:absolute; bottom:90px; left:15px; text-shadow:2px 2px 10px #000;">
                             <h3>@${d.userName}</h3>
@@ -243,11 +197,11 @@
             document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
 
-        // --- ADMIN SYSTEM ---
+        // --- ADMIN CONTROLS (5 TAPS ON PROFILE PIC) ---
         let taps = 0;
-        function adminTaps() {
+        function adminCheck() {
             taps++; if(taps >= 5) {
-                let p = prompt("Admin Key:");
+                let p = prompt("Admin Password:");
                 if(p === "Abdul6353738585@") {
                     document.getElementById('adminPanel').style.display = 'block';
                     loadAdminManager();
@@ -256,8 +210,17 @@
             }
         }
 
-        async function updateQR() {
-            const link = document.getElementById('qrLinkInput').value;
+        async function distributeTokens() {
+            const email = document.getElementById('targetEmail').value;
+            const amt = parseInt(document.getElementById('targetAmt').value);
+            const snap = await db.collection('users').where('email', '==', email).get();
+            if(snap.empty) return alert("User Not Found!");
+            await db.collection('users').doc(snap.docs[0].id).update({ tokens: firebase.firestore.FieldValue.increment(amt) });
+            alert("Tokens Sent!");
+        }
+
+        async function saveQR() {
+            const link = document.getElementById('qrLink').value;
             const ref = db.collection('admin_config').doc('qrs');
             const doc = await ref.get();
             let urls = doc.exists ? doc.data().urls : [];
@@ -267,40 +230,23 @@
         }
 
         async function loadAdminManager() {
-            const list = document.getElementById('adminPostList');
+            const mgr = document.getElementById('postManager');
             const snap = await db.collection('posts').get();
-            list.innerHTML = "";
+            mgr.innerHTML = "<h4>Manage Posts</h4>";
             snap.forEach(doc => {
-                list.innerHTML += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-top:5px; border-radius:10px;">
+                mgr.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; background:#222; margin-top:5px; border-radius:8px;">
                     <span>@${doc.data().userName}</span>
-                    <button onclick="adminDelete('${doc.id}')" style="color:red; background:none; border:none;">Delete</button>
+                    <button onclick="delPost('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button>
                 </div>`;
             });
-            // Also Load QR for User Buy Modal
+            // Also update user's QR view
             const qrDisp = document.getElementById('qrDisplay');
             const qrSnap = await db.collection('admin_config').doc('qrs').get();
             qrDisp.innerHTML = "";
             if(qrSnap.exists) qrSnap.data().urls.forEach(u => qrDisp.innerHTML += `<img src="${u}" style="height:300px; border-radius:20px;">`);
         }
 
-        async function adminDelete(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminManager(); } }
-
-        // --- PROFILE UPDATES (9 DAYS LIMIT) ---
-        async function saveNewName() {
-            const newN = document.getElementById('newNameInput').value;
-            const u = auth.currentUser;
-            const ref = db.collection('users').doc(u.uid);
-            const data = (await ref.get()).data();
-            const now = Date.now();
-            
-            if(now - data.lastChange < 9 * 24 * 60 * 60 * 1000) {
-                alert("Error: Aap 9 din se pehle name nahi badal sakte!");
-                return;
-            }
-            await ref.update({ name: newN, lastChange: now });
-            alert("Name Updated!");
-            location.reload();
-        }
+        async function delPost(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminManager(); } }
     </script>
 </body>
 </html>
