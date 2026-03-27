@@ -1,56 +1,154 @@
-async function uploadVideo() {
-    const file = document.getElementById('vFile').files[0];
-    const desc = document.getElementById('vDesc').value;
-    const status = document.getElementById('progStatus');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tiktok Gajan | Official</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* UI Design: Tiktok Look */
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; overflow: hidden; }
+        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .feed::-webkit-scrollbar { display: none; }
+        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar { position: absolute; right: 15px; bottom: 120px; z-index: 10; display: flex; flex-direction: column; gap: 20px; text-align: center; }
+        .info { position: absolute; bottom: 80px; left: 15px; z-index: 10; width: 75%; text-shadow: 1px 1px 5px #000; }
+        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; z-index: 20; }
+        #uploadPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        input { width: 90%; padding: 15px; margin: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; }
+        .post-btn { background: #fe2c55; padding: 15px; width: 90%; border: none; color: #fff; font-weight: bold; border-radius: 8px; font-size: 16px; }
+    </style>
+</head>
+<body>
 
-    if(!file) {
-        alert("Bhai, pehle video select toh karo!");
-        return;
-    }
+    <div class="feed" id="videoFeed">
+        <div style="padding: 100px; text-align: center;">Tiktok Gajan Loading...</div>
+    </div>
 
-    status.innerText = "⏳ 1. Cloudinary se jud raha hoon...";
-    console.log("Starting upload for:", file.name);
+    <div id="uploadPanel">
+        <h2 style="color: #fe2c55;">Upload to Gajan</h2>
+        <p style="font-size: 12px; color: gray;">Select video from gallery</p>
+        <input type="file" id="vFile" accept="video/*">
+        <input type="text" id="vDesc" placeholder="Describe your video...">
+        <button class="post-btn" onclick="uploadVideo()">POST NOW</button>
+        <button onclick="toggleUpload()" style="background:none; color:gray; border:none; margin-top:15px;">Cancel</button>
+        <p id="progStatus" style="color: #69C9D0; margin-top:20px; font-weight: bold;"></p>
+    </div>
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'ml_default'); // Aapka preset
-    formData.append('cloud_name', 'dvfgzrxs7');     // Aapka cloud name
+    <div class="nav">
+        <i class="fas fa-home" onclick="location.reload()"></i>
+        <div style="background:linear-gradient(to right, #69C9D0, #EE1D52); padding:5px 20px; border-radius:8px; font-weight:bold; cursor: pointer;" onclick="toggleUpload()">+</div>
+        <i class="fas fa-user"></i>
+    </div>
 
-    try {
-        // STEP 1: Cloudinary Upload
-        const response = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {
-            method: "POST",
-            body: formData
-        });
+    <script>
+        // 1. Firebase Configuration (AAPKA PROJECT)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        const cloudData = await response.json();
-
-        if (cloudData.error) {
-            console.error("Cloudinary Error:", cloudData.error);
-            alert("Cloudinary Error: " + cloudData.error.message);
-            status.innerText = "❌ Cloudinary ne mana kar diya!";
-            return;
+        // Show/Hide Upload Panel
+        function toggleUpload() {
+            const up = document.getElementById('uploadPanel');
+            up.style.display = up.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        status.innerText = "✅ 2. Video Cloud par gaya! Ab Database mein save kar raha hoon...";
-        console.log("Video URL:", cloudData.secure_url);
+        // 2. Upload Video Logic
+        async function uploadVideo() {
+            const file = document.getElementById('vFile').files[0];
+            const caption = document.getElementById('vDesc').value;
+            const status = document.getElementById('progStatus');
 
-        // STEP 2: Firebase Firestore Save
-        // Yahan hum 'posts' collection ka use kar rahe hain
-        await db.collection('posts').add({
-            videoUrl: cloudData.secure_url,
-            caption: desc || "Tiktok Gajan Video",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            owner: "Gajan User"
-        });
+            if(!file) return alert("Bhai, video toh chuno!");
+            status.innerText = "⏳ Cloud pe ja raha hai... wait karo!";
 
-        status.innerText = "🔥 3. MUBARAK HO! Video Live hai.";
-        alert("Tiktok Gajan par video dal gaya!");
-        location.reload();
+            // Cloudinary Details (Verified)
+            const cloudName = "dvfgzrxs7"; 
+            const uploadPreset = "ml_default"; 
 
-    } catch (err) {
-        console.error("Full Error:", err);
-        alert("System Error: " + err.message);
-        status.innerText = "❌ Kuch galat ho gaya: " + err.message;
-    }
-}
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+
+            try {
+                // Cloudinary Upload
+                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+                    method: 'POST', body: formData
+                });
+                const cloudData = await cloudRes.json();
+                
+                if(cloudData.error) throw new Error(cloudData.error.message);
+
+                // Save to Firebase Database
+                await db.collection('posts').add({
+                    videoUrl: cloudData.secure_url,
+                    caption: caption || "No Caption",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                status.innerText = "✅ Mubarak ho! Video live ho gaya.";
+                setTimeout(() => location.reload(), 1500);
+
+            } catch (err) {
+                status.innerText = "❌ Fail: " + err.message;
+                alert("Galti: " + err.message);
+            }
+        }
+
+        // 3. Load Videos from Database
+        async function loadFeed() {
+            const feed = document.getElementById('videoFeed');
+            try {
+                const snapshot = await db.collection('posts').orderBy('timestamp', 'desc').get();
+                
+                if(snapshot.empty) {
+                    feed.innerHTML = "<div style='padding:50px; text-align:center;'>Feed Khali hai! Pehla video dalo.</div>";
+                    return;
+                }
+
+                feed.innerHTML = ""; 
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    feed.innerHTML += `
+                        <div class="post">
+                            <video loop src="${data.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
+                            <div class="sidebar">
+                                <div><i class="fas fa-heart" style="font-size:25px;"></i><br><small>Like</small></div>
+                                <div><i class="fas fa-comment" style="font-size:25px;"></i><br><small>Chat</small></div>
+                            </div>
+                            <div class="info">
+                                <h3>@tiktok_gajan</h3>
+                                <p>${data.caption}</p>
+                            </div>
+                        </div>`;
+                });
+
+                // Video Auto-play logic
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
+                }, {threshold: 0.7});
+                document.querySelectorAll('video').forEach(v => observer.observe(v));
+
+            } catch (e) {
+                feed.innerHTML = "Database error: " + e.message;
+            }
+        }
+
+        loadFeed();
+    </script>
+</body>
+</html>
