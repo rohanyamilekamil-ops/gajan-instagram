@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Official System 2026</title>
+    <title>Gajan | Supreme System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -15,7 +15,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #000; color: #fff; overflow: hidden; }
 
-        /* --- 2026 GLASS LOGIN --- */
+        /* --- SUPREME LOGIN --- */
         #authScreen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 40px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; }
         .g-btn { background: #fff; color: #000; padding: 15px 30px; border-radius: 50px; border: none; font-weight: bold; margin-top: 20px; width: 100%; cursor: pointer; }
@@ -32,11 +32,11 @@
 
         /* Sidebar */
         .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .p-ring { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); padding: 2px; }
+        .p-ring { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); padding: 2px; background: #000; }
         .p-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-        /* --- ADMIN MASTER --- */
-        #adminPanel { position: fixed; inset: 0; background: #050505; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 2px solid var(--gold); }
+        /* --- ADMIN PANEL --- */
+        #adminPanel { position: fixed; inset: 0; background: #050505; z-index: 10000; display: none; padding: 25px; overflow-y: auto; }
         .admin-card { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
         input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #222; color: #fff; }
 
@@ -52,8 +52,12 @@
     <div id="authScreen">
         <div class="login-box">
             <h1 style="color:var(--neon); font-size: 50px; margin-bottom: 10px;">GAJAN</h1>
-            <p style="opacity:0.5;">Master System Login</p>
-            <button class="g-btn" onclick="googleLogin()">Login with Google</button>
+            <p style="opacity:0.5;">Enter Supreme Viral System</p>
+            <button class="g-btn" onclick="googleLogin()"><i class="fab fa-google"></i> Login with Google</button>
+            <div style="margin: 20px 0; color: #333;">--- OR ---</div>
+            <input type="email" id="eMail" placeholder="Email">
+            <input type="password" id="pPass" placeholder="Password">
+            <button class="g-btn" style="background:var(--neon); color:#fff;" onclick="emailAuth()">Register / Login</button>
         </div>
     </div>
 
@@ -64,11 +68,18 @@
     <div id="meScreen" class="screen">
         <div style="text-align: center; padding: 50px 20px;">
             <div onclick="adminCheck()" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; overflow: hidden;">
-                <img id="uPic" src="" style="width:100%; height:100%; object-fit:cover;">
+                <img id="uPic" src="https://via.placeholder.com/100" style="width:100%; height:100%; object-fit:cover;">
             </div>
-            <h2 id="uName" style="margin-top:15px; font-size: 24px;">User</h2>
-            <p>🪙 Tokens: <b id="uTokens">0</b></p>
-            <button onclick="document.getElementById('buyBox').style.bottom='0'" style="margin-top:20px; background:var(--gold); border:none; padding:10px 25px; border-radius:10px; font-weight:bold;">BUY TOKENS</button>
+            <h2 id="uNameDisplay" style="margin-top:15px; font-size: 24px;">Loading...</h2>
+            
+            <div style="margin-top: 10px;">
+                <button onclick="changeName()" style="font-size: 12px; color: var(--neon); background:none; border:none;">[ Change Name ]</button>
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:30px; margin-top:30px;">
+                <div>🪙 <b id="uTokens">0</b><br><small style="color:var(--gold);">Tokens</small></div>
+                <button onclick="document.getElementById('buyBox').style.bottom='0'; loadUserQRs();" style="background:var(--gold); border:none; padding:10px 25px; border-radius:10px; font-weight:bold; color:#000;">BUY TOKENS</button>
+            </div>
         </div>
         <div id="userGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px;"></div>
     </div>
@@ -76,30 +87,34 @@
     <div id="adminPanel">
         <h2 style="color:var(--gold);">MRGAJAN MASTER CONTROL</h2>
         <div class="admin-card">
+            <p>MASTER STOCK: <b id="masterStockDisp">10,000,000</b></p>
+        </div>
+        <div class="admin-card">
             <h4>Transfer Tokens</h4>
             <input type="text" id="targetEmail" placeholder="User Email">
             <input type="number" id="targetAmt" placeholder="Amount">
-            <button onclick="distributeTokens()" style="width:100%; margin-top:10px; padding:12px; background:var(--gold); border:none; font-weight:bold; border-radius:5px;">TRANSFER</button>
+            <button onclick="distributeTokens()" style="width:100%; margin-top:10px; padding:12px; background:var(--gold); border:none; font-weight:bold; border-radius:5px;">SEND TOKENS</button>
         </div>
         <div class="admin-card">
-            <h4>Update QR Image Link</h4>
+            <h4>Update QR (Latest 2)</h4>
             <input type="text" id="qrLink" placeholder="Paste Image URL">
-            <button onclick="saveQR()" style="width:100%; margin-top:10px; padding:10px; background:#fff; border:none; font-weight:bold; border-radius:5px;">SAVE QR</button>
+            <button onclick="saveQR()" style="width:100%; margin-top:10px; padding:10px; background:#fff; border:none; font-weight:bold; border-radius:5px;">UPDATE QR</button>
         </div>
         <div class="admin-card" id="postManager">
-            <h4>Manage All Posts</h4>
+            <h4>Manage Posts</h4>
         </div>
         <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:10px;">EXIT ADMIN</button>
     </div>
 
     <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:75%; background:#111; z-index:3000; transition:0.3s; padding:25px; border-radius:30px 30px 0 0;">
         <h3>Deposit System</h3>
-        <div id="qrDisplay" style="display:flex; gap:15px; margin-top:25px; overflow-x:auto;"></div>
+        <p style="font-size: 12px; color: gray; margin-bottom: 20px;">Pay to QR and send screenshot to Admin</p>
+        <div id="qrDisplay" style="display:flex; gap:15px; overflow-x:auto;"></div>
         <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; margin-top:30px; padding:15px; background:var(--neon); border:none; color:#fff; font-weight:bold; border-radius:10px;">Close</button>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-play"></i>Feed</div>
+        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-play-circle"></i>Feed</div>
         <div class="nav-item" onclick="startUpload()"><i class="fas fa-plus-square" style="font-size:32px;"></i></div>
         <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
     </div>
@@ -119,16 +134,24 @@
 
         // --- AUTH & SYNC ---
         function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        async function emailAuth() {
+            const e = document.getElementById('eMail').value;
+            const p = document.getElementById('pPass').value;
+            try { await auth.signInWithEmailAndPassword(e, p); }
+            catch { await auth.createUserWithEmailAndPassword(e, p); }
+        }
 
         auth.onAuthStateChanged(async user => {
             if(user) {
                 document.getElementById('authScreen').style.display = 'none';
                 const ref = db.collection('users').doc(user.uid);
-                await ref.set({ name: user.displayName, email: user.email, photo: user.photoURL }, {merge:true});
+                await ref.set({ name: user.displayName || "Gajan User", email: user.email, photo: user.photoURL || "https://via.placeholder.com/100" }, {merge:true});
+                
                 ref.onSnapshot(d => {
-                    document.getElementById('uTokens').innerText = d.data()?.tokens || 0;
-                    document.getElementById('uName').innerText = d.data()?.name || "User";
-                    document.getElementById('uPic').src = d.data()?.photo || "";
+                    const data = d.data();
+                    document.getElementById('uTokens').innerText = data.tokens || 0;
+                    document.getElementById('uNameDisplay').innerText = data.name;
+                    document.getElementById('uPic').src = data.photo;
                 });
                 loadFeed();
             } else { document.getElementById('authScreen').style.display = 'flex'; }
@@ -149,7 +172,7 @@
             input.type = 'file'; input.accept = 'video/*';
             input.onchange = async (e) => {
                 const file = e.target.files[0];
-                alert("CONGRATULATIONS! Uploading started. Stay on page.");
+                alert("Upload Started! 1%... 100% rukiye.");
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', 'ml_default');
@@ -157,15 +180,17 @@
                 const data = await res.json();
 
                 const u = auth.currentUser;
+                const uDoc = await db.collection('users').doc(u.uid).get();
+
                 await db.collection('posts').add({
                     url: data.secure_url,
                     uid: u.uid,
-                    userName: u.displayName,
-                    userPic: u.photoURL,
+                    userName: uDoc.data().name,
+                    userPic: uDoc.data().photo,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0
                 });
-                alert("Viral Success!");
+                alert("CONGRATULATIONS! Video Live.");
                 loadFeed();
             };
             input.click();
@@ -183,7 +208,7 @@
                         <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
                         <div class="sidebar">
                             <div class="p-ring"><img src="${d.userPic}"></div>
-                            <i class="fas fa-heart" style="font-size:35px;" onclick="alert('Liked!')"></i>
+                            <i class="fas fa-heart" style="font-size:35px;" onclick="this.style.color='red'"></i>
                             <b>${d.likes}</b>
                         </div>
                         <div style="position:absolute; bottom:90px; left:15px; text-shadow:2px 2px 10px #000;">
@@ -197,11 +222,11 @@
             document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
 
-        // --- ADMIN CONTROLS (5 TAPS ON PROFILE PIC) ---
+        // --- MASTER ADMIN (5 TAPS ON PROFILE PIC) ---
         let taps = 0;
         function adminCheck() {
             taps++; if(taps >= 5) {
-                let p = prompt("Admin Password:");
+                let p = prompt("Enter Master Key:");
                 if(p === "Abdul6353738585@") {
                     document.getElementById('adminPanel').style.display = 'block';
                     loadAdminManager();
@@ -215,8 +240,17 @@
             const amt = parseInt(document.getElementById('targetAmt').value);
             const snap = await db.collection('users').where('email', '==', email).get();
             if(snap.empty) return alert("User Not Found!");
-            await db.collection('users').doc(snap.docs[0].id).update({ tokens: firebase.firestore.FieldValue.increment(amt) });
-            alert("Tokens Sent!");
+
+            const stockRef = db.collection('admin_data').doc('stock_info');
+            const userRef = db.collection('users').doc(snap.docs[0].id);
+
+            await db.runTransaction(async (t) => {
+                const s = await t.get(stockRef);
+                t.update(stockRef, { total_tokens: s.data().total_tokens - amt });
+                t.update(userRef, { tokens: firebase.firestore.FieldValue.increment(amt) });
+            });
+            alert("Tokens Transferred!");
+            loadAdminManager();
         }
 
         async function saveQR() {
@@ -226,27 +260,45 @@
             let urls = doc.exists ? doc.data().urls : [];
             if(urls.length < 2) urls.push(link); else urls = [urls[1], link];
             await ref.set({ urls: urls });
-            alert("QR Updated!");
+            alert("QR Saved!");
         }
 
         async function loadAdminManager() {
             const mgr = document.getElementById('postManager');
             const snap = await db.collection('posts').get();
-            mgr.innerHTML = "<h4>Manage Posts</h4>";
+            mgr.innerHTML = "<h4>Manage All Posts</h4>";
             snap.forEach(doc => {
-                mgr.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; background:#222; margin-top:5px; border-radius:8px;">
+                mgr.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; background:#222; margin-top:5px; border-radius:10px;">
                     <span>@${doc.data().userName}</span>
                     <button onclick="delPost('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button>
                 </div>`;
             });
-            // Also update user's QR view
-            const qrDisp = document.getElementById('qrDisplay');
-            const qrSnap = await db.collection('admin_config').doc('qrs').get();
-            qrDisp.innerHTML = "";
-            if(qrSnap.exists) qrSnap.data().urls.forEach(u => qrDisp.innerHTML += `<img src="${u}" style="height:300px; border-radius:20px;">`);
+            const sDoc = await db.collection('admin_data').doc('stock_info').get();
+            document.getElementById('masterStockDisp').innerText = (sDoc.data()?.total_tokens || 10000000).toLocaleString();
         }
 
         async function delPost(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminManager(); } }
+
+        async function loadUserQRs() {
+            const disp = document.getElementById('qrDisplay');
+            const snap = await db.collection('admin_config').doc('qrs').get();
+            disp.innerHTML = "";
+            if(snap.exists) snap.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:350px; border-radius:20px; border:2px solid #333;">`);
+        }
+
+        async function changeName() {
+            const user = auth.currentUser;
+            const ref = db.collection('users').doc(user.uid);
+            const doc = await ref.get();
+            const now = Date.now();
+            if(now - (doc.data().lastChange || 0) < 9 * 24 * 60 * 60 * 1000) return alert("Limit: Aap 9 din baad hi name badal sakte hain!");
+            
+            const n = prompt("Enter New Name:");
+            if(n) {
+                await ref.update({ name: n, lastChange: now });
+                alert("Name Updated!");
+            }
+        }
     </script>
 </body>
 </html>
