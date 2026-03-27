@@ -1,158 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tiktok Gajan | Full App</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage-compat.js"></script>
+        // ... (Baki purana code same rahega, sirf upload function ye wala use karein)
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        
-        /* Video Feed */
-        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .feed::-webkit-scrollbar { display: none; }
-        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* UI Overlays */
-        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 10; text-align: center; }
-        .sidebar i { font-size: 28px; transition: 0.2s; }
-        .sidebar i:active { color: #fe2c55; transform: scale(1.2); }
-        
-        .info { position: absolute; bottom: 80px; left: 15px; z-index: 10; width: 70%; }
-        .info h3 { margin-bottom: 5px; font-size: 18px; }
-        .info p { font-size: 14px; opacity: 0.9; }
-
-        /* Navigation */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; z-index: 20; }
-        .plus-btn { background: linear-gradient(to right, #69C9D0, #EE1D52); padding: 5px 15px; border-radius: 8px; color: #fff; font-size: 20px; font-weight: bold; }
-
-        /* Upload Panel */
-        #uploadPanel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: none; }
-        input { background: #222; color: #fff; }
-        .post-btn { background: #fe2c55; color: white; font-weight: bold; font-size: 16px; }
-    </style>
-</head>
-<body>
-
-    <div class="feed" id="videoFeed">
-        <div style="padding: 50px; text-align: center;" id="loadingMsg">Loading Tiktok Gajan...</div>
-    </div>
-
-    <div id="uploadPanel">
-        <h2>Upload Video</h2>
-        <input type="file" id="vFile" accept="video/*">
-        <input type="text" id="vDesc" placeholder="Enter video caption...">
-        <button class="post-btn" onclick="uploadVideo()">POST VIDEO</button>
-        <button onclick="toggleUpload()" style="background: transparent; color: gray;">Cancel</button>
-        <div id="progress" style="color: #69C9D0;"></div>
-    </div>
-
-    <div class="nav">
-        <i class="fas fa-home" onclick="location.reload()"></i>
-        <div class="plus-btn" onclick="toggleUpload()">+</div>
-        <i class="fas fa-user"></i>
-    </div>
-
-    <script>
-        // --- YOUR FIREBASE CONFIG ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-
-        // Initialize
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        function toggleUpload() {
-            const p = document.getElementById('uploadPanel');
-            p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // 1. Upload To Cloud
         async function uploadVideo() {
             const file = document.getElementById('vFile').files[0];
-            const desc = document.getElementById('vDesc').value;
-            const prog = document.getElementById('progress');
+            const caption = document.getElementById('vDesc').value;
+            const status = document.getElementById('progStatus');
 
-            if(!file) return alert("File chuno bhai!");
+            if(!file) return alert("Select a video first!");
+            status.innerText = "🚀 Sending to Cloud... Please wait.";
 
-            prog.innerText = "Processing... Cloud pe ja raha hai.";
-            
+            const cloudName = "dvfgzrxs7"; 
+            const uploadPreset = "ml_default"; // Yaad se isko 'Unsigned' kar dena settings mein
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+
             try {
-                // Upload to Storage
-                const ref = storage.ref('gajan_videos/' + Date.now() + "_" + file.name);
-                await ref.put(file);
-                const url = await ref.getDownloadURL();
+                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+                    method: 'POST', body: formData
+                });
+                
+                const cloudData = await cloudRes.json();
+                
+                if (cloudData.error) {
+                    throw new Error(cloudData.error.message);
+                }
 
-                // Save to Database
                 await db.collection('posts').add({
-                    url: url,
-                    caption: desc,
-                    owner: "Gajan User",
-                    time: firebase.firestore.FieldValue.serverTimestamp()
+                    videoUrl: cloudData.secure_url,
+                    caption: caption,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                alert("Video Upload Ho Gaya!");
-                location.reload();
+                status.innerText = "✅ Tiktok Gajan par post ho gaya!";
+                setTimeout(() => location.reload(), 1500);
             } catch (err) {
-                alert("Error: " + err.message);
+                status.innerText = "❌ Error: " + err.message;
+                alert("Settings check karein: Preset 'Unsigned' hona chahiye!");
             }
         }
-
-        // 2. Fetch from Cloud
-        async function fetchVideos() {
-            const feed = document.getElementById('videoFeed');
-            const snap = await db.collection('posts').orderBy('time', 'desc').get();
-            
-            if(snap.empty) {
-                document.getElementById('loadingMsg').innerText = "Koi video nahi hai. Pehla video upload karo!";
-                return;
-            }
-
-            feed.innerHTML = ""; // Clear loader
-            snap.forEach(doc => {
-                const data = doc.data();
-                feed.innerHTML += `
-                    <div class="post">
-                        <video loop src="${data.url}" onclick="this.paused ? this.play() : this.pause()"></video>
-                        <div class="sidebar">
-                            <i class="fas fa-heart"></i><br><small>Like</small><br><br>
-                            <i class="fas fa-comment"></i><br><small>Chat</small>
-                        </div>
-                        <div class="info">
-                            <h3>@gajan_creator</h3>
-                            <p>${data.caption}</p>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Intersection Observer to play video on scroll
-            const obs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if(e.isIntersecting) e.target.play();
-                    else e.target.pause();
-                });
-            }, {threshold: 0.8});
-            document.querySelectorAll('video').forEach(v => obs.observe(v));
-        }
-
-        fetchVideos();
-    </script>
-</body>
-</html>
