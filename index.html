@@ -1,195 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Next-Gen</title>
+// --- IS CODE KO REPLACRE KAREIN ---
+
+function signIn() {
+    document.getElementById('loader').style.display = 'block';
+    const provider = new firebase.auth.GoogleAuthProvider();
     
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        :root { --neon-red: #fe2c55; --neon-blue: #25f4ee; --glass: rgba(255, 255, 255, 0.1); }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+    // Sabse pakka tarika mobile ke liye
+    auth.signInWithPopup(provider).then((result) => {
+        // Agar popup kaam kar gaya
+        console.log("Logged in!");
+    }).catch((error) => {
+        console.log("Popup blocked, trying redirect...");
+        // Agar popup block hua toh automatic redirect karega
+        auth.signInWithRedirect(provider);
+    });
+}
 
-        /* --- LATEST NEON LOGIN --- */
-        #authScreen { 
-            position: fixed; inset: 0; background: radial-gradient(circle at center, #111 0%, #000 100%);
-            z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .logo-glow {
-            font-size: 60px; font-weight: 900; letter-spacing: -2px;
-            background: linear-gradient(to right, var(--neon-blue), #fff, var(--neon-red));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(254, 44, 85, 0.5));
-            margin-bottom: 10px;
-        }
-        .g-btn {
-            background: #fff; color: #000; padding: 16px 40px; border-radius: 100px;
-            border: none; font-weight: bold; cursor: pointer; display: flex;
-            align-items: center; gap: 12px; font-size: 16px; margin-top: 40px;
-            transition: 0.3s; box-shadow: 0 0 30px rgba(255,255,255,0.1);
-        }
-        .g-btn:active { transform: scale(0.95); }
-
-        /* --- MODERN FEED --- */
-        .app-feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* --- GLASS UI OVERLAYS --- */
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; z-index: 10; }
-        .side-icon { text-align: center; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
-        .side-icon i { font-size: 32px; margin-bottom: 4px; display: block; }
-        .side-icon span { font-size: 12px; font-weight: 600; }
-
-        .info-glass {
-            position: absolute; bottom: 90px; left: 12px; right: 80px;
-            padding: 15px; background: var(--glass); backdrop-filter: blur(10px);
-            border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* --- LATEST NAVIGATION BAR --- */
-        .nav-bar {
-            position: fixed; bottom: 0; width: 100%; height: 75px;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.05); z-index: 100;
-        }
-        .nav-tab { color: #aaa; text-align: center; font-size: 11px; transition: 0.3s; }
-        .nav-tab.active { color: #fff; }
-        .nav-tab i { font-size: 24px; margin-bottom: 4px; display: block; }
-        
-        .center-add {
-            width: 50px; height: 35px; background: #fff; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .center-add::before { content: ''; position: absolute; inset: 0 -3px; background: linear-gradient(to right, var(--neon-blue), var(--neon-red)); border-radius: 10px; z-index: -1; }
-        .center-add i { color: #000; font-size: 20px; }
-
-        /* --- PROFILE PANEL --- */
-        #profileScreen { 
-            position: fixed; inset: 0; background: #000; z-index: 500; display: none; 
-            flex-direction: column; overflow-y: auto; padding-bottom: 100px;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="authScreen">
-        <div class="logo-glow">GAJAN</div>
-        <p style="color: #888; letter-spacing: 2px; font-size: 12px;">NEXT GENERATION SYSTEM</p>
-        
-        <button class="g-btn" onclick="signIn()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="22">
-            START WITH GOOGLE
-        </button>
-        <div id="loader" style="margin-top: 20px; display: none; color: var(--neon-blue);">System Connecting...</div>
-    </div>
-
-    <div class="app-feed" id="mainFeed"></div>
-
-    <div class="nav-bar">
-        <div class="nav-tab active" onclick="location.reload()"><i class="fas fa-house"></i>Home</div>
-        <div class="nav-tab"><i class="fas fa-compass"></i>Explore</div>
-        <div class="center-add" onclick="alert('System Ready for Upload!')"><i class="fas fa-plus"></i></div>
-        <div class="nav-tab"><i class="fas fa-message"></i>Inbox</div>
-        <div class="nav-tab" onclick="toggleP()"><i class="fas fa-user-ninja"></i>Profile</div>
-    </div>
-
-    <div id="profileScreen">
-        <div style="padding: 40px 20px; text-align: center; background: linear-gradient(to bottom, #111, #000);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <i class="fas fa-chevron-left" onclick="toggleP()"></i>
-                <span>MY SYSTEM</span>
-                <i class="fas fa-power-off" onclick="signOutUser()"></i>
-            </div>
-            <img id="uPic" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--neon-red); box-shadow: 0 0 20px rgba(254,44,85,0.3);">
-            <h2 id="uName" style="margin: 15px 0 5px 0; font-size: 24px;">User</h2>
-            <div style="display:flex; justify-content:center; gap:30px; margin-top:20px; opacity:0.8;">
-                <div><b>0</b><br><small>Followers</small></div>
-                <div><b>0</b><br><small>Likes</small></div>
-            </div>
-        </div>
-        <div id="uGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;"></div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // --- AUTH SYSTEM (FIXED) ---
-        function signIn() {
-            document.getElementById('loader').style.display = 'block';
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Phone users ke liye Popup se better Redirect hai
-            auth.signInWithRedirect(provider);
-        }
-
-        function signOutUser() { auth.signOut().then(() => location.reload()); }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('uName').innerText = user.displayName;
-                document.getElementById('uPic').src = user.photoURL;
-                loadVideos();
-            } else {
-                document.getElementById('authScreen').style.display = 'flex';
-            }
-        });
-
-        // --- LOAD VIDEOS ---
-        async function loadVideos() {
-            const feed = document.getElementById('mainFeed');
-            const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
-            feed.innerHTML = "";
-            
-            if(snap.empty) {
-                feed.innerHTML = "<div style='padding-top:200px; text-align:center; color:#555;'>No System Data Found.</div>";
-                return;
-            }
-
-            snap.forEach(doc => {
-                const d = doc.data();
-                feed.innerHTML += `
-                <div class="post">
-                    <video loop playsinline src="${d.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
-                    <div class="sidebar">
-                        <div class="side-icon"><i class="fas fa-heart"></i><span>${d.likes || 0}</span></div>
-                        <div class="side-icon"><i class="fas fa-comment"></i><span>0</span></div>
-                        <div class="side-icon"><i class="fas fa-share"></i><span>Share</span></div>
-                    </div>
-                    <div class="info-glass">
-                        <h4 style="color:var(--neon-blue);">@${d.userName || 'system_user'}</h4>
-                        <p style="font-size:14px; margin-top:5px; opacity:0.9;">${d.caption || 'Gajan System Vibe'}</p>
-                    </div>
-                </div>`;
-            });
-
-            const obs = new IntersectionObserver(ents => {
-                ents.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
-            }, {threshold: 0.8});
-            document.querySelectorAll('video').forEach(v => obs.observe(v));
-        }
-
-        function toggleP() {
-            const s = document.getElementById('profileScreen');
-            s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
-        }
-    </script>
-</body>
-</html>
+// Redirect hone ke baad data pakadne ke liye ye zaroori hai
+auth.getRedirectResult().then((result) => {
+    if (result && result.user) {
+        document.getElementById('authScreen').style.display = 'none';
+        loadVideos();
+    }
+}).catch((error) => {
+    console.error("Auth Error:", error.message);
+});
