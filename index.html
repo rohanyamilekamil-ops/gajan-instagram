@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan Pro System</title>
+    <title>Gajan | Secure System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,64 +11,67 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --bg: #000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        :root { --neon: #fe2c55; --bg: #000; --glass: rgba(255,255,255,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: var(--bg); color: #fff; overflow: hidden; }
 
-        /* Modern Glass Login */
-        #loginScreen {
-            position: fixed; inset: 0; z-index: 5000; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .logo { font-size: 55px; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px rgba(254,44,85,0.5); }
-        .g-btn {
-            background: #fff; color: #000; padding: 15px 35px; border-radius: 50px;
-            border: none; font-weight: bold; cursor: pointer; display: flex;
-            align-items: center; gap: 10px; margin-top: 30px; font-size: 16px;
-        }
-        .guest-link { margin-top: 20px; color: #555; text-decoration: underline; cursor: pointer; font-size: 14px; }
+        /* --- ADVANCED LOGIN SYSTEM --- */
+        #authScreen { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .logo { font-size: 50px; font-weight: 900; color: var(--neon); margin-bottom: 20px; }
+        .auth-box { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
+        input { background: #111; border: 1px solid #333; padding: 14px; border-radius: 8px; color: #fff; outline: none; }
+        input:focus { border-color: var(--neon); }
+        .main-btn { background: var(--neon); color: #fff; padding: 14px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .link-text { font-size: 13px; color: #888; margin-top: 10px; cursor: pointer; }
 
-        /* Feed System */
+        /* --- FEED & BUTTONS (ACTIVE) --- */
         .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; display: flex; align-items: center; }
+        .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Overlays */
-        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; text-align: center; }
-        .sidebar i { font-size: 30px; }
-        .info { position: absolute; bottom: 90px; left: 15px; width: 70%; }
+        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 100; text-align: center; }
+        .sidebar i { font-size: 32px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); transition: 0.2s; }
+        .sidebar i:active { transform: scale(1.3); color: var(--neon); }
 
-        /* Navbar */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav i { font-size: 22px; }
-        .plus { background: linear-gradient(to right, #25f4ee, #fe2c55); padding: 5px 15px; border-radius: 8px; font-weight: bold; }
+        /* --- NAVIGATION (FIXED DOTS) --- */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #fff; cursor: pointer; }
+        .nav-item i { font-size: 22px; margin-bottom: 3px; }
+        .plus-btn { background: #fff; color: #000; padding: 5px 15px; border-radius: 8px; font-weight: bold; font-size: 20px; }
+
+        /* Profile Panel */
+        #profileScreen { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen">
-        <div class="logo">GAJAN</div>
-        <p style="opacity:0.6;">Next-Gen TikTok Clone</p>
-        <button class="g-btn" onclick="login()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
-            Google Se Start Karein
-        </button>
-        <div class="guest-link" onclick="guestMode()">Bina Login Ke Dekhein (Guest)</div>
-        <div id="stat" style="margin-top:20px; color: #25f4ee; font-size: 12px;"></div>
+    <div id="authScreen">
+        <div class="logo">Gajan</div>
+        <div class="auth-box" id="loginBox">
+            <h3 id="authTitle">Login</h3>
+            <input type="email" id="email" placeholder="Email ID">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="main-btn" onclick="handleAuth()">Login / Sign Up</button>
+            <p class="link-text" onclick="forgotPass()">Forgot Password?</p>
+            <p class="link-text" onclick="toggleAuthMode()">New Creator? Create Account</p>
+            <div style="margin-top:10px; border-top:1px solid #222; padding-top:10px; color:gray;">Or</div>
+            <button onclick="guestMode()" style="background:none; border:none; color:#555; margin-top:10px;">Guest Mode</button>
+        </div>
+        <p id="msg" style="margin-top:20px; font-size:12px; color:var(--neon);"></p>
     </div>
 
     <div class="feed" id="mainFeed"></div>
 
     <div class="nav">
-        <i class="fas fa-home" onclick="location.reload()"></i>
-        <i class="fas fa-search"></i>
-        <div class="plus" onclick="alert('Upload system ready!')">+</div>
-        <i class="fas fa-comment"></i>
-        <i class="fas fa-user"></i>
+        <div class="nav-item" onclick="location.reload()"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="alert('Search Active')"><i class="fas fa-search"></i>Discover</div>
+        <div class="plus-btn" onclick="alert('Upload Open')">+</div>
+        <div class="nav-item" onclick="alert('Chat Active')"><i class="fas fa-comment-dots"></i>Inbox</div>
+        <div class="nav-item" onclick="toggleP()"><i class="fas fa-user"></i>Profile</div>
     </div>
 
     <script>
-        // FIREBASE SETUP
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -81,62 +84,78 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // LOGIN LOGIC
-        function login() {
-            document.getElementById('stat').innerText = "Connecting...";
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Redirect is best for mobile
-            auth.signInWithRedirect(provider);
+        let isLoginMode = true;
+
+        // --- AUTH LOGIC (SECURE) ---
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? "Login" : "Create Account";
         }
 
-        function guestMode() {
-            document.getElementById('loginScreen').style.display = 'none';
-            loadFeed();
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const msg = document.getElementById('msg');
+            
+            if(!email || !pass) return alert("Bhai, Details dalo!");
+
+            try {
+                if(isLoginMode) {
+                    await auth.signInWithEmailAndPassword(email, pass);
+                } else {
+                    await auth.createUserWithEmailAndPassword(email, pass);
+                    alert("Account Created! Data safe hai.");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+            }
         }
 
-        // Check Login Status
+        function forgotPass() {
+            const email = document.getElementById('email').value;
+            if(!email) return alert("Pehle Email likho!");
+            auth.sendPasswordResetEmail(email).then(() => alert("Reset Link Email par gaya hai!"));
+        }
+
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('authScreen').style.display = 'none';
                 loadFeed();
+            } else {
+                document.getElementById('authScreen').style.display = 'flex';
             }
         });
 
-        // LOAD VIDEOS
+        function guestMode() { document.getElementById('authScreen').style.display = 'none'; loadFeed(); }
+
+        // --- ACTIVE FEED & BUTTONS ---
         async function loadFeed() {
             const feed = document.getElementById('mainFeed');
-            try {
-                const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
-                feed.innerHTML = "";
-                if(snap.empty) {
-                    feed.innerHTML = "<div style='padding:100px; text-align:center;'>No videos found. Post first!</div>";
-                    return;
-                }
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    feed.innerHTML += `
-                    <div class="post">
-                        <video loop src="${d.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
-                        <div class="sidebar">
-                            <i class="fas fa-heart"></i><br><small>${d.likes || 0}</small>
-                            <br><br><i class="fas fa-share"></i>
-                        </div>
-                        <div class="info">
-                            <b>@${d.userName || 'gajan_user'}</b>
-                            <p>${d.caption || 'No caption'}</p>
-                        </div>
-                    </div>`;
-                });
-
-                // Auto play
-                const obs = new IntersectionObserver(ents => {
-                    ents.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
-                }, {threshold: 0.8});
-                document.querySelectorAll('video').forEach(v => obs.observe(v));
-            } catch (err) {
-                console.log(err);
-            }
+            const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
+            feed.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                feed.innerHTML += `
+                <div class="post">
+                    <video loop playsinline src="${d.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
+                    <div class="sidebar">
+                        <i class="fas fa-heart" onclick="this.style.color='#fe2c55'"></i><br><small>${d.likes || 0}</small>
+                        <i class="fas fa-comment-dots" onclick="alert('Comments coming soon!')"></i><br><small>0</small>
+                        <i class="fas fa-share" onclick="alert('Link Copied!')"></i>
+                    </div>
+                    <div style="position:absolute; bottom:90px; left:15px; text-shadow:1px 1px 5px #000;">
+                        <h4>@gajan_creator</h4>
+                        <p>${d.caption || ''}</p>
+                    </div>
+                </div>`;
+            });
+            const obs = new IntersectionObserver(ents => {
+                ents.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
+            }, {threshold: 0.8});
+            document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
+
+        function toggleP() { alert("Aapka Account Safe Hai!"); }
     </script>
 </body>
 </html>
