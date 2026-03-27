@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan TikTok Official</title>
+    <title>Tiktok Gajan | Home System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,90 +11,59 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --bg: #000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: var(--bg); color: #fff; overflow: hidden; }
+        :root { --tiktok-red: #fe2c55; --tiktok-blue: #25f4ee; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Proxima Nova', sans-serif; }
+        body { background: #000; color: #fff; overflow: hidden; }
 
-        /* Login Screen */
-        #authScreen { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .auth-box { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
-        input { background: #111; border: 1px solid #333; padding: 14px; border-radius: 8px; color: #fff; }
-        .main-btn { background: var(--neon); color: #fff; padding: 14px; border-radius: 8px; border: none; font-weight: bold; }
-
-        /* Feed */
+        /* --- HOME "GHAR" SECTIONS --- */
         .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        video, .photo-post { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Sidebar Icons */
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 100; text-align: center; }
-        .sidebar-item { cursor: pointer; }
-        .sidebar-item i { font-size: 32px; filter: drop-shadow(0 0 5px #000); transition: 0.2s; }
-        .sidebar-item span { font-size: 12px; font-weight: bold; display: block; margin-top: 4px; }
+        /* Sidebar UI (Screenshot Style) */
+        .sidebar { position: absolute; right: 12px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 100; }
+        .sidebar-item { text-align: center; }
+        .sidebar-item i { font-size: 30px; filter: drop-shadow(0 0 5px #000); cursor: pointer; }
+        .sidebar-item b { font-size: 12px; display: block; margin-top: 2px; }
+        .liked { color: var(--tiktok-red) !important; }
 
-        /* Info */
-        .info { position: absolute; bottom: 90px; left: 15px; width: 75%; text-shadow: 2px 2px 5px #000; }
+        /* Bottom Nav (Ghar ki Chabi) */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; z-index: 200; }
+        .nav-item { text-align: center; font-size: 10px; color: #fff; opacity: 0.6; }
+        .nav-item.active { opacity: 1; }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; display: block; }
+        .plus-box { background: linear-gradient(to right, var(--tiktok-blue) 20%, var(--tiktok-red) 80%); padding: 3px; border-radius: 8px; }
+        .plus-btn { background: #fff; color: #000; padding: 2px 12px; border-radius: 6px; font-weight: bold; font-size: 18px; }
 
-        /* Navbar */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #fff; cursor: pointer; }
-        .nav-item i { font-size: 22px; margin-bottom: 3px; }
-        .plus-btn { background: #fff; color: #000; padding: 5px 15px; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; }
-
-        /* Screens (Profile & Upload) */
-        .full-screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-        .close-btn { position: absolute; top: 20px; left: 20px; font-size: 24px; z-index: 1100; }
-        
-        .upload-content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; }
-        .profile-content { padding: 60px 20px; text-align: center; }
+        /* Overlays */
+        .full-page { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="authScreen">
-        <h1 style="color:var(--neon); font-size: 50px; margin-bottom: 20px;">Gajan</h1>
-        <div class="auth-box">
-            <input type="email" id="email" placeholder="Email Address">
-            <input type="password" id="pass" placeholder="Password">
-            <button class="main-btn" onclick="handleAuth()">LOGIN / REGISTER</button>
-            <button onclick="guestMode()" style="background:none; border:none; color:gray; margin-top:10px;">Guest Access</button>
-        </div>
-        <p id="msg" style="color:var(--neon); margin-top:15px; font-size:12px;"></p>
-    </div>
-
     <div class="feed" id="mainFeed"></div>
 
-    <div id="uploadScreen" class="full-screen">
-        <i class="fas fa-times close-btn" onclick="closeScreens()"></i>
-        <div class="upload-content">
-            <h2 style="color:var(--neon);">Select Video to Viral</h2>
-            <input type="file" id="vFile" accept="video/*" style="margin-top:30px;">
-            <input type="text" id="vCaption" placeholder="Write something hot..." style="width:100%; margin-top:20px;">
-            <button class="main-btn" style="width:100%; margin-top:20px;" onclick="startUpload()">POST TO GAJAN</button>
-            <p id="upStatus" style="margin-top:15px; color:#25f4ee;"></p>
-        </div>
-    </div>
-
-    <div id="profileScreen" class="full-screen">
-        <i class="fas fa-times close-btn" onclick="closeScreens()"></i>
-        <div class="profile-content">
-            <img id="pPic" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--neon);">
-            <h2 id="pName" style="margin-top:15px;">User Name</h2>
-            <p id="pEmail" style="color:gray;"></p>
-            <button class="main-btn" onclick="auth.signOut(); location.reload();" style="margin-top:30px; background:#222;">Logout</button>
+    <div id="uploadBox" class="full-page">
+        <i class="fas fa-times" onclick="this.parentElement.style.display='none'" style="font-size:24px;"></i>
+        <div style="margin-top:50px; text-align:center;">
+            <h2>Upload Photo or Video</h2>
+            <input type="file" id="mediaFile" accept="image/*,video/*" style="margin-top:30px; width:100%;">
+            <input type="text" id="caption" placeholder="Write caption..." style="width:100%; margin-top:20px; padding:15px; background:#111; border:none; color:#fff;">
+            <button onclick="publishMedia()" style="width:100%; margin-top:20px; padding:15px; background:var(--tiktok-red); border:none; color:#fff; font-weight:bold; border-radius:5px;">POST NOW</button>
+            <p id="upStatus" style="margin-top:15px; color:var(--tiktok-blue);"></p>
         </div>
     </div>
 
     <div class="nav">
-        <div class="nav-item" onclick="closeScreens();"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item"><i class="fas fa-search"></i>Discover</div>
-        <div class="plus-btn" onclick="openUpload()">+</div>
+        <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item"><i class="fas fa-compass"></i>Discover</div>
+        <div class="plus-box" onclick="document.getElementById('uploadBox').style.display='flex'"><div class="plus-btn">+</div></div>
         <div class="nav-item"><i class="fas fa-comment-dots"></i>Inbox</div>
-        <div class="nav-item" onclick="openProfile()"><i class="fas fa-user"></i>Profile</div>
+        <div class="nav-item" onclick="alert('Profile Loading...')"><i class="fas fa-user"></i>Me</div>
     </div>
 
     <script>
-        // --- FIREBASE SETUP ---
+        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -107,104 +76,100 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- AUTH & SCREENS ---
-        function openUpload() { document.getElementById('uploadScreen').style.display = 'flex'; }
-        function openProfile() { 
+        // 1. UNIQUE LIKE SYSTEM (1 User = 1 Like Only)
+        async function handleLike(postId, btn) {
             const user = auth.currentUser;
-            if(user) {
-                document.getElementById('pEmail').innerText = user.email;
-                document.getElementById('pName').innerText = user.displayName || "Gajan User";
+            if(!user) return alert("Pehle login karo bhai!");
+
+            const postRef = db.collection('posts').doc(postId);
+            const likeRef = postRef.collection('likedBy').doc(user.uid);
+
+            const alreadyLiked = await likeRef.get();
+
+            if(alreadyLiked.exists) {
+                // Agar pehle se liked hai toh Unlike kar do
+                await likeRef.delete();
+                await postRef.update({ likes: firebase.firestore.FieldValue.increment(-1) });
+                btn.classList.remove('liked');
+            } else {
+                // Naya Like
+                await likeRef.set({ liked: true });
+                await postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
+                btn.classList.add('liked');
             }
-            document.getElementById('profileScreen').style.display = 'flex'; 
-        }
-        function closeScreens() { 
-            document.getElementById('uploadScreen').style.display = 'none';
-            document.getElementById('profileScreen').style.display = 'none';
+            // Real-time update count
+            const updated = await postRef.get();
+            btn.nextElementSibling.innerText = updated.data().likes || 0;
         }
 
-        async function handleAuth() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            try {
-                await auth.signInWithEmailAndPassword(e, p);
-            } catch {
-                await auth.createUserWithEmailAndPassword(e, p);
-            }
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) { document.getElementById('authScreen').style.display = 'none'; loadFeed(); }
-            else { document.getElementById('authScreen').style.display = 'flex'; }
-        });
-
-        function guestMode() { document.getElementById('authScreen').style.display = 'none'; loadFeed(); }
-
-        // --- LIKE ENGINE ---
-        async function doLike(id, btn) {
-            btn.style.color = '#fe2c55';
-            const postRef = db.collection('posts').doc(id);
-            const doc = await postRef.get();
-            const newLikes = (doc.data().likes || 0) + 1;
-            await postRef.update({ likes: newLikes });
-            btn.nextElementSibling.innerText = newLikes;
-        }
-
-        // --- LOAD FEED ---
+        // 2. LOAD FEED (Videos & Photos)
         async function loadFeed() {
             const feed = document.getElementById('mainFeed');
             const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
             feed.innerHTML = "";
+
             snap.forEach(doc => {
                 const d = doc.data();
                 const id = doc.id;
+                const isVideo = d.type === 'video';
+
                 feed.innerHTML += `
-                <div class="post">
-                    <video loop playsinline src="${d.videoUrl}" onclick="this.paused ? this.play() : this.pause()"></video>
-                    <div class="sidebar">
-                        <div class="sidebar-item" onclick="doLike('${id}', this.children[0])">
-                            <i class="fas fa-heart"></i><span>${d.likes || 0}</span>
+                    <div class="post">
+                        ${isVideo ? `<video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${d.url}" class="photo-post">`}
+                        
+                        <div class="sidebar">
+                            <div class="sidebar-item">
+                                <i class="fas fa-heart" onclick="handleLike('${id}', this)"></i>
+                                <b>${d.likes || 0}</b>
+                            </div>
+                            <div class="sidebar-item"><i class="fas fa-comment-dots"></i><b>200</b></div>
+                            <div class="sidebar-item"><i class="fas fa-share"></i><b>Share</b></div>
                         </div>
-                        <div class="sidebar-item"><i class="fas fa-comment-dots"></i><span>0</span></div>
-                        <div class="sidebar-item"><i class="fas fa-share"></i><span>Share</span></div>
+
+                        <div style="position:absolute; bottom:80px; left:15px; width:75%;">
+                            <h4>@gajan_creator</h4>
+                            <p>${d.caption}</p>
+                        </div>
                     </div>
-                    <div class="info">
-                        <h3>@gajan_king</h3>
-                        <p>${d.caption || ''}</p>
-                    </div>
-                </div>`;
+                `;
             });
+
+            // Intersection Observer
             const obs = new IntersectionObserver(ents => {
-                ents.forEach(e => { if(e.isIntersecting) e.target.play(); else e.target.pause(); });
+                ents.forEach(e => { if(e.isIntersecting && e.target.tagName === 'VIDEO') e.target.play(); else if(e.target.tagName === 'VIDEO') e.target.pause(); });
             }, {threshold: 0.8});
             document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
 
-        // --- UPLOAD ENGINE (CLOUDINARY) ---
-        async function startUpload() {
-            const file = document.getElementById('vFile').files[0];
-            const cap = document.getElementById('vCaption').value;
+        // 3. PUBLISH PHOTOS & VIDEOS
+        async function publishMedia() {
+            const file = document.getElementById('mediaFile').files[0];
+            const cap = document.getElementById('caption').value;
             const status = document.getElementById('upStatus');
-            if(!file) return alert("Select video!");
+            if(!file) return alert("File chuno!");
 
-            status.innerText = "Processing Cloud...";
+            status.innerText = "Cloud pe ja raha hai...";
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', 'ml_default');
 
-            const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/${file.type.includes('video')?'video':'image'}/upload`, {
                 method: "POST", body: formData
             });
             const data = await res.json();
 
             await db.collection('posts').add({
-                videoUrl: data.secure_url,
+                url: data.secure_url,
+                type: file.type.includes('video') ? 'video' : 'photo',
                 caption: cap,
                 likes: 0,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            status.innerText = "LIVE!";
-            setTimeout(() => location.reload(), 1000);
+            status.innerText = "Success! Ghar mein entry ho gayi.";
+            location.reload();
         }
+
+        auth.onAuthStateChanged(user => { if(user) loadFeed(); else auth.signInAnonymously(); });
     </script>
 </body>
 </html>
