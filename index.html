@@ -1,41 +1,56 @@
-        // ... (Baki purana code same rahega, sirf upload function ye wala use karein)
+async function uploadVideo() {
+    const file = document.getElementById('vFile').files[0];
+    const desc = document.getElementById('vDesc').value;
+    const status = document.getElementById('progStatus');
 
-        async function uploadVideo() {
-            const file = document.getElementById('vFile').files[0];
-            const caption = document.getElementById('vDesc').value;
-            const status = document.getElementById('progStatus');
+    if(!file) {
+        alert("Bhai, pehle video select toh karo!");
+        return;
+    }
 
-            if(!file) return alert("Select a video first!");
-            status.innerText = "🚀 Sending to Cloud... Please wait.";
+    status.innerText = "⏳ 1. Cloudinary se jud raha hoon...";
+    console.log("Starting upload for:", file.name);
 
-            const cloudName = "dvfgzrxs7"; 
-            const uploadPreset = "ml_default"; // Yaad se isko 'Unsigned' kar dena settings mein
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default'); // Aapka preset
+    formData.append('cloud_name', 'dvfgzrxs7');     // Aapka cloud name
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', uploadPreset);
+    try {
+        // STEP 1: Cloudinary Upload
+        const response = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {
+            method: "POST",
+            body: formData
+        });
 
-            try {
-                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
-                    method: 'POST', body: formData
-                });
-                
-                const cloudData = await cloudRes.json();
-                
-                if (cloudData.error) {
-                    throw new Error(cloudData.error.message);
-                }
+        const cloudData = await response.json();
 
-                await db.collection('posts').add({
-                    videoUrl: cloudData.secure_url,
-                    caption: caption,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                status.innerText = "✅ Tiktok Gajan par post ho gaya!";
-                setTimeout(() => location.reload(), 1500);
-            } catch (err) {
-                status.innerText = "❌ Error: " + err.message;
-                alert("Settings check karein: Preset 'Unsigned' hona chahiye!");
-            }
+        if (cloudData.error) {
+            console.error("Cloudinary Error:", cloudData.error);
+            alert("Cloudinary Error: " + cloudData.error.message);
+            status.innerText = "❌ Cloudinary ne mana kar diya!";
+            return;
         }
+
+        status.innerText = "✅ 2. Video Cloud par gaya! Ab Database mein save kar raha hoon...";
+        console.log("Video URL:", cloudData.secure_url);
+
+        // STEP 2: Firebase Firestore Save
+        // Yahan hum 'posts' collection ka use kar rahe hain
+        await db.collection('posts').add({
+            videoUrl: cloudData.secure_url,
+            caption: desc || "Tiktok Gajan Video",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            owner: "Gajan User"
+        });
+
+        status.innerText = "🔥 3. MUBARAK HO! Video Live hai.";
+        alert("Tiktok Gajan par video dal gaya!");
+        location.reload();
+
+    } catch (err) {
+        console.error("Full Error:", err);
+        alert("System Error: " + err.message);
+        status.innerText = "❌ Kuch galat ho gaya: " + err.message;
+    }
+}
