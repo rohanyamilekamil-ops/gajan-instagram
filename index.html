@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan Supreme System 2027</title>
+    <title>Gajan App | Next-Gen TikTok Clone</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,121 +11,134 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; overflow: hidden; }
+        :root { --neon: #fe2c55; --gold: #ffd700; --cyan: #25f4ee; --dark-bg: #010101; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--dark-bg); color: #fff; overflow: hidden; }
 
-        /* --- LOGIN SCREEN --- */
-        #authScreen { position: fixed; inset: 0; background: radial-gradient(circle at top, #111, #000); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .gajan-logo { font-size: 60px; font-weight: 900; background: linear-gradient(45deg, #25f4ee, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--neon)); margin-bottom: 20px; }
-        .btn-login { background: #fff; color: #000; padding: 16px 40px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 16px; transition: 0.3s; }
+        /* --- 1. LOGIN & SPLASH SYSTEM --- */
+        #authScreen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .logo-anim { font-size: 65px; font-weight: 900; background: linear-gradient(45deg, var(--cyan), #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--neon)); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .login-box { width: 85%; max-width: 380px; margin-top: 40px; }
+        input { width: 100%; padding: 16px; margin: 8px 0; background: #111; border: 1px solid #333; color: #fff; border-radius: 12px; outline: none; }
+        .btn-prime { width: 100%; padding: 16px; border-radius: 50px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; background: var(--neon); color: #fff; margin-top: 15px; }
 
-        /* --- SCREENS --- */
+        /* --- 2. THEME & UI SCREENS --- */
         .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; overflow-y: auto; padding-bottom: 80px; }
         .active-screen { display: flex; }
 
-        /* Video Feed */
+        /* Video Feed Screen */
         #feedScroll { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
+        .video-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        .p-ring { width: 55px; height: 55px; border-radius: 50%; border: 2.5px solid var(--gold); padding: 2px; background: #000; }
-        .p-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        
+        /* Action Buttons (Right Sidebar) */
+        .action-bar { position: absolute; right: 12px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 100; }
+        .profile-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; padding: 2px; }
+        .profile-btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .icon-unit { text-align: center; font-size: 30px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); cursor: pointer; }
+        .icon-unit span { font-size: 12px; display: block; font-weight: bold; }
 
-        /* --- NAVIGATION --- */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
-        .nav-item { text-align: center; color: #666; font-size: 11px; cursor: pointer; }
-        .nav-item.active { color: #fff; }
-        .nav-item i { font-size: 26px; margin-bottom: 4px; display: block; }
-        .plus-btn { width: 50px; height: 35px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .plus-btn::before { content:''; position:absolute; inset: 0 -3px; background: linear-gradient(to right, #25f4ee, var(--neon)); border-radius: 10px; z-index: -1; }
+        /* --- 3. GIFT & TOKEN SYSTEM --- */
+        .modal { position: fixed; bottom: -100%; width: 100%; background: #111; z-index: 3000; transition: 0.4s; padding: 25px; border-radius: 30px 30px 0 0; border-top: 2px solid var(--gold); }
+        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+        .gift-item { background: #222; padding: 10px; border-radius: 15px; text-align: center; font-size: 20px; }
 
-        /* --- ADMIN PANEL --- */
-        #adminPanel { position: fixed; inset: 0; background: #050505; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 2px solid var(--gold); }
-        .admin-card { background: #111; padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #333; }
-        input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 10px; border: none; background: #222; color: #fff; outline: none; }
-        .btn-act { width: 100%; padding: 14px; background: var(--gold); border: none; color: #000; font-weight: bold; border-radius: 10px; margin-top: 15px; }
+        /* --- 4. NAVIGATION BAR --- */
+        .navbar { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 5000; border-top: 0.5px solid #222; }
+        .nav-link { text-align: center; color: #777; font-size: 10px; }
+        .nav-link.active { color: #fff; }
+        .nav-link i { font-size: 24px; margin-bottom: 4px; display: block; }
+        .upload-center { background: #fff; color: #000; width: 45px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; position: relative; }
+        .upload-center::before { content:''; position:absolute; inset: 0 -3px; background: linear-gradient(to right, var(--cyan), var(--neon)); border-radius: 8px; z-index: -1; }
 
-        /* Modals */
-        .modal { position: fixed; bottom: -100%; width: 100%; background: #111; z-index: 3000; transition: 0.4s; padding: 25px; border-radius: 30px 30px 0 0; border-top: 1px solid var(--neon); }
+        /* --- 5. ADMIN CONTROL UI --- */
+        #adminDashboard { position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 4px solid var(--gold); }
+        .admin-stat-card { background: #151515; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        .del-post-btn { background: var(--neon); border: none; padding: 5px 12px; border-radius: 5px; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="authScreen">
-        <div class="gajan-logo">GAJAN</div>
-        <p style="color: gray; margin-bottom: 30px;">2027 SUPREME SYSTEM</p>
-        <button class="btn-login" onclick="googleLogin()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
-            START GAJAN
-        </button>
+        <div class="logo-anim">GAJAN</div>
+        <div class="login-box" id="loginForm">
+            <input type="email" id="userEmail" placeholder="Email / Phone">
+            <input type="password" id="userPass" placeholder="Password">
+            <button class="btn-prime" onclick="processLogin()">LOGIN / SIGNUP</button>
+            <button onclick="googleAuth()" style="background:none; border:1px solid #444; color:#fff; width:100%; margin-top:15px; padding:12px; border-radius:50px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="18" style="vertical-align:middle;"> Continue with Google
+            </button>
+        </div>
     </div>
 
-    <div id="feedScreen" class="screen active-screen">
-        <div id="feedScroll"></div>
-    </div>
-
-    <div id="meScreen" class="screen">
-        <div style="text-align: center; padding: 60px 20px;">
-            <div onclick="adminTaps()" class="p-ring" style="width:110px; height:110px; margin: 0 auto; position: relative;">
-                <img id="uPic" src="https://via.placeholder.com/100">
-                <i class="fas fa-camera" onclick="upProfilePic()" style="position:absolute; bottom:5px; right:5px; background:var(--neon); padding:8px; border-radius:50%; font-size:12px; border:2px solid #000;"></i>
+    <div id="homeScreen" class="screen active-screen">
+        <div id="feedScroll">
             </div>
-            <h2 id="uName" style="margin-top:20px;">User</h2>
-            <p id="uEmail" style="color:gray; font-size:12px;"></p>
-            <div style="display:flex; justify-content:center; gap:25px; margin-top:30px;">
-                <div>🪙 <b id="uT">0</b><br><small>Tokens</small></div>
-                <button onclick="document.getElementById('buyBox').style.bottom='0'; loadQRs();" style="background:var(--gold); color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">BUY TOKENS</button>
-                <button onclick="document.getElementById('sendBox').style.bottom='0'" style="background:#222; color:#fff; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">SEND</button>
+    </div>
+
+    <div id="profileScreen" class="screen">
+        <div style="text-align: center; padding: 40px 20px;">
+            <div onclick="adminTaps()" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); margin: 0 auto; position: relative;">
+                <img id="myAvatar" src="https://via.placeholder.com/100" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                <i class="fas fa-plus-circle" onclick="changeProfilePhoto()" style="position:absolute; bottom:5px; right:5px; color:var(--neon); background:#fff; border-radius:50%;"></i>
             </div>
+            <h2 id="displayUName" style="margin-top:15px;">Gajan User</h2>
+            <p id="displayUEmail" style="color:gray; font-size:12px;">user@gajan.app</p>
+            <div style="display:flex; justify-content:center; gap:30px; margin-top:30px;">
+                <div onclick="openWallet()"><b id="walletBal">0</b><br><small>Tokens</small></div>
+                <div><b>0</b><br><small>Followers</small></div>
+            </div>
+            <button class="btn-prime" style="background:var(--gold); color:#000; width:auto; padding:10px 40px;" onclick="openQR()">MY QR CODE</button>
         </div>
-        <div id="uGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;"></div>
+        <div id="userGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;"></div>
     </div>
 
-    <div id="adminPanel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="color:var(--gold);">MRGAJAN MASTER CONTROL</h2>
-            <i class="fas fa-times" onclick="document.getElementById('adminPanel').style.display='none'"></i>
-        </div>
-        <div class="admin-card">
-            <h4>Transfer Tokens</h4>
-            <input type="text" id="targetE" placeholder="User Email">
-            <input type="number" id="targetA" placeholder="Amount">
-            <button class="btn-act" onclick="transfer()">SEND NOW</button>
-        </div>
-        <div class="admin-card">
-            <h4>QR Manager (Gallery Upload)</h4>
-            <input type="file" accept="image/*" onchange="upQR(this)">
-            <div id="qrPrev" style="display:flex; gap:10px; margin-top:10px; overflow-x:auto;"></div>
-        </div>
-        <div class="admin-card" id="postManager">
-            <h4>Manage Posts (Delete Anytime)</h4>
+    <div id="giftModal" class="modal">
+        <h3>Send Love to Creator</h3>
+        <div class="gift-grid">
+            <div class="gift-item" onclick="sendGift(10)">🌹<br><small>10</small></div>
+            <div class="gift-item" onclick="sendGift(100)">💎<br><small>100</small></div>
+            <div class="gift-item" onclick="sendGift(500)">👑<br><small>500</small></div>
+            <div class="gift-item" onclick="sendGift(1000)">🚀<br><small>1000</small></div>
         </div>
     </div>
 
-    <div id="buyBox" class="modal">
-        <h3>Deposit System</h3>
-        <p style="color:gray; font-size:11px;">Pay to QR and send screenshot to Admin</p>
-        <div id="userQR" style="display:flex; gap:15px; overflow-x:auto; margin-top:20px; height:350px;"></div>
-        <button onclick="document.getElementById('buyBox').style.bottom='-100%'" class="btn-act" style="background:var(--neon); color:#fff;">CLOSE</button>
+    <div id="qrModal" class="modal">
+        <h3>Scan & Pay</h3>
+        <div id="adminQRContainer" style="text-align: center; margin-top: 20px;">
+            </div>
+        <button class="btn-prime" onclick="closeModal('qrModal')">CLOSE</button>
     </div>
 
-    <div id="sendBox" class="modal">
-        <h3>Send Tokens to Friend</h3>
-        <input type="email" id="fEmail" placeholder="Friend's Gmail">
-        <input type="number" id="fAmt" placeholder="Amount">
-        <button onclick="p2pSend()" class="btn-act" style="background:#25f4ee; color:#000;">SEND NOW</button>
+    <div id="adminDashboard">
+        <h2 style="color:var(--gold);">MRGAJAN MASTER PANEL</h2>
+        <div class="admin-stat-card">
+            <h4>System Token Stock: <span id="masterStock">10,000,000</span></h4>
+            <input type="email" id="tEmail" placeholder="User Gmail">
+            <input type="number" id="tAmount" placeholder="Amount">
+            <button class="btn-prime" style="background:var(--gold); color:#000;" onclick="adminTransfer()">DISTRIBUTE TOKENS</button>
+        </div>
+        <div class="admin-stat-card">
+            <h4>Gallery QR Control</h4>
+            <input type="file" accept="image/*" onchange="adminUploadQR(this)">
+        </div>
+        <div class="admin-stat-card" id="allPostList">
+            <h4>Video Management (Delete Anytime)</h4>
+            </div>
+        <button class="btn-prime" style="background:#333;" onclick="closeAdmin()">LOGOUT ADMIN</button>
     </div>
 
-    <div class="nav">
-        <div class="nav-item active" onclick="showS('feedScreen', this)"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="alert('Search Active')"><i class="fas fa-search"></i>Discover</div>
-        <div class="nav-item" onclick="upV()"><div class="plus-btn"><i class="fas fa-plus"></i></div></div>
-        <div class="nav-item"><i class="fas fa-comment-dots"></i>Inbox</div>
-        <div class="nav-item" onclick="showS('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
+    <div class="navbar">
+        <div class="nav-link active" onclick="showScreen('homeScreen', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-link" onclick="alert('Search Open')"><i class="fas fa-search"></i>Search</div>
+        <div class="nav-link" onclick="handleUpload()"><div class="upload-center">+</div></div>
+        <div class="nav-item nav-link" onclick="alert('Inbox Open')"><i class="fas fa-comment-dots"></i>Inbox</div>
+        <div class="nav-link" onclick="showScreen('profileScreen', this)"><i class="fas fa-user"></i>Profile</div>
     </div>
 
     <script>
+        // --- 13. TECH STACK (FIREBASE CONFIG) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
             authDomain: "tiktok-clone-gajan.firebaseapp.com",
@@ -138,73 +151,56 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- AUTH & SYNC ---
-        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        // --- 1. LOGIN / SIGNUP SYSTEM ---
+        function googleAuth() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
-        auth.onAuthStateChanged(async user => {
+        auth.onAuthStateChanged(async (user) => {
             if(user) {
-                document.getElementById('authScreen').style.display='none';
-                const ref = db.collection('users').doc(user.uid);
-                const doc = await ref.get();
-                if(!doc.exists) await ref.set({ name: user.displayName, email: user.email, photo: user.photoURL, tokens: 0 });
-                ref.onSnapshot(s => {
-                    const d = s.data();
-                    document.getElementById('uName').innerText = d.name;
-                    document.getElementById('uEmail').innerText = d.email;
-                    document.getElementById('uPic').src = d.photo;
-                    document.getElementById('uT').innerText = d.tokens || 0;
-                });
+                document.getElementById('authScreen').style.display = 'none';
+                const userRef = db.collection('users').doc(user.uid);
+                const doc = await userRef.get();
+                if(!doc.exists) {
+                    await userRef.set({ name: user.displayName, email: user.email, photo: user.photoURL, tokens: 0, uid: user.uid });
+                }
+                syncProfile(user.uid);
                 loadFeed();
-            } else { document.getElementById('authScreen').style.display='flex'; }
+            } else {
+                document.getElementById('authScreen').style.display = 'flex';
+            }
         });
 
-        // --- GALLERY UPLOADS ---
-        async function upProfilePic() {
-            let i = document.createElement('input'); i.type='file'; i.accept='image/*';
-            i.onchange = async (e) => {
-                const f = e.target.files[0]; alert("Updating Photo...");
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
+        async function syncProfile(uid) {
+            db.collection('users').doc(uid).onSnapshot(doc => {
+                const data = doc.data();
+                document.getElementById('displayUName').innerText = data.name;
+                document.getElementById('displayUEmail').innerText = data.email;
+                document.getElementById('myAvatar').src = data.photo;
+                document.getElementById('walletBal').innerText = data.tokens.toLocaleString();
+            });
+        }
+
+        // --- 4. VIDEO SYSTEM (UPLOAD & FEED) ---
+        async function handleUpload() {
+            let input = document.createElement('input');
+            input.type = 'file'; input.accept = 'video/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                alert("Processing 2027 Optimization... Please Wait.");
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'ml_default');
+                
+                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", { method: 'POST', body: formData });
                 const d = await res.json();
-                await db.collection('users').doc(auth.currentUser.uid).update({ photo: d.secure_url });
-                alert("Success!");
-            }; i.click();
-        }
-
-        async function upQR(input) {
-            const f = input.files[0];
-            const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-            const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
-            const d = await res.json();
-            const ref = db.collection('admin_config').doc('qrs');
-            const doc = await ref.get();
-            let urls = doc.exists ? doc.data().urls : [];
-            urls.push(d.secure_url);
-            await ref.set({ urls: urls }); alert("QR Added!"); loadQRs();
-        }
-
-        async function loadQRs() {
-            const disp = document.getElementById('userQR');
-            const s = await db.collection('admin_config').doc('qrs').get();
-            disp.innerHTML = "";
-            if(s.exists) s.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:100%; border-radius:20px;">`);
-        }
-
-        // --- FEED & UPLOAD ---
-        async function upV() {
-            let i = document.createElement('input'); i.type='file'; i.accept='video/*';
-            i.onchange = async (e) => {
-                const f = e.target.files[0]; alert("CONGRATULATIONS! Uploading started...");
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {method:'POST', body:fd});
-                const d = await res.json();
+                
                 const u = auth.currentUser;
                 await db.collection('posts').add({
-                    url: d.secure_url, uid: u.uid, uName: u.displayName, uPic: u.photoURL, uEmail: u.email,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), likes: 0
+                    url: d.secure_url, uid: u.uid, name: u.displayName, photo: u.photoURL,
+                    email: u.email, likes: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert("Live!"); loadFeed();
-            }; i.click();
+                alert("CONGRATULATIONS! Video is LIVE."); loadFeed();
+            };
+            input.click();
         }
 
         async function loadFeed() {
@@ -214,16 +210,17 @@
             snap.forEach(doc => {
                 const d = doc.data();
                 cont.innerHTML += `
-                    <div class="v-post">
+                    <div class="video-post">
                         <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
-                        <div class="sidebar">
-                            <div class="p-ring"><img src="${d.uPic}"></div>
-                            <i class="fas fa-heart"></i><b>${d.likes}</b>
-                            <i class="fas fa-share" onclick="alert('Gmail: ${d.uEmail}')"></i>
+                        <div class="action-bar">
+                            <div class="profile-btn"><img src="${d.photo}"></div>
+                            <div class="icon-unit" onclick="likePost('${doc.id}')"><i class="fas fa-heart"></i><span>${d.likes}</span></div>
+                            <div class="icon-unit" onclick="document.getElementById('giftModal').style.bottom='0'"><i class="fas fa-gift" style="color:var(--gold)"></i><span>Gift</span></div>
+                            <div class="icon-unit" onclick="alert('Gmail: ${d.email}')"><i class="fas fa-share"></i><span>Share</span></div>
                         </div>
-                        <div style="position:absolute; bottom:95px; left:15px; text-shadow:2px 2px 10px #000;">
-                            <h3>@${d.uName}</h3>
-                            <p style="font-size:10px; opacity:0.6;">${d.uEmail}</p>
+                        <div style="position:absolute; bottom:85px; left:15px; text-shadow:2px 2px 10px #000;">
+                            <h3>@${d.name}</h3>
+                            <p style="font-size:12px; opacity:0.7;">${d.email}</p>
                         </div>
                     </div>`;
             });
@@ -231,46 +228,57 @@
             document.querySelectorAll('video').forEach(v => obs.observe(v));
         }
 
-        // --- P2P SEND ---
-        async function p2pSend() {
-            const email = document.getElementById('fEmail').value;
-            const amt = parseInt(document.getElementById('fAmt').value);
-            const uRef = db.collection('users').doc(auth.currentUser.uid);
-            const fSnap = await db.collection('users').where('email', '==', email).get();
-            if(fSnap.empty) return alert("User not found!");
-            await db.runTransaction(async t => {
-                const uDoc = await t.get(uRef);
-                if(uDoc.data().tokens < amt) throw "Low Balance";
-                t.update(uRef, { tokens: firebase.firestore.FieldValue.increment(-amt) });
-                t.update(db.collection('users').doc(fSnap.docs[0].id), { tokens: firebase.firestore.FieldValue.increment(amt) });
-            });
-            alert("Sent!"); document.getElementById('sendBox').style.bottom='-100%';
-        }
-
-        // --- ADMIN ---
+        // --- 11. ADMIN PANEL (MASTER ACCESS) ---
         let taps = 0;
         function adminTaps() {
             taps++; if(taps >= 5) {
-                let p = prompt("Admin Key:");
-                if(p === "Abdul6353738585@") { document.getElementById('adminPanel').style.display='block'; loadAdminStuff(); }
+                let p = prompt("MASTER ADMIN KEY:");
+                if(p === "Abdul6353738585@") {
+                    document.getElementById('adminDashboard').style.display = 'block';
+                    loadAdminPosts();
+                }
                 taps = 0;
             }
         }
 
-        async function loadAdminStuff() {
-            const mgr = document.getElementById('postManager');
-            const s = await db.collection('posts').get();
-            mgr.innerHTML = "<h4>Manage Posts</h4>";
-            s.forEach(doc => mgr.innerHTML += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-top:5px; border-radius:10px;">
-                <span>@${doc.data().uName}</span><button onclick="admDel('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button></div>`);
+        async function loadAdminPosts() {
+            const list = document.getElementById('allPostList');
+            const snap = await db.collection('posts').get();
+            list.innerHTML = "<h4>Manage Viral Feed</h4>";
+            snap.forEach(doc => {
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-top:5px; border-radius:10px;">
+                    <span>@${doc.data().name}</span>
+                    <button class="del-post-btn" onclick="adminDelete('${doc.id}')">DELETE</button>
+                </div>`;
+            });
         }
 
-        async function admDel(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminStuff(); } }
+        async function adminDelete(id) {
+            if(confirm("Delete this video forever?")) {
+                await db.collection('posts').doc(id).delete();
+                loadAdminPosts();
+                alert("Video Hata di gayi hai!");
+            }
+        }
 
-        function showS(id, btn) {
+        // --- 10. PROFILE SYSTEM (GALLERY PHOTO) ---
+        async function changeProfilePhoto() {
+            let i = document.createElement('input'); i.type='file'; i.accept='image/*';
+            i.onchange = async (e) => {
+                const f = e.target.files[0];
+                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
+                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
+                const d = await res.json();
+                await db.collection('users').doc(auth.currentUser.uid).update({ photo: d.secure_url });
+                alert("Profile Photo Updated!");
+            }; i.click();
+        }
+
+        // --- UI UTILS ---
+        function showScreen(id, btn) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
             document.getElementById(id).classList.add('active-screen');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
         }
     </script>
