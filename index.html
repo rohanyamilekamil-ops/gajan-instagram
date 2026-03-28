@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Premiere Social System</title>
+    <title>Gajan | Supreme 2027 Engine</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,363 +11,267 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --accent: #fe2c55;
-            --gold: #ffd700;
-            --surface: #121212;
-            --glass: rgba(255, 255, 255, 0.05);
+        :root { --neon: #fe2c55; --gold: #ffd700; --cyan: #25f4ee; --bg: #000; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: #000; color: #fff; overflow: hidden; }
+
+        /* --- 1. LOGIN WITH GAJAN STYLES BACKGROUND --- */
+        #authScreen { 
+            position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+            background: #000; overflow: hidden;
+        }
+        .gajan-bg-text {
+            position: absolute; font-size: 12vw; font-weight: 900; line-height: 1;
+            color: rgba(255,255,255,0.02); text-transform: uppercase; pointer-events: none;
+            user-select: none; white-space: nowrap; animation: moveText 20s linear infinite;
+        }
+        @keyframes moveText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        
+        .login-card { 
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 40px; 
+            border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; 
+            z-index: 10; box-shadow: 0 0 50px rgba(254,44,85,0.2);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        body { background: #000; color: #fff; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
-
-        /* --- AUTHENTICATION LAYER --- */
-        #authLayer {
-            position: fixed; inset: 0; background: radial-gradient(circle at top right, #1a1a1a, #000);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .brand-logo { 
-            font-size: 70px; font-weight: 900; letter-spacing: -2px; 
-            background: linear-gradient(to bottom, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 40px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
-        }
-        .auth-card {
-            background: var(--glass); backdrop-filter: blur(20px); padding: 40px;
-            border-radius: 32px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px; text-align: center;
-        }
-        .btn-auth {
-            background: #fff; color: #000; padding: 18px; border-radius: 16px; border: none;
-            width: 100%; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
-        }
-
-        /* --- APP STRUCTURE --- */
-        .viewport { position: fixed; inset: 0; display: none; flex-direction: column; }
-        .screen { flex: 1; display: none; overflow-y: auto; padding-bottom: 90px; }
-        .screen.active { display: block; }
-
-        /* Video Feed (Ultra Smooth) */
-        .feed-engine { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .feed-engine::-webkit-scrollbar { display: none; }
-        .v-item { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
+        /* --- 2. FEED LAYOUT (ORIGINAL TIKTOK) --- */
+        .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; }
+        .active-screen { display: flex; }
+        #feedScroll { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* UI Overlays */
-        .sidebar-actions {
-            position: absolute; right: 16px; bottom: 120px; display: flex; flex-direction: column; gap: 24px; align-items: center;
-        }
-        .user-avatar { 
-            width: 54px; height: 54px; border-radius: 50%; border: 2px solid #fff; 
-            position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
-        }
-        .user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .action-unit { text-align: center; font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
-        .action-unit span { font-size: 12px; display: block; font-weight: 600; margin-top: 4px; }
+        /* Right Side Buttons */
+        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 100; }
+        .p-gold-ring { width: 55px; height: 55px; border-radius: 50%; border: 2.5px solid var(--gold); padding: 2px; background: #000; }
+        .p-gold-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .action-icon { font-size: 32px; text-align: center; text-shadow: 0 2px 10px #000; cursor: pointer; }
+        .action-icon span { font-size: 12px; display: block; font-weight: bold; margin-top: 4px; }
 
-        /* --- PROFILE SYSTEM --- */
-        .profile-header { padding: 60px 24px 30px; text-align: center; }
-        .master-pfp { 
-            width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 20px;
-            border: 4px solid var(--gold); position: relative; padding: 4px;
-        }
-        .master-pfp img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .edit-pfp { 
-            position: absolute; bottom: 4px; right: 4px; background: var(--accent);
-            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000;
-        }
+        /* --- 3. MASTER ADMIN PANEL --- */
+        #adminPanel { position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 2px solid var(--gold); }
+        .admin-section { background: #111; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #333; }
+        input { width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; border: none; background: #222; color: #fff; }
+        .admin-post-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a1a1a; margin-top: 8px; border-radius: 10px; }
 
-        /* --- ADMIN CONSOLE --- */
-        #adminConsole {
-            position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 30px; overflow-y: auto;
-        }
-        .admin-card { background: #1a1a1a; padding: 24px; border-radius: 24px; margin-bottom: 20px; border: 1px solid #333; }
-        input { 
-            width: 100%; padding: 16px; background: #252525; border: 1px solid #444; 
-            color: #fff; border-radius: 12px; margin-top: 12px; outline: none;
-        }
-        .btn-admin { 
-            width: 100%; padding: 16px; background: var(--gold); border: none; 
-            border-radius: 12px; color: #000; font-weight: 800; margin-top: 16px;
-        }
-
-        /* --- NAVIGATION --- */
-        .navbar {
-            position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.05); z-index: 5000;
-        }
-        .nav-link { color: #666; font-size: 11px; text-align: center; transition: 0.3s; }
-        .nav-link.active { color: #fff; }
-        .nav-link i { font-size: 24px; margin-bottom: 4px; display: block; }
+        /* Bottom Nav */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
+        .nav-item { color: #555; text-align: center; font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: #fff; }
+        .nav-item i { font-size: 26px; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="authLayer">
-        <div class="brand-logo">GAJAN</div>
-        <div class="auth-card">
-            <p style="color: #aaa; margin-bottom: 30px; font-weight: 500;">PREMIERE SOCIAL ACCESS</p>
-            <button class="btn-auth" onclick="GajanCore.auth.google()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
-                Continue with Google
-            </button>
+    <div id="authScreen">
+        <div class="gajan-bg-text" style="top: 10%;">GAJAN GAJAN GAJAN</div>
+        <div class="gajan-bg-text" style="top: 40%; animation-delay: -5s; color: rgba(37, 244, 238, 0.02);">GAJAN GAJAN GAJAN</div>
+        <div class="gajan-bg-text" style="top: 70%; animation-delay: -10s;">GAJAN GAJAN GAJAN</div>
+        
+        <div class="login-card">
+            <h1 style="color:var(--neon); font-size: 55px; font-weight: 900; letter-spacing: 5px;">GAJAN</h1>
+            <p style="color: gray; font-size: 12px; margin-bottom: 30px;">Original TikTok Clone 2027</p>
+            <button onclick="googleLogin()" style="width: 100%; padding: 18px; border-radius: 50px; border: none; background: #fff; font-weight: 900; cursor: pointer;">START SYSTEM</button>
         </div>
     </div>
 
-    <div class="viewport" id="appViewport">
-        <div id="screen-feed" class="screen active">
-            <div class="feed-engine" id="mainFeed"></div>
-        </div>
+    <div id="feedScreen" class="screen active-screen">
+        <div id="feedScroll"></div>
+    </div>
 
-        <div id="screen-profile" class="screen">
-            <div class="profile-header">
-                <div class="master-pfp" id="adminTrigger">
-                    <img id="user-pfp" src="">
-                    <div class="edit-pfp" onclick="GajanCore.profile.updatePhoto()"><i class="fas fa-camera"></i></div>
-                </div>
-                <h2 id="user-name" style="font-weight: 800; font-size: 28px;">-</h2>
-                <p id="user-email" style="color: #777; margin-top: 4px; font-size: 13px;">-</p>
-                
-                <div style="display: flex; justify-content: center; gap: 40px; margin-top: 40px;">
-                    <div><b id="user-tokens" style="font-size: 20px;">0</b><br><small style="color: var(--gold);">Tokens</small></div>
-                    <div onclick="GajanCore.ui.toggleModal('buyModal')"><b style="font-size: 20px;"><i class="fas fa-wallet"></i></b><br><small>Buy</small></div>
-                </div>
+    <div id="meScreen" class="screen">
+        <div style="text-align: center; padding: 60px 20px;">
+            <div onclick="adminGodTrigger()" class="p-gold-ring" style="width: 110px; height: 110px; margin: 0 auto; position: relative;">
+                <img id="myPhoto" src="https://via.placeholder.com/100">
+                <i class="fas fa-camera" onclick="galleryUploadPFP()" style="position: absolute; bottom: 5px; right: 5px; background: var(--neon); padding: 8px; border-radius: 50%; font-size: 12px;"></i>
             </div>
-            <div id="user-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;"></div>
+            <h2 id="myName" style="margin-top: 15px; font-size: 28px;">User</h2>
+            <p id="myEmail" style="color: gray; font-size: 13px;"></p>
+            
+            <div style="display:flex; justify-content:center; gap:30px; margin-top:35px;">
+                <div>🪙 <b id="myTokens">0</b><br><small>Tokens</small></div>
+                <button onclick="document.getElementById('buyBox').style.bottom='0'; fetchAdminQRs();" style="background:var(--gold); border:none; padding:12px 30px; border-radius:15px; font-weight:bold; color:#000;">BUY TOKENS</button>
+            </div>
         </div>
-
-        <nav class="navbar">
-            <div class="nav-link active" onclick="GajanCore.ui.switchScreen('feed', this)"><i class="fas fa-house"></i>Home</div>
-            <div class="nav-link" onclick="GajanCore.upload.start()"><i class="fas fa-square-plus" style="font-size: 32px; color: #fff;"></i></div>
-            <div class="nav-link" onclick="GajanCore.ui.switchScreen('profile', this)"><i class="fas fa-user-ninja"></i>Me</div>
-        </nav>
+        <div id="myGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;"></div>
     </div>
 
-    <div id="adminConsole">
-        <h1 style="color: var(--gold); margin-bottom: 30px;">MASTER CONSOLE</h1>
-        <div class="admin-card">
-            <h3>Token Distribution</h3>
-            <input type="text" id="target-mail" placeholder="Recipient Email">
-            <input type="number" id="target-amt" placeholder="Amount">
-            <button class="btn-admin" onclick="GajanCore.admin.sendTokens()">EXECUTE TRANSFER</button>
+    <div id="adminPanel">
+        <h2 style="color:var(--gold); text-align: center; margin-bottom: 30px;">GOD-MODE CONTROL</h2>
+        
+        <div class="admin-section">
+            <h4>Token Distribution (Stock: 10M)</h4>
+            <input type="text" id="targetE" placeholder="User Email">
+            <input type="number" id="targetA" placeholder="Amount">
+            <button onclick="distributeTokens()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; margin-top:15px;">SEND TOKENS</button>
         </div>
-        <div class="admin-card">
-            <h3>QR Management</h3>
-            <input type="file" onchange="GajanCore.admin.uploadQR(this)">
+
+        <div class="admin-section">
+            <h4>QR Manager (Gallery Upload)</h4>
+            <input type="file" accept="image/*" onchange="uploadQRFromGallery(this)">
+            <button onclick="deleteQRs()" style="width:100%; padding:10px; background:red; color:#fff; border:none; border-radius:8px; margin-top:10px;">DELETE ALL QRS</button>
         </div>
-        <div class="admin-card" id="admin-video-list"></div>
-        <button class="btn-admin" style="background: #333; color: #fff;" onclick="GajanCore.ui.hideAdmin()">EXIT CONSOLE</button>
+
+        <div class="admin-section" id="adminPostManager">
+            <h4>Manage Viral Feed (Delete)</h4>
+            </div>
+
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:10px;">EXIT CONTROL</button>
     </div>
 
-    <div id="buyModal" class="modal" style="position: fixed; bottom: -100%; width: 100%; background: #111; z-index: 6000; transition: 0.5s; padding: 30px; border-radius: 40px 40px 0 0; border-top: 1px solid var(--gold);">
-        <h2 style="text-align: center; margin-bottom: 20px;">Deposit Tokens</h2>
-        <div id="qr-container" style="display: flex; gap: 20px; overflow-x: auto; padding: 10px;"></div>
-        <button class="btn-admin" onclick="GajanCore.ui.toggleModal('buyModal')">CLOSE</button>
+    <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:80%; background:#111; z-index:6000; transition:0.5s; padding:25px; border-radius:40px 40px 0 0; border-top: 2px solid var(--gold);">
+        <h3 style="text-align: center;">Scan & Deposit</h3>
+        <div id="qrListArea" style="display:flex; gap:15px; overflow-x:auto; margin-top:25px; height:350px;"></div>
+        <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; padding:15px; background:var(--neon); color:#fff; border:none; border-radius:15px; font-weight:bold; margin-top:20px;">CLOSE</button>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="startViralUpload()"><i class="fas fa-plus-square" style="font-size:32px; color:#fff;"></i></div>
+        <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
     </div>
 
     <script>
-        // --- GAJAN CORE ENGINE (OBJECT-ORIENTED) ---
-        const GajanCore = {
-            config: {
-                firebase: {
-                    apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-                    authDomain: "tiktok-clone-gajan.firebaseapp.com",
-                    projectId: "tiktok-clone-gajan",
-                    storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-                    messagingSenderId: "838023307513",
-                    appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-                },
-                cloudinary: {
-                    url: "https://api.cloudinary.com/v1_1/dvfgzrxs7",
-                    preset: "ml_default"
-                }
-            },
-
-            init: function() {
-                firebase.initializeApp(this.config.firebase);
-                this.db = firebase.firestore();
-                this.auth_service = firebase.auth();
-                this.bindEvents();
-            },
-
-            bindEvents: function() {
-                this.auth_service.onAuthStateChanged(user => {
-                    if(user) {
-                        document.getElementById('authLayer').style.display = 'none';
-                        document.getElementById('appViewport').style.display = 'flex';
-                        this.user.sync(user);
-                        this.feed.load();
-                    } else {
-                        document.getElementById('authLayer').style.display = 'flex';
-                    }
-                });
-
-                // Admin Secret Trigger
-                let taps = 0;
-                document.getElementById('adminTrigger').addEventListener('touchstart', () => {
-                    taps++;
-                    if(taps >= 5) {
-                        let p = prompt("ACCESS KEY:");
-                        if(p === "Abdul6353738585@") GajanCore.admin.show();
-                        taps = 0;
-                    }
-                });
-            },
-
-            user: {
-                sync: async function(u) {
-                    const ref = GajanCore.db.collection('users').doc(u.uid);
-                    await ref.set({
-                        name: u.displayName,
-                        email: u.email,
-                        photo: u.photoURL,
-                        uid: u.uid
-                    }, {merge: true});
-
-                    ref.onSnapshot(doc => {
-                        const data = doc.data();
-                        document.getElementById('user-name').innerText = data.name;
-                        document.getElementById('user-email').innerText = data.email;
-                        document.getElementById('user-pfp').src = data.photo;
-                        document.getElementById('user-tokens').innerText = (data.tokens || 0).toLocaleString();
-                    });
-                }
-            },
-
-            feed: {
-                load: async function() {
-                    const cont = document.getElementById('mainFeed');
-                    const snap = await GajanCore.db.collection('posts').orderBy('timestamp', 'desc').get();
-                    cont.innerHTML = "";
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        cont.innerHTML += `
-                            <div class="v-item">
-                                <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
-                                <div class="sidebar-actions">
-                                    <div class="user-avatar"><img src="${d.author_photo}"></div>
-                                    <div class="action-unit"><i class="fas fa-heart"></i><span>${d.likes || 0}</span></div>
-                                    <div class="action-unit" onclick="alert('User: ${d.author_email}')"><i class="fas fa-gift"></i></div>
-                                </div>
-                                <div style="position: absolute; bottom: 100px; left: 20px; text-shadow: 0 2px 8px #000;">
-                                    <h3 style="font-size: 20px;">@${d.author_name}</h3>
-                                    <p style="font-size: 12px; opacity: 0.6;">${d.author_email}</p>
-                                </div>
-                            </div>`;
-                    });
-
-                    // Intersection Observer for AutoPlay
-                    const obs = new IntersectionObserver(ents => {
-                        ents.forEach(e => {
-                            if(e.isIntersecting) e.target.play();
-                            else e.target.pause();
-                        });
-                    }, {threshold: 0.8});
-                    document.querySelectorAll('video').forEach(v => obs.observe(v));
-                }
-            },
-
-            upload: {
-                start: function() {
-                    let i = document.createElement('input'); i.type = 'file'; i.accept = 'video/*';
-                    i.onchange = async (e) => {
-                        const file = e.target.files[0];
-                        alert("PREMIERE UPLOAD: Initializing Cloud Bridge...");
-                        const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', GajanCore.config.cloudinary.preset);
-                        
-                        const res = await fetch(`${GajanCore.config.cloudinary.url}/video/upload`, {method: 'POST', body: fd});
-                        const data = await res.json();
-
-                        const u = GajanCore.auth_service.currentUser;
-                        await GajanCore.db.collection('posts').add({
-                            url: data.secure_url,
-                            author_uid: u.uid,
-                            author_name: u.displayName,
-                            author_photo: u.photoURL,
-                            author_email: u.email,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            likes: 0
-                        });
-                        alert("LIVE: Content Sync Complete.");
-                        GajanCore.feed.load();
-                    };
-                    i.click();
-                }
-            },
-
-            admin: {
-                show: function() {
-                    document.getElementById('adminConsole').style.display = 'block';
-                    this.loadPosts();
-                },
-                loadPosts: async function() {
-                    const cont = document.getElementById('admin-video-list');
-                    const snap = await GajanCore.db.collection('posts').get();
-                    cont.innerHTML = "<h4>Active Content Feed</h4>";
-                    snap.forEach(doc => {
-                        cont.innerHTML += `
-                            <div style="display:flex; justify-content:space-between; background:#222; padding:12px; border-radius:12px; margin-top:8px;">
-                                <span>@${doc.data().author_name}</span>
-                                <button onclick="GajanCore.admin.deletePost('${doc.id}')" style="color:red; background:none; border:none;">DELETE</button>
-                            </div>`;
-                    });
-                },
-                deletePost: async function(id) {
-                    if(confirm("Confirm Destruction?")) {
-                        await GajanCore.db.collection('posts').doc(id).delete();
-                        this.loadPosts();
-                    }
-                },
-                sendTokens: async function() {
-                    const mail = document.getElementById('target-mail').value;
-                    const amt = parseInt(document.getElementById('target-amt').value);
-                    const snap = await GajanCore.db.collection('users').where('email', '==', mail).get();
-                    if(snap.empty) return alert("System Error: Recipient Not Found.");
-                    
-                    await GajanCore.db.collection('users').doc(snap.docs[0].id).update({
-                        tokens: firebase.firestore.FieldValue.increment(amt)
-                    });
-                    alert(`CREDIT: ${amt} Tokens assigned to ${mail}`);
-                },
-                uploadQR: async function(input) {
-                    const file = input.files[0];
-                    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', GajanCore.config.cloudinary.preset);
-                    const res = await fetch(`${GajanCore.config.cloudinary.url}/image/upload`, {method: 'POST', body: fd});
-                    const data = await res.json();
-                    
-                    const ref = GajanCore.db.collection('admin_config').doc('qrs');
-                    const doc = await ref.get();
-                    let urls = doc.exists ? doc.data().urls : [];
-                    urls.push(data.secure_url);
-                    await ref.set({ urls: urls });
-                    alert("QR SYSTEM: Matrix Updated.");
-                }
-            },
-
-            ui: {
-                switchScreen: function(id, btn) {
-                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                    document.getElementById(`screen-${id}`).classList.add('active');
-                    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-                    btn.classList.add('active');
-                },
-                toggleModal: async function(id) {
-                    const m = document.getElementById(id);
-                    if(m.style.bottom === '0px') m.style.bottom = '-100%';
-                    else {
-                        m.style.bottom = '0px';
-                        if(id === 'buyModal') {
-                            const disp = document.getElementById('qr-container');
-                            const snap = await GajanCore.db.collection('admin_config').doc('qrs').get();
-                            disp.innerHTML = "";
-                            if(snap.exists) snap.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:350px; border-radius:20px; border:2px solid #333;">`);
-                        }
-                    }
-                },
-                hideAdmin: function() { document.getElementById('adminConsole').style.display = 'none'; }
-            }
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        GajanCore.init();
+        // --- AUTH & SYNC ---
+        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+
+        auth.onAuthStateChanged(async u => {
+            if(u) {
+                document.getElementById('authScreen').style.display='none';
+                const ref = db.collection('users').doc(u.uid);
+                const doc = await ref.get();
+                if(!doc.exists) await ref.set({ name: u.displayName, email: u.email, photo: u.photoURL, tokens: 0 });
+                ref.onSnapshot(s => {
+                    const data = s.data();
+                    document.getElementById('myName').innerText = data.name;
+                    document.getElementById('myEmail').innerText = data.email;
+                    document.getElementById('myPhoto').src = data.photo;
+                    document.getElementById('myTokens').innerText = (data.tokens || 0).toLocaleString();
+                });
+                loadFeed();
+            } else { document.getElementById('authScreen').style.display='flex'; }
+        });
+
+        // --- GALLERY UPLOADS ---
+        async function galleryUploadPFP() {
+            let i = document.createElement('input'); i.type='file'; i.accept='image/*';
+            i.onchange = async (e) => {
+                const f = e.target.files[0];
+                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
+                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
+                const d = await res.json();
+                await db.collection('users').doc(auth.currentUser.uid).update({ photo: d.secure_url });
+                alert("Profile Photo Updated!");
+            }; i.click();
+        }
+
+        async function uploadQRFromGallery(input) {
+            const f = input.files[0];
+            const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
+            const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
+            const d = await res.json();
+            const ref = db.collection('admin_config').doc('qrs');
+            const doc = await ref.get();
+            let urls = doc.exists ? doc.data().urls : [];
+            urls.push(d.secure_url);
+            await ref.set({ urls: urls });
+            alert("System QR Updated!");
+        }
+
+        // --- FEED & VIDEO SYSTEM ---
+        async function startViralUpload() {
+            let i = document.createElement('input'); i.type='file'; i.accept='video/*';
+            i.onchange = async (e) => {
+                const f = e.target.files[0]; alert("CONGRATULATIONS! Uploading started...");
+                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
+                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {method:'POST', body:fd});
+                const d = await res.json();
+                const u = auth.currentUser;
+                await db.collection('posts').add({
+                    url: d.secure_url, uid: u.uid, uName: u.displayName, uPic: u.photoURL, uEmail: u.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), likes: 0
+                });
+                alert("Live!"); loadFeed();
+            }; i.click();
+        }
+
+        async function loadFeed() {
+            const cont = document.getElementById('feedScroll');
+            const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
+            cont.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                cont.innerHTML += `
+                    <div class="v-post">
+                        <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
+                        <div class="sidebar">
+                            <div class="p-gold-ring"><img src="${d.uPic}"></div>
+                            <div class="action-icon"><i class="fas fa-heart"></i><span>${d.likes}</span></div>
+                            <div class="action-icon" onclick="alert('Gmail: ${d.uEmail}')"><i class="fas fa-gift" style="color:var(--gold)"></i><span>Gift</span></div>
+                            <div class="action-icon"><i class="fas fa-share"></i><span>Share</span></div>
+                        </div>
+                        <div style="position:absolute; bottom:95px; left:15px; text-shadow:2px 2px 10px #000;">
+                            <h3 style="font-size:22px;">@${d.uName}</h3>
+                            <p style="font-size:11px; opacity:0.6;">${d.uEmail}</p>
+                        </div>
+                    </div>`;
+            });
+            const obs = new IntersectionObserver(ents => ents.forEach(e => e.isIntersecting ? e.target.play() : e.target.pause()), {threshold: 0.8});
+            document.querySelectorAll('video').forEach(v => obs.observe(v));
+        }
+
+        // --- MASTER ADMIN LOGIC ---
+        let taps = 0;
+        function adminGodTrigger() {
+            taps++; if(taps >= 5) {
+                let p = prompt("MASTER ACCESS KEY:");
+                if(p === "Abdul6353738585@") {
+                    document.getElementById('adminPanel').style.display='block';
+                    loadAdminPosts();
+                }
+                taps = 0;
+            }
+        }
+
+        async function loadAdminPosts() {
+            const list = document.getElementById('adminPostManager');
+            const snap = await db.collection('posts').get();
+            list.innerHTML = "<h4>Manage Viral Feed</h4>";
+            snap.forEach(doc => {
+                list.innerHTML += `<div class="admin-post-item">
+                    <span>@${doc.data().uName}</span>
+                    <button onclick="adminDeleteV('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button>
+                </div>`;
+            });
+        }
+
+        async function adminDeleteV(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminPosts(); } }
+        async function deleteQRs() { if(confirm("Delete All QRs?")) { await db.collection('admin_config').doc('qrs').set({urls:[]}); alert("Deleted!"); } }
+
+        function showScreen(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(id).classList.add('active-screen');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function fetchAdminQRs() {
+            const disp = document.getElementById('qrListArea');
+            const snap = await db.collection('admin_config').doc('qrs').get();
+            disp.innerHTML = "";
+            if(snap.exists) snap.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:100%; border-radius:20px;">`);
+        }
     </script>
 </body>
 </html>
