@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Supreme 2027 Engine</title>
+    <title>Gajan | The Absolute DNA Clone</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
@@ -11,267 +11,277 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --gold: #ffd700; --cyan: #25f4ee; --bg: #000; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-        body { background: #000; color: #fff; overflow: hidden; }
+        :root { --accent: #fe2c55; --gold: #ffd700; --blue: #25f4ee; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background:#000; color:#fff; overflow:hidden; }
 
-        /* --- 1. LOGIN WITH GAJAN STYLES BACKGROUND --- */
-        #authScreen { 
-            position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
-            background: #000; overflow: hidden;
-        }
-        .gajan-bg-text {
-            position: absolute; font-size: 12vw; font-weight: 900; line-height: 1;
-            color: rgba(255,255,255,0.02); text-transform: uppercase; pointer-events: none;
-            user-select: none; white-space: nowrap; animation: moveText 20s linear infinite;
-        }
-        @keyframes moveText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-        
-        .login-card { 
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 40px; 
-            border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; 
-            z-index: 10; box-shadow: 0 0 50px rgba(254,44,85,0.2);
-        }
+        /* --- SCREEN ARCHITECTURE --- */
+        .screen { position:fixed; inset:0; background:#000; display:none; flex-direction:column; z-index:1000; }
+        .active-screen { display:flex; }
+        .overlay-p { position:fixed; inset:0; background:#000; z-index:4000; transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
 
-        /* --- 2. FEED LAYOUT (ORIGINAL TIKTOK) --- */
-        .screen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; z-index: 1000; }
-        .active-screen { display: flex; }
-        #feedScroll { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .v-post { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        /* Feed Engine */
+        #mainFeed { height:100vh; overflow-y:scroll; scroll-snap-type: y mandatory; scrollbar-width:none; }
+        .v-container { position:relative; height:100vh; width:100vw; scroll-snap-align:start; }
+        video { width:100%; height:100%; object-fit:cover; }
 
-        /* Right Side Buttons */
-        .sidebar { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 100; }
-        .p-gold-ring { width: 55px; height: 55px; border-radius: 50%; border: 2.5px solid var(--gold); padding: 2px; background: #000; }
-        .p-gold-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .action-icon { font-size: 32px; text-align: center; text-shadow: 0 2px 10px #000; cursor: pointer; }
-        .action-icon span { font-size: 12px; display: block; font-weight: bold; margin-top: 4px; }
+        /* DNA Side Actions */
+        .sidebar { position:absolute; right:12px; bottom:130px; display:flex; flex-direction:column; gap:25px; align-items:center; }
+        .p-wrap { position:relative; width:55px; height:55px; }
+        .p-ring { width:100%; height:100%; border-radius:50%; border:2px solid #fff; padding:2px; background:#000; cursor:pointer; }
+        .p-ring img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+        .follow-plus { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #000; }
 
-        /* --- 3. MASTER ADMIN PANEL --- */
-        #adminPanel { position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 25px; overflow-y: auto; border: 2px solid var(--gold); }
-        .admin-section { background: #111; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #333; }
-        input { width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; border: none; background: #222; color: #fff; }
-        .admin-post-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a1a1a; margin-top: 8px; border-radius: 10px; }
+        /* Profile Header DNA */
+        .header-dna { text-align:center; padding:50px 20px; }
+        .m-avatar { width:110px; height:110px; border-radius:50%; border:4px solid var(--gold); margin:0 auto 15px; position:relative; }
+        .m-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+        .stats-bar { display:flex; justify-content:center; gap:30px; margin:20px 0; }
+        .stats-bar div { text-align:center; }
+        .stats-bar b { display:block; font-size:18px; }
+        .btn-follow { background:var(--accent); color:#fff; padding:10px 40px; border:none; border-radius:5px; font-weight:bold; }
+        .btn-following { background:#333; color:#fff; }
 
-        /* Bottom Nav */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
-        .nav-item { color: #555; text-align: center; font-size: 11px; cursor: pointer; }
-        .nav-item.active { color: #fff; }
-        .nav-item i { font-size: 26px; margin-bottom: 4px; display: block; }
+        /* Nav Bar */
+        .navbar { position:fixed; bottom:0; width:100%; height:75px; background:rgba(0,0,0,0.95); display:flex; justify-content:space-around; align-items:center; z-index:5000; border-top:1px solid #222; }
+        .n-link { color:#666; font-size:10px; text-align:center; }
+        .n-link.active { color:#fff; }
+        .n-link i { font-size:24px; margin-bottom:4px; display:block; }
     </style>
 </head>
 <body>
 
-    <div id="authScreen">
-        <div class="gajan-bg-text" style="top: 10%;">GAJAN GAJAN GAJAN</div>
-        <div class="gajan-bg-text" style="top: 40%; animation-delay: -5s; color: rgba(37, 244, 238, 0.02);">GAJAN GAJAN GAJAN</div>
-        <div class="gajan-bg-text" style="top: 70%; animation-delay: -10s;">GAJAN GAJAN GAJAN</div>
-        
-        <div class="login-card">
-            <h1 style="color:var(--neon); font-size: 55px; font-weight: 900; letter-spacing: 5px;">GAJAN</h1>
-            <p style="color: gray; font-size: 12px; margin-bottom: 30px;">Original TikTok Clone 2027</p>
-            <button onclick="googleLogin()" style="width: 100%; padding: 18px; border-radius: 50px; border: none; background: #fff; font-weight: 900; cursor: pointer;">START SYSTEM</button>
+    <div id="authScreen" style="position:fixed; inset:0; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; text-align:center;">
+        <div>
+            <h1 style="color:var(--accent); font-size:60px; letter-spacing:5px; font-weight:900;">GAJAN</h1>
+            <button onclick="DNA.auth()" style="background:#fff; padding:15px 40px; border-radius:50px; font-weight:900; margin-top:30px; border:none;">LOGIN DNA</button>
         </div>
     </div>
 
-    <div id="feedScreen" class="screen active-screen">
-        <div id="feedScroll"></div>
+    <div id="v-home" class="screen active-screen">
+        <div id="mainFeed"></div>
     </div>
 
-    <div id="meScreen" class="screen">
-        <div style="text-align: center; padding: 60px 20px;">
-            <div onclick="adminGodTrigger()" class="p-gold-ring" style="width: 110px; height: 110px; margin: 0 auto; position: relative;">
-                <img id="myPhoto" src="https://via.placeholder.com/100">
-                <i class="fas fa-camera" onclick="galleryUploadPFP()" style="position: absolute; bottom: 5px; right: 5px; background: var(--neon); padding: 8px; border-radius: 50%; font-size: 12px;"></i>
+    <div id="v-me" class="screen">
+        <div class="header-dna">
+            <div class="m-avatar" onclick="DNA.admin.check()">
+                <img id="my-pfp" src="">
+                <i class="fas fa-camera" onclick="DNA.gallery.upPic()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); padding:8px; border-radius:50%; font-size:12px;"></i>
             </div>
-            <h2 id="myName" style="margin-top: 15px; font-size: 28px;">User</h2>
-            <p id="myEmail" style="color: gray; font-size: 13px;"></p>
-            
-            <div style="display:flex; justify-content:center; gap:30px; margin-top:35px;">
-                <div>🪙 <b id="myTokens">0</b><br><small>Tokens</small></div>
-                <button onclick="document.getElementById('buyBox').style.bottom='0'; fetchAdminQRs();" style="background:var(--gold); border:none; padding:12px 30px; border-radius:15px; font-weight:bold; color:#000;">BUY TOKENS</button>
+            <h2 id="my-name">-</h2>
+            <div class="stats-bar">
+                <div><b id="my-following">0</b><small>Following</small></div>
+                <div><b id="my-followers">0</b><small>Followers</small></div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button onclick="DNA.ui.modal('buyBox')" style="background:var(--gold); border:none; padding:10px 25px; border-radius:8px; font-weight:bold; color:#000;">WALLET</button>
             </div>
         </div>
-        <div id="myGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;"></div>
+        <div id="my-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px;"></div>
     </div>
 
-    <div id="adminPanel">
-        <h2 style="color:var(--gold); text-align: center; margin-bottom: 30px;">GOD-MODE CONTROL</h2>
-        
-        <div class="admin-section">
-            <h4>Token Distribution (Stock: 10M)</h4>
-            <input type="text" id="targetE" placeholder="User Email">
-            <input type="number" id="targetA" placeholder="Amount">
-            <button onclick="distributeTokens()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; margin-top:15px;">SEND TOKENS</button>
+    <div id="v-profile" class="overlay-p">
+        <div style="padding:20px;"><i class="fas fa-arrow-left" onclick="DNA.ui.hideP()" style="font-size:24px;"></i></div>
+        <div class="header-dna">
+            <div class="m-avatar"><img id="v-pfp" src=""></div>
+            <h2 id="v-user">-</h2>
+            <p id="v-gmail" style="color:gray; font-size:12px; margin-bottom:15px;"></p>
+            <button id="follow-btn" class="btn-follow" onclick="DNA.social.toggleFollow()">FOLLOW</button>
         </div>
+        <div id="v-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px;"></div>
+    </div>
 
-        <div class="admin-section">
-            <h4>QR Manager (Gallery Upload)</h4>
-            <input type="file" accept="image/*" onchange="uploadQRFromGallery(this)">
-            <button onclick="deleteQRs()" style="width:100%; padding:10px; background:red; color:#fff; border:none; border-radius:8px; margin-top:10px;">DELETE ALL QRS</button>
+    <div id="adminPanel" style="position:fixed; inset:0; background:#050505; z-index:9000; display:none; padding:30px; overflow-y:auto;">
+        <h2 style="color:var(--gold); text-align:center;">GOD-MODE DNA</h2>
+        <div style="background:#111; padding:20px; border-radius:20px; margin-top:20px;">
+            <h4>Send Stock Tokens</h4>
+            <input type="text" id="adm-mail" placeholder="Gmail" style="width:100%; padding:15px; margin-top:10px; background:#222; color:#fff; border:none; border-radius:10px;">
+            <input type="number" id="adm-amt" placeholder="Amount" style="width:100%; padding:15px; margin-top:10px; background:#222; color:#fff; border:none; border-radius:10px;">
+            <button onclick="DNA.admin.send()" style="width:100%; padding:15px; background:var(--gold); color:#000; font-weight:bold; margin-top:15px; border-radius:10px; border:none;">TRANSFER</button>
         </div>
-
-        <div class="admin-section" id="adminPostManager">
-            <h4>Manage Viral Feed (Delete)</h4>
-            </div>
-
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none; border-radius:10px;">EXIT CONTROL</button>
+        <div id="adm-videos" style="margin-top:20px;"></div>
+        <button onclick="DNA.ui.hideAdmin()" style="width:100%; padding:15px; background:#333; color:#fff; border:none; margin-top:20px; border-radius:10px;">EXIT</button>
     </div>
 
-    <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:80%; background:#111; z-index:6000; transition:0.5s; padding:25px; border-radius:40px 40px 0 0; border-top: 2px solid var(--gold);">
-        <h3 style="text-align: center;">Scan & Deposit</h3>
-        <div id="qrListArea" style="display:flex; gap:15px; overflow-x:auto; margin-top:25px; height:350px;"></div>
-        <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; padding:15px; background:var(--neon); color:#fff; border:none; border-radius:15px; font-weight:bold; margin-top:20px;">CLOSE</button>
+    <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; background:#111; z-index:7000; transition:0.5s; padding:30px; border-radius:40px 40px 0 0; border-top:2px solid var(--gold);">
+        <h3>Deposit QR Gallery</h3>
+        <div id="qrList" style="display:flex; gap:15px; overflow-x:auto; margin:20px 0;"></div>
+        <button onclick="DNA.ui.modal('buyBox')" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:10px; font-weight:bold; color:#fff;">CLOSE</button>
     </div>
 
-    <div class="nav">
-        <div class="nav-item active" onclick="showScreen('feedScreen', this)"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="startViralUpload()"><i class="fas fa-plus-square" style="font-size:32px; color:#fff;"></i></div>
-        <div class="nav-item" onclick="showScreen('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
-    </div>
+    <nav class="navbar">
+        <div class="n-link active" onclick="DNA.ui.screen('home', this)"><i class="fas fa-home"></i>Home</div>
+        <div class="n-link" onclick="DNA.gallery.upVideo()"><i class="fas fa-plus-square" style="font-size:32px; color:#fff;"></i></div>
+        <div class="n-link" onclick="DNA.ui.screen('me', this)"><i class="fas fa-user-circle"></i>Me</div>
+    </nav>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        const DNA = {
+            fb_cfg: {
+                apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+                authDomain: "tiktok-clone-gajan.firebaseapp.com",
+                projectId: "tiktok-clone-gajan",
+                storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+                messagingSenderId: "838023307513",
+                appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+            },
+            cloud: "https://api.cloudinary.com/v1_1/dvfgzrxs7/upload",
 
-        // --- AUTH & SYNC ---
-        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+            init() {
+                firebase.initializeApp(this.fb_cfg);
+                this.db = firebase.firestore();
+                this.auth_sys = firebase.auth();
+                this.watch();
+            },
 
-        auth.onAuthStateChanged(async u => {
-            if(u) {
-                document.getElementById('authScreen').style.display='none';
-                const ref = db.collection('users').doc(u.uid);
-                const doc = await ref.get();
-                if(!doc.exists) await ref.set({ name: u.displayName, email: u.email, photo: u.photoURL, tokens: 0 });
-                ref.onSnapshot(s => {
-                    const data = s.data();
-                    document.getElementById('myName').innerText = data.name;
-                    document.getElementById('myEmail').innerText = data.email;
-                    document.getElementById('myPhoto').src = data.photo;
-                    document.getElementById('myTokens').innerText = (data.tokens || 0).toLocaleString();
+            watch() {
+                this.auth_sys.onAuthStateChanged(async u => {
+                    if(u) {
+                        document.getElementById('authScreen').style.display='none';
+                        const ref = this.db.collection('users').doc(u.uid);
+                        const doc = await ref.get();
+                        if(!doc.exists) await ref.set({ name: u.displayName, email: u.email, photo: u.photoURL, following: 0, followers: 0 });
+                        ref.onSnapshot(s => {
+                            const d = s.data();
+                            document.getElementById('my-name').innerText = d.name;
+                            document.getElementById('my-pfp').src = d.photo;
+                            document.getElementById('my-followers').innerText = d.followers || 0;
+                            document.getElementById('my-following').innerText = d.following || 0;
+                        });
+                        this.feed();
+                    }
                 });
-                loadFeed();
-            } else { document.getElementById('authScreen').style.display='flex'; }
-        });
+            },
 
-        // --- GALLERY UPLOADS ---
-        async function galleryUploadPFP() {
-            let i = document.createElement('input'); i.type='file'; i.accept='image/*';
-            i.onchange = async (e) => {
-                const f = e.target.files[0];
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
-                const d = await res.json();
-                await db.collection('users').doc(auth.currentUser.uid).update({ photo: d.secure_url });
-                alert("Profile Photo Updated!");
-            }; i.click();
-        }
-
-        async function uploadQRFromGallery(input) {
-            const f = input.files[0];
-            const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-            const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", {method:'POST', body:fd});
-            const d = await res.json();
-            const ref = db.collection('admin_config').doc('qrs');
-            const doc = await ref.get();
-            let urls = doc.exists ? doc.data().urls : [];
-            urls.push(d.secure_url);
-            await ref.set({ urls: urls });
-            alert("System QR Updated!");
-        }
-
-        // --- FEED & VIDEO SYSTEM ---
-        async function startViralUpload() {
-            let i = document.createElement('input'); i.type='file'; i.accept='video/*';
-            i.onchange = async (e) => {
-                const f = e.target.files[0]; alert("CONGRATULATIONS! Uploading started...");
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {method:'POST', body:fd});
-                const d = await res.json();
-                const u = auth.currentUser;
-                await db.collection('posts').add({
-                    url: d.secure_url, uid: u.uid, uName: u.displayName, uPic: u.photoURL, uEmail: u.email,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), likes: 0
+            async feed() {
+                const cont = document.getElementById('mainFeed');
+                const snap = await this.db.collection('posts').orderBy('timestamp', 'desc').get();
+                cont.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    cont.innerHTML += `
+                        <div class="v-container">
+                            <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
+                            <div class="sidebar">
+                                <div class="p-wrap" onclick="DNA.ui.showP('${d.uid}')">
+                                    <div class="p-ring"><img src="${d.uPic}"></div>
+                                    <div class="follow-plus"><i class="fas fa-plus"></i></div>
+                                </div>
+                                <div style="text-align:center;"><i class="fas fa-heart" style="font-size:35px;"></i><br><small>${d.likes}</small></div>
+                                <div onclick="alert('User: ${d.uMail}')"><i class="fas fa-gift" style="color:var(--gold); font-size:30px;"></i></div>
+                            </div>
+                            <div style="position:absolute; bottom:100px; left:20px; text-shadow:0 2px 10px #000;">
+                                <h3 style="font-size:22px;">@${d.uName}</h3>
+                                <p style="font-size:12px; color:rgba(255,255,255,0.6);">${d.uMail}</p>
+                            </div>
+                        </div>`;
                 });
-                alert("Live!"); loadFeed();
-            }; i.click();
-        }
+                const obs = new IntersectionObserver(ents => ents.forEach(e => e.isIntersecting ? e.target.play() : e.target.pause()), {threshold: 0.8});
+                document.querySelectorAll('video').forEach(v => obs.observe(v));
+            },
 
-        async function loadFeed() {
-            const cont = document.getElementById('feedScroll');
-            const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
-            cont.innerHTML = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                cont.innerHTML += `
-                    <div class="v-post">
-                        <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
-                        <div class="sidebar">
-                            <div class="p-gold-ring"><img src="${d.uPic}"></div>
-                            <div class="action-icon"><i class="fas fa-heart"></i><span>${d.likes}</span></div>
-                            <div class="action-icon" onclick="alert('Gmail: ${d.uEmail}')"><i class="fas fa-gift" style="color:var(--gold)"></i><span>Gift</span></div>
-                            <div class="action-icon"><i class="fas fa-share"></i><span>Share</span></div>
-                        </div>
-                        <div style="position:absolute; bottom:95px; left:15px; text-shadow:2px 2px 10px #000;">
-                            <h3 style="font-size:22px;">@${d.uName}</h3>
-                            <p style="font-size:11px; opacity:0.6;">${d.uEmail}</p>
-                        </div>
-                    </div>`;
-            });
-            const obs = new IntersectionObserver(ents => ents.forEach(e => e.isIntersecting ? e.target.play() : e.target.pause()), {threshold: 0.8});
-            document.querySelectorAll('video').forEach(v => obs.observe(v));
-        }
+            social: {
+                target_id: '',
+                async toggleFollow() {
+                    const my_id = DNA.auth_sys.currentUser.uid;
+                    const target_id = this.target_id;
+                    const followRef = DNA.db.collection('users').doc(my_id).collection('following').doc(target_id);
+                    const doc = await followRef.get();
+                    const btn = document.getElementById('follow-btn');
 
-        // --- MASTER ADMIN LOGIC ---
-        let taps = 0;
-        function adminGodTrigger() {
-            taps++; if(taps >= 5) {
-                let p = prompt("MASTER ACCESS KEY:");
-                if(p === "Abdul6353738585@") {
-                    document.getElementById('adminPanel').style.display='block';
-                    loadAdminPosts();
+                    if(doc.exists) {
+                        await followRef.delete();
+                        await DNA.db.collection('users').doc(target_id).collection('followers').doc(my_id).delete();
+                        await DNA.db.collection('users').doc(my_id).update({ following: firebase.firestore.FieldValue.increment(-1) });
+                        await DNA.db.collection('users').doc(target_id).update({ followers: firebase.firestore.FieldValue.increment(-1) });
+                        btn.innerText = "FOLLOW"; btn.classList.remove('btn-following');
+                    } else {
+                        await followRef.set({ active: true });
+                        await DNA.db.collection('users').doc(target_id).collection('followers').doc(my_id).set({ active: true });
+                        await DNA.db.collection('users').doc(my_id).update({ following: firebase.firestore.FieldValue.increment(1) });
+                        await DNA.db.collection('users').doc(target_id).update({ followers: firebase.firestore.FieldValue.increment(1) });
+                        btn.innerText = "FOLLOWING"; btn.classList.add('btn-following');
+                    }
                 }
-                taps = 0;
-            }
-        }
+            },
 
-        async function loadAdminPosts() {
-            const list = document.getElementById('adminPostManager');
-            const snap = await db.collection('posts').get();
-            list.innerHTML = "<h4>Manage Viral Feed</h4>";
-            snap.forEach(doc => {
-                list.innerHTML += `<div class="admin-post-item">
-                    <span>@${doc.data().uName}</span>
-                    <button onclick="adminDeleteV('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px;">Delete</button>
-                </div>`;
-            });
-        }
+            gallery: {
+                async upPic() {
+                    let i = document.createElement('input'); i.type='file'; i.accept='image/*';
+                    i.onchange = async (e) => {
+                        const fd = new FormData(); fd.append('file', e.target.files[0]); fd.append('upload_preset', 'ml_default');
+                        const res = await fetch(DNA.cloud, {method:'POST', body:fd});
+                        const d = await res.json();
+                        await DNA.db.collection('users').doc(DNA.auth_sys.currentUser.uid).update({ photo: d.secure_url });
+                        alert("DNA PFP Updated!");
+                    }; i.click();
+                },
+                async upVideo() {
+                    let i = document.createElement('input'); i.type='file'; i.accept='video/*';
+                    i.onchange = async (e) => {
+                        alert("GAJAN DNA: Encoding Video...");
+                        const fd = new FormData(); fd.append('file', e.target.files[0]); fd.append('upload_preset', 'ml_default');
+                        const res = await fetch(DNA.cloud, {method:'POST', body:fd});
+                        const d = await res.json();
+                        const u = (await DNA.db.collection('users').doc(DNA.auth_sys.currentUser.uid).get()).data();
+                        await DNA.db.collection('posts').add({
+                            url: d.secure_url, uid: DNA.auth_sys.currentUser.uid, uName: u.name, uPic: u.photo, uMail: u.email,
+                            likes: 0, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        alert("Live!"); DNA.feed();
+                    }; i.click();
+                }
+            },
 
-        async function adminDeleteV(id) { if(confirm("Delete Video?")) { await db.collection('posts').doc(id).delete(); loadAdminPosts(); } }
-        async function deleteQRs() { if(confirm("Delete All QRs?")) { await db.collection('admin_config').doc('qrs').set({urls:[]}); alert("Deleted!"); } }
+            admin: {
+                t: 0, check() { this.t++; if(this.t>=5){ let p=prompt("KEY:"); if(p==="Abdul6353738585@") DNA.ui.showAdmin(); this.t=0; } },
+                async send() {
+                    const m = document.getElementById('adm-mail').value;
+                    const a = parseInt(document.getElementById('adm-amt').value);
+                    const s = await DNA.db.collection('users').where('email', '==', m).get();
+                    if(s.empty) return alert("System Fail: User Not Found");
+                    await DNA.db.collection('users').doc(s.docs[0].id).update({ tokens: firebase.firestore.FieldValue.increment(a) });
+                    alert("DNA Credits Assigned!");
+                }
+            },
 
-        function showScreen(id, btn) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(id).classList.add('active-screen');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            btn.classList.add('active');
-        }
+            ui: {
+                screen(id, btn) {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+                    document.getElementById(`v-${id}`).classList.add('active-screen');
+                    document.querySelectorAll('.n-link').forEach(n => n.classList.remove('active'));
+                    btn.classList.add('active');
+                },
+                async showP(uid) {
+                    DNA.social.target_id = uid;
+                    const uDoc = await DNA.db.collection('users').doc(uid).get();
+                    const d = uDoc.data();
+                    document.getElementById('v-user').innerText = d.name;
+                    document.getElementById('v-pfp').src = d.photo;
+                    document.getElementById('v-gmail').innerText = d.email;
+                    
+                    const btn = document.getElementById('follow-btn');
+                    const isF = await DNA.db.collection('users').doc(DNA.auth_sys.currentUser.uid).collection('following').doc(uid).get();
+                    if(isF.exists) { btn.innerText="FOLLOWING"; btn.classList.add('btn-following'); } 
+                    else { btn.innerText="FOLLOW"; btn.classList.remove('btn-following'); }
 
-        async function fetchAdminQRs() {
-            const disp = document.getElementById('qrListArea');
-            const snap = await db.collection('admin_config').doc('qrs').get();
-            disp.innerHTML = "";
-            if(snap.exists) snap.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:100%; border-radius:20px;">`);
-        }
+                    const g = document.getElementById('v-grid'); g.innerHTML = "";
+                    const posts = await DNA.db.collection('posts').where('uid', '==', uid).get();
+                    posts.forEach(p => g.innerHTML += `<div class="grid-item"><video src="${p.data().url}"></video></div>`);
+
+                    const vP = document.getElementById('v-profile');
+                    vP.style.display = 'block'; setTimeout(() => vP.style.transform = 'translateX(0)', 10);
+                },
+                hideP() { const p=document.getElementById('v-profile'); p.style.transform='translateX(100%)'; setTimeout(()=>p.style.display='none',300); },
+                showAdmin() { document.getElementById('adminPanel').style.display='block'; },
+                hideAdmin() { document.getElementById('adminPanel').style.display='none'; },
+                modal(id) { const m=document.getElementById(id); m.style.bottom = m.style.bottom==='0px'?'-100%':'0px'; }
+            },
+
+            auth() { this.auth_sys.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        };
+
+        DNA.init();
     </script>
 </body>
 </html>
