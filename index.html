@@ -3,193 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Original System</title>
+    <title>Gajan | Premiere Social System</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --neon: #fe2c55; --gold: #ffd700; --bg: #000; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: sans-serif; }
-        body { background: #000; color: #fff; overflow: hidden; }
+        :root {
+            --accent: #fe2c55;
+            --gold: #ffd700;
+            --surface: #121212;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
 
-        /* Screens */
-        .screen { position:fixed; inset:0; background:#000; display:none; flex-direction:column; z-index:1000; padding-bottom:70px; }
-        .active-screen { display:flex; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        body { background: #000; color: #fff; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
 
-        /* Feed */
-        #feedScroll { height:100vh; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; }
-        .v-post { position:relative; height:100vh; width:100vw; scroll-snap-align:start; }
-        video { width:100%; height:100%; object-fit:cover; }
+        /* --- AUTHENTICATION LAYER --- */
+        #authLayer {
+            position: fixed; inset: 0; background: radial-gradient(circle at top right, #1a1a1a, #000);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .brand-logo { 
+            font-size: 70px; font-weight: 900; letter-spacing: -2px; 
+            background: linear-gradient(to bottom, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 40px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
+        }
+        .auth-card {
+            background: var(--glass); backdrop-filter: blur(20px); padding: 40px;
+            border-radius: 32px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px; text-align: center;
+        }
+        .btn-auth {
+            background: #fff; color: #000; padding: 18px; border-radius: 16px; border: none;
+            width: 100%; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
+        }
 
-        /* Sidebar */
-        .sidebar { position:absolute; right:12px; bottom:120px; display:flex; flex-direction:column; gap:20px; align-items:center; }
-        .p-ring { width:50px; height:50px; border-radius:50%; border:2px solid var(--gold); padding:2px; }
-        .p-ring img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+        /* --- APP STRUCTURE --- */
+        .viewport { position: fixed; inset: 0; display: none; flex-direction: column; }
+        .screen { flex: 1; display: none; overflow-y: auto; padding-bottom: 90px; }
+        .screen.active { display: block; }
 
-        /* Admin Dashboard */
-        #adminPanel { position:fixed; inset:0; background:#0a0a0a; z-index:10000; display:none; padding:20px; overflow-y:auto; border:3px solid var(--gold); }
-        .admin-card { background:#111; padding:15px; border-radius:15px; margin-bottom:15px; border:1px solid #333; }
-        input { width:100%; padding:12px; margin-top:10px; background:#222; color:#fff; border:none; border-radius:8px; }
+        /* Video Feed (Ultra Smooth) */
+        .feed-engine { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .feed-engine::-webkit-scrollbar { display: none; }
+        .v-item { position: relative; height: 100vh; width: 100vw; scroll-snap-align: start; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Nav */
-        .nav { position:fixed; bottom:0; width:100%; height:65px; background:#000; border-top:1px solid #222; display:flex; justify-content:space-around; align-items:center; z-index:2000; }
-        .nav-item { text-align:center; color:#555; font-size:10px; }
-        .nav-item.active { color:#fff; }
-        .nav-item i { font-size:24px; display:block; }
+        /* UI Overlays */
+        .sidebar-actions {
+            position: absolute; right: 16px; bottom: 120px; display: flex; flex-direction: column; gap: 24px; align-items: center;
+        }
+        .user-avatar { 
+            width: 54px; height: 54px; border-radius: 50%; border: 2px solid #fff; 
+            position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+        }
+        .user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .action-unit { text-align: center; font-size: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+        .action-unit span { font-size: 12px; display: block; font-weight: 600; margin-top: 4px; }
+
+        /* --- PROFILE SYSTEM --- */
+        .profile-header { padding: 60px 24px 30px; text-align: center; }
+        .master-pfp { 
+            width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 20px;
+            border: 4px solid var(--gold); position: relative; padding: 4px;
+        }
+        .master-pfp img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .edit-pfp { 
+            position: absolute; bottom: 4px; right: 4px; background: var(--accent);
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000;
+        }
+
+        /* --- ADMIN CONSOLE --- */
+        #adminConsole {
+            position: fixed; inset: 0; background: #080808; z-index: 10000; display: none; padding: 30px; overflow-y: auto;
+        }
+        .admin-card { background: #1a1a1a; padding: 24px; border-radius: 24px; margin-bottom: 20px; border: 1px solid #333; }
+        input { 
+            width: 100%; padding: 16px; background: #252525; border: 1px solid #444; 
+            color: #fff; border-radius: 12px; margin-top: 12px; outline: none;
+        }
+        .btn-admin { 
+            width: 100%; padding: 16px; background: var(--gold); border: none; 
+            border-radius: 12px; color: #000; font-weight: 800; margin-top: 16px;
+        }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05); z-index: 5000;
+        }
+        .nav-link { color: #666; font-size: 11px; text-align: center; transition: 0.3s; }
+        .nav-link.active { color: #fff; }
+        .nav-link i { font-size: 24px; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="authScreen" style="position:fixed; inset:0; background:#000; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <h1 style="color:var(--neon); font-size:60px; font-weight:900;">GAJAN</h1>
-        <button onclick="googleLogin()" style="width:80%; padding:15px; border-radius:50px; background:#fff; font-weight:bold; margin-top:30px; border:none;">Login with Google</button>
+    <div id="authLayer">
+        <div class="brand-logo">GAJAN</div>
+        <div class="auth-card">
+            <p style="color: #aaa; margin-bottom: 30px; font-weight: 500;">PREMIERE SOCIAL ACCESS</p>
+            <button class="btn-auth" onclick="GajanCore.auth.google()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_logo_32.png" width="20">
+                Continue with Google
+            </button>
+        </div>
     </div>
 
-    <div id="feedScreen" class="screen active-screen">
-        <div id="feedScroll"></div>
-    </div>
+    <div class="viewport" id="appViewport">
+        <div id="screen-feed" class="screen active">
+            <div class="feed-engine" id="mainFeed"></div>
+        </div>
 
-    <div id="meScreen" class="screen">
-        <div style="text-align:center; padding:50px 20px;">
-            <div onclick="adminTaps()" class="p-ring" style="width:100px; height:100px; margin:0 auto; position:relative;">
-                <img id="uImg" src="https://via.placeholder.com/100">
-                <i class="fas fa-camera" onclick="upPFP()" style="position:absolute; bottom:0; right:0; background:var(--neon); padding:8px; border-radius:50%; font-size:12px;"></i>
+        <div id="screen-profile" class="screen">
+            <div class="profile-header">
+                <div class="master-pfp" id="adminTrigger">
+                    <img id="user-pfp" src="">
+                    <div class="edit-pfp" onclick="GajanCore.profile.updatePhoto()"><i class="fas fa-camera"></i></div>
+                </div>
+                <h2 id="user-name" style="font-weight: 800; font-size: 28px;">-</h2>
+                <p id="user-email" style="color: #777; margin-top: 4px; font-size: 13px;">-</p>
+                
+                <div style="display: flex; justify-content: center; gap: 40px; margin-top: 40px;">
+                    <div><b id="user-tokens" style="font-size: 20px;">0</b><br><small style="color: var(--gold);">Tokens</small></div>
+                    <div onclick="GajanCore.ui.toggleModal('buyModal')"><b style="font-size: 20px;"><i class="fas fa-wallet"></i></b><br><small>Buy</small></div>
+                </div>
             </div>
-            <h2 id="uName" style="margin-top:15px;">User</h2>
-            <p id="uEmail" style="color:gray; font-size:12px;"></p>
-            <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
-                <button onclick="document.getElementById('buyBox').style.bottom='0'; loadQRs();" style="background:var(--gold); padding:10px 20px; border-radius:10px; border:none; font-weight:bold;">BUY TOKENS</button>
-            </div>
+            <div id="user-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;"></div>
         </div>
-        <div id="myGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1px;"></div>
+
+        <nav class="navbar">
+            <div class="nav-link active" onclick="GajanCore.ui.switchScreen('feed', this)"><i class="fas fa-house"></i>Home</div>
+            <div class="nav-link" onclick="GajanCore.upload.start()"><i class="fas fa-square-plus" style="font-size: 32px; color: #fff;"></i></div>
+            <div class="nav-link" onclick="GajanCore.ui.switchScreen('profile', this)"><i class="fas fa-user-ninja"></i>Me</div>
+        </nav>
     </div>
 
-    <div id="adminPanel">
-        <h2 style="color:var(--gold); text-align:center;">ADMIN MASTER</h2>
+    <div id="adminConsole">
+        <h1 style="color: var(--gold); margin-bottom: 30px;">MASTER CONSOLE</h1>
         <div class="admin-card">
-            <h4>Transfer Tokens</h4>
-            <input type="text" id="targetE" placeholder="Email">
-            <input type="number" id="targetA" placeholder="Amount">
-            <button onclick="transfer()" style="width:100%; padding:12px; background:var(--gold); border:none; font-weight:bold; margin-top:10px;">SEND</button>
+            <h3>Token Distribution</h3>
+            <input type="text" id="target-mail" placeholder="Recipient Email">
+            <input type="number" id="target-amt" placeholder="Amount">
+            <button class="btn-admin" onclick="GajanCore.admin.sendTokens()">EXECUTE TRANSFER</button>
         </div>
         <div class="admin-card">
-            <h4>Gallery QR Upload</h4>
-            <input type="file" onchange="upQR(this)">
+            <h3>QR Management</h3>
+            <input type="file" onchange="GajanCore.admin.uploadQR(this)">
         </div>
-        <div class="admin-card" id="postList">
-            <h4>Delete Any Video</h4>
-        </div>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="width:100%; padding:15px; background:#333; color:#fff; border:none;">EXIT</button>
+        <div class="admin-card" id="admin-video-list"></div>
+        <button class="btn-admin" style="background: #333; color: #fff;" onclick="GajanCore.ui.hideAdmin()">EXIT CONSOLE</button>
     </div>
 
-    <div id="buyBox" style="position:fixed; bottom:-100%; width:100%; height:75%; background:#111; z-index:5000; transition:0.4s; padding:25px; border-radius:30px 30px 0 0;">
-        <h3>Deposit QR</h3>
-        <div id="qrDisp" style="display:flex; gap:10px; overflow-x:auto; margin-top:20px; height:350px;"></div>
-        <button onclick="document.getElementById('buyBox').style.bottom='-100%'" style="width:100%; padding:15px; background:var(--neon); color:#fff; border:none; margin-top:20px;">CLOSE</button>
-    </div>
-
-    <div class="nav">
-        <div class="nav-item active" onclick="showS('feedScreen', this)"><i class="fas fa-play"></i>Feed</div>
-        <div class="nav-item" onclick="upV()"><div style="background:#fff; color:#000; padding:5px 15px; border-radius:8px; font-weight:bold;">+</div></div>
-        <div class="nav-item" onclick="showS('meScreen', this)"><i class="fas fa-user-circle"></i>Me</div>
+    <div id="buyModal" class="modal" style="position: fixed; bottom: -100%; width: 100%; background: #111; z-index: 6000; transition: 0.5s; padding: 30px; border-radius: 40px 40px 0 0; border-top: 1px solid var(--gold);">
+        <h2 style="text-align: center; margin-bottom: 20px;">Deposit Tokens</h2>
+        <div id="qr-container" style="display: flex; gap: 20px; overflow-x: auto; padding: 10px;"></div>
+        <button class="btn-admin" onclick="GajanCore.ui.toggleModal('buyModal')">CLOSE</button>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // --- GAJAN CORE ENGINE (OBJECT-ORIENTED) ---
+        const GajanCore = {
+            config: {
+                firebase: {
+                    apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+                    authDomain: "tiktok-clone-gajan.firebaseapp.com",
+                    projectId: "tiktok-clone-gajan",
+                    storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+                    messagingSenderId: "838023307513",
+                    appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+                },
+                cloudinary: {
+                    url: "https://api.cloudinary.com/v1_1/dvfgzrxs7",
+                    preset: "ml_default"
+                }
+            },
 
-        // AUTH
-        function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        auth.onAuthStateChanged(async u => {
-            if(u) {
-                document.getElementById('authScreen').style.display='none';
-                const ref = db.collection('users').doc(u.uid);
-                const doc = await ref.get();
-                if(!doc.exists) await ref.set({ name: u.displayName, email: u.email, photo: u.photoURL, tokens: 0 });
-                ref.onSnapshot(s => {
-                    document.getElementById('uName').innerText = s.data().name;
-                    document.getElementById('uEmail').innerText = s.data().email;
-                    document.getElementById('uImg').src = s.data().photo;
+            init: function() {
+                firebase.initializeApp(this.config.firebase);
+                this.db = firebase.firestore();
+                this.auth_service = firebase.auth();
+                this.bindEvents();
+            },
+
+            bindEvents: function() {
+                this.auth_service.onAuthStateChanged(user => {
+                    if(user) {
+                        document.getElementById('authLayer').style.display = 'none';
+                        document.getElementById('appViewport').style.display = 'flex';
+                        this.user.sync(user);
+                        this.feed.load();
+                    } else {
+                        document.getElementById('authLayer').style.display = 'flex';
+                    }
                 });
-                loadFeed();
-            } else { document.getElementById('authScreen').style.display='flex'; }
-        });
 
-        // UPLOAD & FEED
-        async function upV() {
-            let i = document.createElement('input'); i.type='file'; i.accept='video/*';
-            i.onchange = async (e) => {
-                const f = e.target.files[0]; alert("CONGRATULATIONS! Uploading...");
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'ml_default');
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", {method:'POST', body:fd});
-                const d = await res.json();
-                const u = (await db.collection('users').doc(auth.currentUser.uid).get()).data();
-                await db.collection('posts').add({
-                    url: d.secure_url, uid: auth.currentUser.uid, uName: u.name, uPic: u.photo, uEmail: u.email,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), likes: 0
+                // Admin Secret Trigger
+                let taps = 0;
+                document.getElementById('adminTrigger').addEventListener('touchstart', () => {
+                    taps++;
+                    if(taps >= 5) {
+                        let p = prompt("ACCESS KEY:");
+                        if(p === "Abdul6353738585@") GajanCore.admin.show();
+                        taps = 0;
+                    }
                 });
-                alert("Live!"); loadFeed();
-            }; i.click();
-        }
+            },
 
-        async function loadFeed() {
-            const cont = document.getElementById('feedScroll');
-            const snap = await db.collection('posts').orderBy('timestamp', 'desc').get();
-            cont.innerHTML = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                cont.innerHTML += `
-                    <div class="v-post">
-                        <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
-                        <div class="sidebar">
-                            <div class="p-ring"><img src="${d.uPic}"></div>
-                            <i class="fas fa-heart"></i><b>${d.likes}</b>
-                            <i class="fas fa-share" onclick="alert('${d.uEmail}')"></i>
-                        </div>
-                        <div style="position:absolute; bottom:90px; left:15px; text-shadow:2px 2px 10px #000;">
-                            <h3>@${d.uName}</h3><p style="font-size:10px; opacity:0.5;">${d.uEmail}</p>
-                        </div>
-                    </div>`;
-            });
-        }
+            user: {
+                sync: async function(u) {
+                    const ref = GajanCore.db.collection('users').doc(u.uid);
+                    await ref.set({
+                        name: u.displayName,
+                        email: u.email,
+                        photo: u.photoURL,
+                        uid: u.uid
+                    }, {merge: true});
 
-        // ADMIN
-        let taps = 0;
-        function adminTaps() {
-            taps++; if(taps >= 5) {
-                let p = prompt("Master Key:");
-                if(p === "Abdul6353738585@") { document.getElementById('adminPanel').style.display='block'; loadAdminPosts(); }
-                taps = 0;
+                    ref.onSnapshot(doc => {
+                        const data = doc.data();
+                        document.getElementById('user-name').innerText = data.name;
+                        document.getElementById('user-email').innerText = data.email;
+                        document.getElementById('user-pfp').src = data.photo;
+                        document.getElementById('user-tokens').innerText = (data.tokens || 0).toLocaleString();
+                    });
+                }
+            },
+
+            feed: {
+                load: async function() {
+                    const cont = document.getElementById('mainFeed');
+                    const snap = await GajanCore.db.collection('posts').orderBy('timestamp', 'desc').get();
+                    cont.innerHTML = "";
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        cont.innerHTML += `
+                            <div class="v-item">
+                                <video loop playsinline src="${d.url}" onclick="this.paused?this.play():this.pause()"></video>
+                                <div class="sidebar-actions">
+                                    <div class="user-avatar"><img src="${d.author_photo}"></div>
+                                    <div class="action-unit"><i class="fas fa-heart"></i><span>${d.likes || 0}</span></div>
+                                    <div class="action-unit" onclick="alert('User: ${d.author_email}')"><i class="fas fa-gift"></i></div>
+                                </div>
+                                <div style="position: absolute; bottom: 100px; left: 20px; text-shadow: 0 2px 8px #000;">
+                                    <h3 style="font-size: 20px;">@${d.author_name}</h3>
+                                    <p style="font-size: 12px; opacity: 0.6;">${d.author_email}</p>
+                                </div>
+                            </div>`;
+                    });
+
+                    // Intersection Observer for AutoPlay
+                    const obs = new IntersectionObserver(ents => {
+                        ents.forEach(e => {
+                            if(e.isIntersecting) e.target.play();
+                            else e.target.pause();
+                        });
+                    }, {threshold: 0.8});
+                    document.querySelectorAll('video').forEach(v => obs.observe(v));
+                }
+            },
+
+            upload: {
+                start: function() {
+                    let i = document.createElement('input'); i.type = 'file'; i.accept = 'video/*';
+                    i.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        alert("PREMIERE UPLOAD: Initializing Cloud Bridge...");
+                        const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', GajanCore.config.cloudinary.preset);
+                        
+                        const res = await fetch(`${GajanCore.config.cloudinary.url}/video/upload`, {method: 'POST', body: fd});
+                        const data = await res.json();
+
+                        const u = GajanCore.auth_service.currentUser;
+                        await GajanCore.db.collection('posts').add({
+                            url: data.secure_url,
+                            author_uid: u.uid,
+                            author_name: u.displayName,
+                            author_photo: u.photoURL,
+                            author_email: u.email,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            likes: 0
+                        });
+                        alert("LIVE: Content Sync Complete.");
+                        GajanCore.feed.load();
+                    };
+                    i.click();
+                }
+            },
+
+            admin: {
+                show: function() {
+                    document.getElementById('adminConsole').style.display = 'block';
+                    this.loadPosts();
+                },
+                loadPosts: async function() {
+                    const cont = document.getElementById('admin-video-list');
+                    const snap = await GajanCore.db.collection('posts').get();
+                    cont.innerHTML = "<h4>Active Content Feed</h4>";
+                    snap.forEach(doc => {
+                        cont.innerHTML += `
+                            <div style="display:flex; justify-content:space-between; background:#222; padding:12px; border-radius:12px; margin-top:8px;">
+                                <span>@${doc.data().author_name}</span>
+                                <button onclick="GajanCore.admin.deletePost('${doc.id}')" style="color:red; background:none; border:none;">DELETE</button>
+                            </div>`;
+                    });
+                },
+                deletePost: async function(id) {
+                    if(confirm("Confirm Destruction?")) {
+                        await GajanCore.db.collection('posts').doc(id).delete();
+                        this.loadPosts();
+                    }
+                },
+                sendTokens: async function() {
+                    const mail = document.getElementById('target-mail').value;
+                    const amt = parseInt(document.getElementById('target-amt').value);
+                    const snap = await GajanCore.db.collection('users').where('email', '==', mail).get();
+                    if(snap.empty) return alert("System Error: Recipient Not Found.");
+                    
+                    await GajanCore.db.collection('users').doc(snap.docs[0].id).update({
+                        tokens: firebase.firestore.FieldValue.increment(amt)
+                    });
+                    alert(`CREDIT: ${amt} Tokens assigned to ${mail}`);
+                },
+                uploadQR: async function(input) {
+                    const file = input.files[0];
+                    const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', GajanCore.config.cloudinary.preset);
+                    const res = await fetch(`${GajanCore.config.cloudinary.url}/image/upload`, {method: 'POST', body: fd});
+                    const data = await res.json();
+                    
+                    const ref = GajanCore.db.collection('admin_config').doc('qrs');
+                    const doc = await ref.get();
+                    let urls = doc.exists ? doc.data().urls : [];
+                    urls.push(data.secure_url);
+                    await ref.set({ urls: urls });
+                    alert("QR SYSTEM: Matrix Updated.");
+                }
+            },
+
+            ui: {
+                switchScreen: function(id, btn) {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    document.getElementById(`screen-${id}`).classList.add('active');
+                    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+                    btn.classList.add('active');
+                },
+                toggleModal: async function(id) {
+                    const m = document.getElementById(id);
+                    if(m.style.bottom === '0px') m.style.bottom = '-100%';
+                    else {
+                        m.style.bottom = '0px';
+                        if(id === 'buyModal') {
+                            const disp = document.getElementById('qr-container');
+                            const snap = await GajanCore.db.collection('admin_config').doc('qrs').get();
+                            disp.innerHTML = "";
+                            if(snap.exists) snap.data().urls.forEach(u => disp.innerHTML += `<img src="${u}" style="height:350px; border-radius:20px; border:2px solid #333;">`);
+                        }
+                    }
+                },
+                hideAdmin: function() { document.getElementById('adminConsole').style.display = 'none'; }
             }
-        }
+        };
 
-        async function loadAdminPosts() {
-            const list = document.getElementById('postList');
-            const snap = await db.collection('posts').get();
-            list.innerHTML = "<h4>Manage Posts</h4>";
-            snap.forEach(doc => list.innerHTML += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-top:5px;"><span>@${doc.data().uName}</span><button onclick="admDel('${doc.id}')" style="background:red; color:#fff; border:none; padding:5px;">Delete</button></div>`);
-        }
-
-        async function admDel(id) { if(confirm("Delete?")) { await db.collection('posts').doc(id).delete(); loadAdminPosts(); } }
-
-        function showS(id, btn) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(id).classList.add('active-screen');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            btn.classList.add('active');
-        }
+        GajanCore.init();
     </script>
 </body>
 </html>
