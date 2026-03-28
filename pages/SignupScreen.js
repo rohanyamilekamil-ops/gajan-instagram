@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { auth, db } from './firebaseConfig';
+import { auth, db } from '../firebaseConfig'; // Double dot zaroori hai
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-const SignupScreen = () => {
+export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -12,41 +11,28 @@ const SignupScreen = () => {
   const handleSignup = async () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // User ka data Firestore mein save karein
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, "users", userCredential.user.uid), {
         username: username,
-        email: email,
-        tokens: 0, // Shuruat mein 0 tokens
-        profilePic: "https://via.placeholder.com/150",
-        location: "Jamnagar"
+        tokens: 0,
+        location: "Jamnagar",
+        profilePic: "https://via.placeholder.com/150"
       });
-      alert("Account ban gaya! Ab login karein.");
+      alert("Gajan App mein Swagat hai! Account ban gaya.");
     } catch (error) {
       alert(error.message);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>Gajan Signup</Text>
-      <TextInput placeholder="Username" style={styles.input} onChangeText={setUsername} />
-      <TextInput placeholder="Email" style={styles.input} onChangeText={setEmail} />
-      <TextInput placeholder="Password" style={styles.input} secureTextEntry onChangeText={setPassword} />
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Create Account</Text>
-      </TouchableOpacity>
-    </View>
+    <div style={{ padding: '50px', color: '#fff', textAlign: 'center' }}>
+      <h1>GAJAN</h1>
+      <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} style={inputStyle} /><br/>
+      <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} style={inputStyle} /><br/>
+      <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} style={inputStyle} /><br/>
+      <button onClick={handleSignup} style={btnStyle}>Sign Up</button>
+    </div>
   );
-};
+}
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', justifyContent: 'center', padding: 20 },
-  logo: { color: '#fff', fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 30 },
-  input: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 15 },
-  button: { backgroundColor: '#3897f0', padding: 15, borderRadius: 10, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold' }
-});
-
-export default SignupScreen;
+const inputStyle = { padding: '10px', margin: '10px', width: '80%', borderRadius: '5px' };
+const btnStyle = { padding: '10px 20px', backgroundColor: '#8a2be2', color: '#fff', border: 'none', borderRadius: '5px' };
