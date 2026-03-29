@@ -1,0 +1,22 @@
+name: Save New Post
+on:
+  repository_dispatch:
+    types: [new-post]
+
+jobs:
+  update-posts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update JSON
+        run: |
+          echo '${{ github.event.client_payload.post }}' > new_post.json
+          jq '. += [input]' posts.json new_post.json > temp.json && mv temp.json posts.json
+          rm new_post.json
+      - name: Commit and Push
+        run: |
+          git config --global user.name "SocialBot"
+          git config --global user.email "bot@github.com"
+          git add posts.json
+          git commit -m "New post added"
+          git push
