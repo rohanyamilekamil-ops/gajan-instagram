@@ -2,133 +2,145 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Ultra HD Reels</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gajan | Ultra HD Fullscreen</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
     <style>
+        /* Force Full Screen Background */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
-            margin: 0; padding: 0; 
-            height: 100vh; width: 100vw; 
-            overflow: hidden; 
-            background-color: #000;
-            font-family: 'Poppins', sans-serif;
-            overscroll-behavior-y: none; /* Smooth feel on scroll */
+            height: 100%; width: 100%; 
+            background-color: #000; 
+            overflow: hidden;
+            position: fixed; /* Address bar scroll prevent karne ke liye */
         }
-        
-        /* main container for swipe */
-        .reels-scroller {
-            height: 100vh;
+
+        .reels-wrapper {
+            height: 100dvh; /* Dynamic Viewport Height for mobile */
+            width: 100vw;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* VVIP for smooth mobile swipe */
+            -webkit-overflow-scrolling: touch;
         }
-        .reels-scroller::-webkit-scrollbar { display: none; }
+        .reels-wrapper::-webkit-scrollbar { display: none; }
 
-        /* Each reel section */
-        .reel {
-            height: 100vh;
+        .reel-unit {
+            height: 100dvh;
             width: 100vw;
             scroll-snap-align: start;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: #000;
         }
 
-        /* VVIP UHD VIDEO SETTINGS */
+        /* VVIP: Force Video to Stretch & Cover */
         video {
-            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
             width: 100%;
-            object-fit: cover; /* Cover full screen */
-            
-            /* High-Performance Rendering (Smoothness Fix) */
-            will-change: transform;
-            transform: translateZ(0); 
-            
-            /* Remove default browser bars */
-            outline: none;
-            -webkit-media-controls-play-button { display: none; }
+            height: 100%;
+            object-fit: cover; /* Ye video ko pura khinch lega */
+            z-index: 1;
         }
 
-        /* Floating elements visibility */
-        .overlay-elements { pointer-events: none; }
-        .interactive-icon { pointer-events: auto; }
+        /* UI Elements Layer */
+        .ui-layer {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(0,0,0,0.6) 100%);
+        }
 
-        /* Bottom Nav Fix */
-        nav {
+        .side-bar {
+            position: absolute;
+            right: 15px;
+            bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            color: white;
+            pointer-events: auto;
+        }
+
+        .bottom-nav {
             position: fixed;
             bottom: 0;
             width: 100%;
-            background: rgba(0,0,0,0.9);
+            height: 70px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
             display: flex;
             justify-content: space-around;
-            padding: 15px 0;
+            align-items: center;
             z-index: 100;
-            border-top: 1px solid #1a1a1a;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
         }
-        
-        a { text-decoration: none; color: inherit; }
     </style>
 </head>
-<body class="no-scrollbar">
+<body>
 
-    <div class="reels-scroller">
+    <div class="reels-wrapper">
         
-        <div class="reel">
-            <video loop preload="auto" playsinline id="v1" onclick="handleReelAction(this)">
+        <div class="reel-unit">
+            <video loop playsinline preload="auto" id="main-video" onclick="toggleReel(this)">
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             </video>
 
-            <div id="hint-1" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50 z-20">
-                <i class="fa-solid fa-volume-xmark text-white text-5xl" id="vol-1"></i>
+            <div id="mute-overlay" class="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none z-20">
+                <i class="fa-solid fa-volume-xmark text-white text-6xl" id="v-icon"></i>
             </div>
 
-            <div class="side-actions absolute right-4 bottom-[120px] z-30 text-white flex flex-col items-center gap-7">
-                <div class="flex flex-col items-center interactive-icon"><i class="fa-solid fa-heart text-3xl"></i><span class="text-[11px] font-bold">1.5M</span></div>
-                <div class="flex flex-col items-center interactive-icon"><i class="fa-solid fa-comment text-3xl"></i><span class="text-[11px] font-bold">10K</span></div>
-                <i class="fa-solid fa-share-nodes text-2xl interactive-icon"></i>
-                <i class="fa-solid fa-ellipsis text-xl interactive-icon"></i>
+            <div class="ui-layer">
+                <div class="mb-16">
+                    <p class="font-bold text-white text-lg">@gajan_premium</p>
+                    <p class="text-white text-sm mt-1 opacity-90">UHD 4K Stretch Mode. Smooth Swipe Active! 🔥</p>
+                </div>
             </div>
 
-            <div class="overlay-elements absolute bottom-[100px] left-4 right-[80px] z-30 text-white p-4 rounded-xl" style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
-                <p class="font-bold text-base">@gajan_premium</p>
-                <p class="text-xs mt-1 leading-relaxed">UHD 4k mode active! Experience the smoothness. Tap to unmute. 🔥 #gajan #premium #jamnagar</p>
+            <div class="side-bar">
+                <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold">1.5M</p></div>
+                <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] font-bold">10K</p></div>
+                <i class="fa-solid fa-share text-2xl"></i>
+                <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
             </div>
         </div>
 
     </div>
 
-    <nav>
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-600"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-600"></i>
+    <nav class="bottom-nav">
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs text-black font-bold border border-black">G</div></a>
+        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] text-black font-bold">G</div></a>
     </nav>
 
     <script>
-        function handleReelAction(video) {
-            const vIcon = document.getElementById('vol-1');
-            const vHint = document.getElementById('hint-1');
+        function toggleReel(vid) {
+            const icon = document.getElementById('v-icon');
+            const overlay = document.getElementById('mute-overlay');
 
-            if (video.paused) {
-                video.play();
-                video.muted = false; // Unmute on click
-                vHint.classList.add('hidden');
+            if (vid.paused) {
+                vid.play();
+                vid.muted = false;
+                overlay.classList.add('hidden');
             } else {
-                video.pause();
-                vHint.classList.remove('hidden');
+                vid.pause();
+                overlay.classList.remove('hidden');
+                icon.className = "fa-solid fa-play text-white text-6xl";
             }
         }
 
-        // Browser policy: Pehla video hamesha click se hi sound dega.
-        window.addEventListener('load', () => {
-            alert("✨ Welcome to Gajan UHD! Tap on the video to play with Sound.");
-        });
+        // Address bar ko hide karne ka attempt
+        window.scrollTo(0, 1);
     </script>
 </body>
 </html>
