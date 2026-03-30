@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Profile</title>
+    <title>Gajan | My Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,50 +12,39 @@
 </head>
 <body class="bg-white pb-24">
 
-    <header class="flex justify-between items-center px-5 py-3 border-b sticky top-0 bg-white z-50">
+    <header class="flex justify-between items-center px-5 py-3 border-b sticky top-0 bg-white z-[100]">
         <h1 class="font-bold italic text-2xl tracking-tighter">Gajan</h1>
         <div class="flex space-x-6 items-center">
             <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl text-black"></i></a>
-            <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl text-black"></i></a>
-            <i class="fa-solid fa-right-from-bracket text-red-500 text-xl cursor-pointer" id="logout-btn"></i>
+            <i class="fa-solid fa-right-from-bracket text-red-500 text-xl cursor-pointer" onclick="gajanLogout()"></i>
         </div>
     </header>
 
     <div class="p-6">
         <div class="flex items-center space-x-8 mb-6">
-            <div class="w-24 h-24 rounded-full p-1 insta-gradient">
-                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
+            <div class="w-24 h-24 rounded-full p-1 insta-gradient shadow-lg">
+                <img id="u-avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
             </div>
             <div class="flex-1 flex justify-around text-center">
-                <div><p class="font-bold text-lg" id="p-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
-                
-                <a href="users.html" class="block">
-                    <p class="font-bold text-lg">191</p>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p>
-                </a>
-
-                <a href="users.html" class="block">
-                    <p class="font-bold text-lg">120</p>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase">Following</p>
-                </a>
+                <div><p class="font-bold text-lg" id="count-posts">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
+                <div><p class="font-bold text-lg">191</p><p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p></div>
             </div>
         </div>
-        
-        <h2 id="u-name" class="font-bold text-lg text-black">Loading...</h2>
+        <h2 id="u-display-name" class="font-bold text-lg">Gajan Member</h2>
         <p class="text-sm text-gray-500 mb-5">Jamnagar, Gujarat ❤️</p>
         
         <div class="flex space-x-2">
-            <a href="users.html" class="flex-1 bg-black text-white py-2.5 rounded-xl font-bold text-xs text-center">Find People</a>
+            <a href="users.html" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs border text-center">Find People</a>
             <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2.5 rounded-xl font-bold text-xs border text-center">Wallet</a>
         </div>
     </div>
 
-    <div id="video-grid" class="grid grid-cols-3 gap-0.5 border-t mt-4">
+    <div id="u-video-grid" class="grid grid-cols-3 gap-0.5 border-t mt-4">
         </div>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4 z-50">
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4 z-[100]">
         <a href="profile.html"><i class="fa-solid fa-house nav-icon text-black"></i></a>
-        <a href="users.html"><i class="fa-solid fa-magnifying-glass nav-icon"></i></a>
+        <a href="search.html"><i class="fa-solid fa-magnifying-glass nav-icon"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard nav-icon"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet nav-icon text-pink-500"></i></a>
     </nav>
@@ -70,27 +59,39 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('u-name').innerText = user.displayName || "Gajan Member";
-                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
-
-                // Load User Specific Videos
-                const q = query(collection(db, "reels"), where("uid", "==", user.uid));
-                onSnapshot(q, (sn) => {
-                    const grid = document.getElementById('video-grid');
-                    grid.innerHTML = "";
-                    document.getElementById('p-count').innerText = sn.size;
-                    sn.forEach(doc => {
-                        const d = doc.data();
-                        grid.innerHTML += `<div class="aspect-[9/16] bg-black border-white border-[0.5px]"><video src="${d.videoUrl}" class="w-full h-full object-cover"></video></div>`;
-                    });
-                });
-            } else { window.location.href = "index.html"; }
+        // Security: Reset data on Auth Change
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('u-display-name').innerText = user.displayName || "Gajan Member";
+                if(user.photoURL) document.getElementById('u-avatar').src = user.photoURL;
+                loadMyContent(user.uid);
+            } else {
+                window.location.replace("index.html");
+            }
         });
 
-        document.getElementById('logout-btn').onclick = () => {
-            signOut(auth).then(() => window.location.href = "index.html");
+        function loadMyContent(uid) {
+            const q = query(collection(db, "reels"), where("uid", "==", uid));
+            onSnapshot(q, (sn) => {
+                const grid = document.getElementById('u-video-grid');
+                grid.innerHTML = "";
+                document.getElementById('count-posts').innerText = sn.size;
+                if(sn.empty) {
+                    grid.innerHTML = `<p class="col-span-3 text-center py-20 text-gray-300 text-xs">No Videos Uploaded</p>`;
+                    return;
+                }
+                sn.forEach(doc => {
+                    const d = doc.data();
+                    grid.innerHTML += `
+                        <div class="aspect-[9/16] bg-black">
+                            <video src="${d.videoUrl}" class="w-full h-full object-cover" muted></video>
+                        </div>`;
+                });
+            });
+        }
+
+        window.gajanLogout = () => {
+            signOut(auth).then(() => window.location.replace("index.html"));
         };
     </script>
 </body>
