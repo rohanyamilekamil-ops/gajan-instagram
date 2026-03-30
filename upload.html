@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Upload Video</title>
+    <title>Gajan | Upload Large Video</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .insta-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        #bar { transition: width 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-white">
@@ -21,20 +22,19 @@
         <div class="w-full aspect-[9/16] bg-gray-50 rounded-[30px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden" onclick="document.getElementById('file-input').click()">
             <div id="ui-box" class="text-center p-4">
                 <i class="fa-solid fa-video text-5xl text-pink-500 mb-4"></i>
-                <p class="text-xs font-bold text-gray-400">TAP TO SELECT VIDEO</p>
-                <p class="text-[10px] text-gray-300 mt-2">(Use MP4 for best results)</p>
+                <p class="text-xs font-bold text-gray-400 uppercase">Select Video (Up to 3 Min)</p>
             </div>
             <video id="preview" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
             <input type="file" id="file-input" class="hidden" accept="video/*" onchange="previewVideo(this)">
         </div>
 
-        <textarea id="caption" placeholder="Write a caption..." class="w-full mt-6 p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100"></textarea>
+        <textarea id="caption" placeholder="Write a viral caption..." class="w-full mt-6 p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100"></textarea>
         
         <div id="loader" class="hidden mt-6">
-            <div class="w-full bg-gray-100 rounded-full h-2">
-                <div id="bar" class="insta-btn h-2 rounded-full transition-all" style="width: 0%"></div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div id="bar" class="insta-btn h-full w-0"></div>
             </div>
-            <p class="text-[10px] text-center mt-2 text-gray-500 font-bold">UPLOADING HD VIDEO...</p>
+            <p id="progress-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold">STARTING UPLOAD...</p>
         </div>
     </main>
 
@@ -43,7 +43,15 @@
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan", 
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
+            messagingSenderId: "838023307513", 
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -51,44 +59,73 @@
         window.previewVideo = (input) => {
             const file = input.files[0];
             if (file) {
-                document.getElementById('preview').src = URL.createObjectURL(file);
-                document.getElementById('preview').classList.remove('hidden');
-                document.getElementById('ui-box').classList.add('hidden');
+                // Time Limit Check: 3 Minutes (180 seconds)
+                const videoElement = document.createElement('video');
+                videoElement.preload = 'metadata';
+                videoElement.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(videoElement.src);
+                    if (videoElement.duration > 185) { // 5 sec buffer
+                        alert("Video 3 minute se bada hai! Chota video select karein.");
+                        input.value = "";
+                        return;
+                    }
+                    document.getElementById('preview').src = URL.createObjectURL(file);
+                    document.getElementById('preview').classList.remove('hidden');
+                    document.getElementById('ui-box').classList.add('hidden');
+                };
+                videoElement.src = URL.createObjectURL(file);
             }
         };
 
         window.startUpload = async () => {
             const file = document.getElementById('file-input').files[0];
             const btn = document.getElementById('share-btn');
-            if(!file) return alert("Please select a video!");
+            const bar = document.getElementById('bar');
+            const pText = document.getElementById('progress-text');
+
+            if(!file) return alert("Pehle video select karein!");
 
             btn.disabled = true;
-            btn.innerText = "...";
+            btn.innerText = "WAIT";
             document.getElementById('loader').classList.remove('hidden');
             
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", "gajan_live");
+            // Large File Config (Chunking support)
+            const cloudName = "dvfgzrxs7";
+            const unsignedUploadPreset = "gajan_live";
+            
+            const XHR = new XMLHttpRequest();
+            XHR.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
 
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
-                const data = await res.json();
+            XHR.upload.onprogress = (e) => {
+                const progress = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = progress + "%";
+                pText.innerText = "UPLOADING: " + progress + "% (HD QUALITY)";
+            };
 
-                if(data.secure_url) {
+            XHR.onload = async () => {
+                const response = JSON.parse(XHR.responseText);
+                if (response.secure_url) {
                     await addDoc(collection(db, "reels"), {
-                        videoUrl: data.secure_url,
+                        videoUrl: response.secure_url,
                         caption: document.getElementById('caption').value,
-                        name: auth.currentUser.displayName,
+                        name: auth.currentUser.displayName || "Gajan User",
                         uid: auth.currentUser.uid,
                         time: serverTimestamp()
                     });
-                    alert("✅ Post Shared!");
+                    alert("✅ Video Posted!");
                     window.location.href = "profile.html";
+                } else {
+                    alert("Upload Error! Try a smaller file size.");
+                    location.reload();
                 }
-            } catch (err) {
-                alert("Upload Failed! Use a smaller video file.");
-                location.reload();
-            }
+            };
+
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', unsignedUploadPreset);
+            fd.append('resource_type', 'video');
+            
+            XHR.send(fd);
         };
     </script>
 </body>
