@@ -3,21 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Full Screen UHD</title>
+    <title>Gajan | Smart Fit Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Base Setup */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { 
-            height: 100%; width: 100%; 
-            background: #000; overflow: hidden; 
-            position: fixed; /* Scroll bars lock karne ke liye */
-        }
+        html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
 
-        /* Full Screen Container */
         .reels-container {
-            height: 100dvh; /* Dynamic height for mobile address bar */
+            height: 100dvh;
             width: 100vw;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
@@ -25,51 +19,60 @@
         }
         .reels-container::-webkit-scrollbar { display: none; }
 
-        /* Individual Reel */
         .reel-slide {
             height: 100dvh;
             width: 100vw;
             scroll-snap-align: start;
             position: relative;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* FORCE FULL SCREEN VIDEO */
-        video {
+        /* Background Blur Effect (Instagram Style) */
+        .video-bg-blur {
             position: absolute;
             top: 0; left: 0;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important; /* Isse video pura khinch jayega aur bars khatam hongi */
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: blur(20px) brightness(0.5);
+            opacity: 0.6;
             z-index: 1;
         }
 
-        /* Content Overlay (Bottom Text) */
-        .content-overlay {
+        /* Main UHD Video - Smart Fit */
+        .main-video {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-height: 100dvh;
+            object-fit: contain; /* Isse video ka koi bhi part nahi katega aur object nahi dabega */
+            z-index: 2;
+        }
+
+        /* UI Overlays */
+        .content-info {
             position: absolute;
-            bottom: 90px; /* Nav bar ke upar */
+            bottom: 100px;
             left: 15px;
             right: 80px;
             z-index: 10;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             pointer-events: none;
         }
 
-        /* Side Actions (Icons) */
-        .side-actions {
+        .side-bar {
             position: absolute;
             right: 15px;
             bottom: 120px;
             z-index: 20;
             display: flex;
             flex-direction: column;
-            align-items: center;
             gap: 25px;
             color: white;
         }
 
-        /* Bottom Nav */
         nav {
             position: fixed;
             bottom: 0;
@@ -80,7 +83,6 @@
             justify-content: space-around;
             align-items: center;
             z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom); /* iPhone notch support */
         }
     </style>
 </head>
@@ -88,24 +90,21 @@
 
     <div class="reels-container">
         <div class="reel-slide">
-            <video loop playsinline preload="auto" onclick="toggleVideo(this)">
+            <video class="video-bg-blur" muted loop src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
+            
+            <video class="main-video" loop playsinline preload="auto" onclick="togglePlay(this)">
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             </video>
 
-            <div id="status-icon" class="absolute inset-0 flex items-center justify-center z-20 opacity-40 pointer-events-none">
-                <i class="fa-solid fa-volume-xmark text-white text-6xl" id="v-icon"></i>
+            <div class="content-info">
+                <p class="font-bold">@gajan_premium</p>
+                <p class="text-xs mt-1">Smart Fit Mode: No parts cut, only pure UHD quality. 🔥</p>
             </div>
 
-            <div class="content-overlay">
-                <p class="font-bold text-lg">@gajan_premium</p>
-                <p class="text-xs mt-1">UHD Mode: No more black bars! 🔥 Smooth Full Screen experience.</p>
-            </div>
-
-            <div class="side-actions">
+            <div class="side-bar">
                 <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold">1.5M</p></div>
                 <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] font-bold">10K</p></div>
                 <i class="fa-solid fa-share text-2xl"></i>
-                <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
             </div>
         </div>
     </div>
@@ -119,18 +118,15 @@
     </nav>
 
     <script>
-        function toggleVideo(vid) {
-            const icon = document.getElementById('v-icon');
-            const statusBox = document.getElementById('status-icon');
-
+        function togglePlay(vid) {
+            const bgVid = vid.parentElement.querySelector('.video-bg-blur');
             if (vid.paused) {
                 vid.play();
-                vid.muted = false; // Sound chalu
-                statusBox.classList.add('hidden');
+                bgVid.play();
+                vid.muted = false;
             } else {
                 vid.pause();
-                statusBox.classList.remove('hidden');
-                icon.className = "fa-solid fa-play text-white text-6xl";
+                bgVid.pause();
             }
         }
     </script>
