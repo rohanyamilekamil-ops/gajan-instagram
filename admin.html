@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Master Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div id="admin-login" class="w-full max-w-md bg-gray-800 p-8 rounded-[40px] shadow-2xl border border-gray-700">
+        <h1 class="text-3xl font-bold mb-6 text-center text-pink-500 italic">Gajan Admin</h1>
+        <div class="space-y-4">
+            <input id="adm-user" type="text" placeholder="Username" class="w-full p-4 bg-gray-700 rounded-2xl outline-none border border-gray-600">
+            <input id="adm-pass" type="password" placeholder="Password" class="w-full p-4 bg-gray-700 rounded-2xl outline-none border border-gray-600">
+            <button onclick="checkAdmin()" class="w-full py-4 bg-pink-600 hover:bg-pink-700 rounded-2xl font-bold shadow-lg transition">Enter Control Room</button>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="hidden w-full max-w-4xl bg-gray-800 p-8 rounded-[40px] shadow-2xl border border-gray-700">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-2xl font-bold italic">Admin Dashboard</h2>
+            <button onclick="location.reload()" class="text-xs bg-red-500 px-4 py-2 rounded-full">Logout</button>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-gray-700 p-6 rounded-3xl border border-gray-600">
+                <h3 class="font-bold text-yellow-500 mb-4"><i class="fa-solid fa-coins mr-2"></i>Unlimited Token Generator</h3>
+                <input id="target-uid" type="text" placeholder="User ID (UID)" class="w-full p-3 bg-gray-800 rounded-xl mb-3 text-sm outline-none">
+                <input id="token-amt" type="number" placeholder="Amount (e.g. 1000000)" class="w-full p-3 bg-gray-800 rounded-xl mb-4 text-sm outline-none">
+                <button onclick="sendTokens()" class="w-full bg-yellow-600 py-3 rounded-xl font-bold text-sm">Add Tokens to User</button>
+            </div>
+
+            <div class="bg-gray-700 p-6 rounded-3xl border border-gray-600">
+                <h3 class="font-bold text-blue-400 mb-4"><i class="fa-solid fa-qrcode mr-2"></i>Payment QR Control</h3>
+                <input id="qr-input-url" type="text" placeholder="Paste New QR Image URL" class="w-full p-3 bg-gray-800 rounded-xl mb-4 text-sm outline-none">
+                <button onclick="updateGlobalQR()" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm">Update QR Globally</button>
+                <p class="text-[10px] mt-2 text-gray-400">Note: Millions of users will see this QR in their wallet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Login Check Logic
+        window.checkAdmin = () => {
+            const u = document.getElementById('adm-user').value;
+            const p = document.getElementById('adm-pass').value;
+            
+            if(u === "MRGAJAN" && p === "Abdul6353738585@") {
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+            } else {
+                alert("Galat Password!");
+            }
+        };
+
+        // Unlimited Token Generator
+        window.sendTokens = async () => {
+            const uid = document.getElementById('target-uid').value;
+            const amt = parseInt(document.getElementById('token-amt').value);
+            if(!uid || !amt) return alert("UID aur Amount bhariye!");
+
+            try {
+                // User ke wallet mein tokens add karna
+                await setDoc(doc(db, "wallets", uid), {
+                    balance: increment(amt)
+                }, { merge: true });
+                alert("Success: " + amt + " Tokens bhej diye gaye!");
+            } catch(e) { alert("Error: User ID galat hai!"); }
+        };
+
+        // QR Update Logic
+        window.updateGlobalQR = async () => {
+            const url = document.getElementById('qr-input-url').value;
+            if(!url) return alert("URL zaroori hai!");
+            await setDoc(doc(db, "admin", "settings"), { qrUrl: url }, { merge: true });
+            alert("QR Updated for Millions of Users!");
+        };
+    </script>
+</body>
+</html>
