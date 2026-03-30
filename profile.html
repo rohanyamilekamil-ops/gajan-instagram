@@ -1,39 +1,66 @@
-<script type="module">
-    // ... (Firebase init same rahega) ...
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white pb-24">
+    <header class="flex justify-between items-center px-5 py-3 border-b sticky top-0 bg-white">
+        <h1 class="font-bold italic text-2xl">Gajan</h1>
+        <div class="flex space-x-6 items-center">
+            <i class="fa-regular fa-square-plus text-2xl" onclick="alert('Upload Open')"></i>
+            <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl text-black"></i></a>
+        </div>
+    </header>
 
-    window.uploadReel = async () => {
-        const videoFile = document.getElementById('reel-input').files[0];
-        const btn = document.getElementById('upload-btn');
-        if(!videoFile) return alert("Select video!");
+    <div class="p-6">
+        <div class="flex items-center space-x-8 mb-6">
+            <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
+                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
+            </div>
+            <div class="flex-1 flex justify-around text-center">
+                <div><p class="font-bold">11</p><p class="text-xs text-gray-400 font-bold uppercase">Posts</p></div>
+                <div><p class="font-bold">191</p><p class="text-xs text-gray-400 font-bold uppercase">Followers</p></div>
+            </div>
+        </div>
+        <p id="name" class="font-bold text-lg text-black">Loading...</p>
+        <p class="text-sm text-gray-500 mb-5">Jamnagar • Official Gajan App ❤️</p>
+        <button class="w-full bg-gray-100 py-2.5 rounded-xl font-bold text-xs border">Edit Profile</button>
+    </div>
 
-        btn.innerText = "Optimizing & Uploading...";
-        btn.disabled = true;
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4">
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-black"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-500"></i></a>
+    </nav>
 
-        const fd = new FormData();
-        fd.append("file", videoFile);
-        fd.append("upload_preset", "gajan_live");
-        // AUTO COMPRESSION TAGS
-        fd.append("quality", "auto"); 
-        fd.append("fetch_format", "auto");
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan", 
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
+            messagingSenderId: "838023307513", 
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
+        };
 
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
-            const data = await res.json();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-            if(data.secure_url) {
-                await addDoc(collection(db, "reels"), {
-                    videoUrl: data.secure_url,
-                    uid: auth.currentUser.uid,
-                    time: serverTimestamp()
-                });
-                alert("✅ Uploaded!");
-                location.reload();
-            } else { alert("Error: Video too large for free plan."); }
-        } catch (err) {
-            alert("Network Error!");
-        } finally {
-            btn.innerText = "Upload Video";
-            btn.disabled = false;
-        }
-    };
-</script>
+        onAuthStateChanged(auth, user => {
+            if(!user) {
+                window.location.replace("index.html");
+            } else {
+                document.getElementById('name').innerText = user.displayName || "Gajan User";
+                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
+            }
+        });
+    </script>
+</body>
+</html>
