@@ -1,36 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Messenger</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Messages</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .chat-bubble-me { background: #3797f0; color: white; border-radius: 18px 18px 4px 18px; }
-        .chat-bubble-them { background: #efefef; color: black; border-radius: 18px 18px 18px 4px; }
+        .msg-me { background: #3797f0; color: white; border-radius: 18px 18px 4px 18px; }
+        .msg-them { background: #efefef; color: black; border-radius: 18px 18px 18px 4px; }
     </style>
 </head>
-<body class="bg-white h-screen flex flex-col">
-
-    <header class="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-50">
+<body class="bg-white flex flex-col h-screen">
+    <header class="p-4 border-b flex items-center justify-between bg-white sticky top-0 z-50">
         <div class="flex items-center space-x-4">
-            <a href="index.html"><i class="fa-solid fa-arrow-left text-xl text-black"></i></a>
-            <div>
-                <h2 class="font-bold text-sm">Gajan Global Chat</h2>
-                <p class="text-[10px] text-green-500 font-bold">● Online</p>
-            </div>
+            <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl"></i></a>
+            <h2 class="font-bold">Gajan Global Chat</h2>
         </div>
         <i class="fa-solid fa-circle-info text-xl text-gray-400"></i>
     </header>
 
-    <main id="chat-window" class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-        </main>
+    <main id="chat-box" class="flex-1 p-4 space-y-4 overflow-y-auto bg-gray-50"></main>
 
-    <footer class="p-4 border-t bg-white">
+    <footer class="p-4 bg-white border-t">
         <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 border">
-            <input id="msg-input" type="text" placeholder="Message..." class="flex-1 bg-transparent outline-none text-sm py-1">
-            <button onclick="sendGajanMsg()" class="text-blue-500 font-bold text-sm ml-3">Send</button>
+            <input id="msg-input" type="text" placeholder="Message..." class="flex-1 bg-transparent outline-none text-sm">
+            <button onclick="send()" class="text-blue-500 font-bold ml-2">Send</button>
         </div>
     </footer>
 
@@ -39,60 +33,43 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Send Message Logic
-        window.sendGajanMsg = async () => {
-            const input = document.getElementById('msg-input');
-            const user = auth.currentUser;
-            if(!user || input.value.trim() === "") return;
-
-            await addDoc(collection(db, "global_messages"), {
-                text: input.value,
-                senderName: user.displayName || "Anonymous",
-                senderUid: user.uid,
-                timestamp: serverTimestamp()
+        window.send = async () => {
+            const inp = document.getElementById('msg-input');
+            if(!inp.value) return;
+            await addDoc(collection(db, "global_chat"), {
+                text: inp.value,
+                name: auth.currentUser.displayName,
+                uid: auth.currentUser.uid,
+                time: serverTimestamp()
             });
-            input.value = "";
+            inp.value = "";
         };
 
-        // Live Chat Listener
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, user => {
             if (user) {
-                const q = query(collection(db, "global_messages"), orderBy("timestamp", "asc"));
-                onSnapshot(q, (snapshot) => {
-                    const chatWindow = document.getElementById('chat-window');
-                    chatWindow.innerHTML = "";
-                    snapshot.forEach(doc => {
-                        const msg = doc.data();
-                        const isMe = msg.senderUid === user.uid;
-                        chatWindow.innerHTML += `
+                const q = query(collection(db, "global_chat"), orderBy("time", "asc"));
+                onSnapshot(q, (sn) => {
+                    const box = document.getElementById('chat-box');
+                    box.innerHTML = "";
+                    sn.forEach(d => {
+                        const m = d.data();
+                        const isMe = m.uid === user.uid;
+                        box.innerHTML += `
                             <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                                <div class="max-w-[75%]">
-                                    <p class="text-[9px] text-gray-400 mb-0.5 ml-1">${msg.senderName}</p>
-                                    <div class="${isMe ? 'chat-bubble-me' : 'chat-bubble-them'} px-4 py-2 text-sm shadow-sm">
-                                        ${msg.text}
-                                    </div>
+                                <div class="${isMe ? 'msg-me' : 'msg-them'} p-3 text-xs shadow-sm max-w-[75%]">
+                                    <p class="font-bold text-[8px] mb-1 opacity-70">${m.name}</p>
+                                    <p>${m.text}</p>
                                 </div>
-                            </div>
-                        `;
+                            </div>`;
                     });
-                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                    box.scrollTop = box.scrollHeight;
                 });
-            } else {
-                window.location.href = "index.html";
-            }
+            } else { window.location.href = "index.html"; }
         });
     </script>
 </body>
