@@ -2,39 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Upload Large Video</title>
+    <title>Gajan | Secure Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .insta-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        #bar { transition: width 0.3s ease-in-out; }
+        #bar { transition: width 0.3s linear; }
     </style>
 </head>
 <body class="bg-white">
 
     <header class="flex items-center justify-between px-5 py-4 border-b">
         <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl text-gray-700"></i></a>
-        <h1 class="font-bold text-lg">New Post</h1>
+        <h1 class="font-bold text-lg">Post HD Reel</h1>
         <button id="share-btn" onclick="startUpload()" class="text-blue-500 font-bold text-lg">Share</button>
     </header>
 
-    <main class="p-6">
-        <div class="w-full aspect-[9/16] bg-gray-50 rounded-[30px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden" onclick="document.getElementById('file-input').click()">
-            <div id="ui-box" class="text-center p-4">
+    <main class="p-6 text-center">
+        <div class="w-full aspect-[9/16] bg-gray-50 rounded-[30px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden mb-6" onclick="document.getElementById('file-input').click()">
+            <div id="ui-box" class="p-4">
                 <i class="fa-solid fa-video text-5xl text-pink-500 mb-4"></i>
-                <p class="text-xs font-bold text-gray-400 uppercase">Select Video (Up to 3 Min)</p>
+                <p class="text-xs font-bold text-gray-400">TAP TO SELECT VIDEO</p>
             </div>
             <video id="preview" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
             <input type="file" id="file-input" class="hidden" accept="video/*" onchange="previewVideo(this)">
         </div>
 
-        <textarea id="caption" placeholder="Write a viral caption..." class="w-full mt-6 p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100"></textarea>
+        <textarea id="caption" placeholder="Write caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100 mb-6"></textarea>
         
-        <div id="loader" class="hidden mt-6">
+        <div id="loader" class="hidden">
             <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                 <div id="bar" class="insta-btn h-full w-0"></div>
             </div>
-            <p id="progress-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold">STARTING UPLOAD...</p>
+            <p id="p-text" class="text-[10px] mt-2 text-gray-500 font-bold">PREPARING...</p>
         </div>
     </main>
 
@@ -58,74 +58,58 @@
 
         window.previewVideo = (input) => {
             const file = input.files[0];
-            if (file) {
-                // Time Limit Check: 3 Minutes (180 seconds)
-                const videoElement = document.createElement('video');
-                videoElement.preload = 'metadata';
-                videoElement.onloadedmetadata = function() {
-                    window.URL.revokeObjectURL(videoElement.src);
-                    if (videoElement.duration > 185) { // 5 sec buffer
-                        alert("Video 3 minute se bada hai! Chota video select karein.");
-                        input.value = "";
-                        return;
-                    }
-                    document.getElementById('preview').src = URL.createObjectURL(file);
-                    document.getElementById('preview').classList.remove('hidden');
-                    document.getElementById('ui-box').classList.add('hidden');
-                };
-                videoElement.src = URL.createObjectURL(file);
+            if(file){
+                document.getElementById('preview').src = URL.createObjectURL(file);
+                document.getElementById('preview').classList.remove('hidden');
+                document.getElementById('ui-box').classList.add('hidden');
             }
         };
 
-        window.startUpload = async () => {
+        window.startUpload = () => {
             const file = document.getElementById('file-input').files[0];
             const btn = document.getElementById('share-btn');
-            const bar = document.getElementById('bar');
-            const pText = document.getElementById('progress-text');
-
             if(!file) return alert("Pehle video select karein!");
 
             btn.disabled = true;
-            btn.innerText = "WAIT";
+            btn.innerText = "...";
             document.getElementById('loader').classList.remove('hidden');
-            
-            // Large File Config (Chunking support)
-            const cloudName = "dvfgzrxs7";
-            const unsignedUploadPreset = "gajan_live";
-            
-            const XHR = new XMLHttpRequest();
-            XHR.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
 
-            XHR.upload.onprogress = (e) => {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "gajan_live");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", true);
+
+            xhr.upload.onprogress = (e) => {
                 const progress = Math.round((e.loaded / e.total) * 100);
-                bar.style.width = progress + "%";
-                pText.innerText = "UPLOADING: " + progress + "% (HD QUALITY)";
+                document.getElementById('bar').style.width = progress + "%";
+                document.getElementById('p-text').innerText = "SENDING: " + progress + "%";
+                if(progress === 100) document.getElementById('p-text').innerText = "FINALIZING ON GAJAN CLOUD (WAIT)...";
             };
 
-            XHR.onload = async () => {
-                const response = JSON.parse(XHR.responseText);
-                if (response.secure_url) {
-                    await addDoc(collection(db, "reels"), {
-                        videoUrl: response.secure_url,
-                        caption: document.getElementById('caption').value,
-                        name: auth.currentUser.displayName || "Gajan User",
-                        uid: auth.currentUser.uid,
-                        time: serverTimestamp()
-                    });
-                    alert("✅ Video Posted!");
-                    window.location.href = "profile.html";
-                } else {
-                    alert("Upload Error! Try a smaller file size.");
-                    location.reload();
+            xhr.onreadystatechange = async () => {
+                if (xhr.readyState === 4) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && response.secure_url) {
+                        document.getElementById('p-text').innerText = "SAVING TO FEED...";
+                        await addDoc(collection(db, "reels"), {
+                            videoUrl: response.secure_url,
+                            caption: document.getElementById('caption').value,
+                            name: auth.currentUser.displayName,
+                            uid: auth.currentUser.uid,
+                            time: serverTimestamp()
+                        });
+                        alert("🔥 Gajan: Post Shared Successfully!");
+                        window.location.href = "profile.html";
+                    } else {
+                        alert("Upload Failed! Shayad video bohot bada hai.");
+                        location.reload();
+                    }
                 }
             };
 
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('upload_preset', unsignedUploadPreset);
-            fd.append('resource_type', 'video');
-            
-            XHR.send(fd);
+            xhr.send(fd);
         };
     </script>
 </body>
