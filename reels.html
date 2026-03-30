@@ -1,138 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Reels Fix</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        /* Smooth Vertical Swipe Container */
-        .reels-wrapper {
-            height: 100dvh;
-            width: 100vw;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+    const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_DOMAIN", projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_STORAGE_BUCKET", messagingSenderId: "YOUR_SENDER_ID", appId: "YOUR_APP_APP_ID" }; // Use YOUR config here
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUserId = null;
+
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            currentUserId = user.uid;
+            document.getElementById('nav-avatar').innerText = user.displayName ? user.displayName.charAt(0) : "G";
+            renderFeed();
+        } else {
+            window.location.href = "index.html"; // Login par bhej do
         }
-        .reels-wrapper::-webkit-scrollbar { display: none; }
+    });
 
-        .reel-unit {
-            height: 100dvh;
-            width: 100vw;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    const observerConfig = { threshold: 0.8 }; // 80% video screen par aana chahiye play hone ke liye
 
-        /* Video Fit System */
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Instagram style full screen */
-            z-index: 1;
-        }
-
-        /* Basic UI Overlay */
-        .ui-overlay {
-            position: absolute; bottom: 100px; left: 15px; z-index: 10; color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
-        }
-
-        .side-btns {
-            position: absolute; right: 15px; bottom: 140px; z-index: 10;
-            display: flex; flex-direction: column; gap: 25px; color: white;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed; bottom: 0; width: 100%; height: 70px;
-            background: linear-gradient(transparent, #000);
-            display: flex; justify-content: space-around; align-items: center; z-index: 100;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="reels-wrapper" id="main-feed">
-        </div>
-
-    <nav>
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black">G</div></a>
-    </nav>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
-            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
-            projectId: "tiktok-clone-gajan", 
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
-            messagingSenderId: "838023307513", 
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Load Reels from Database
+    function renderFeed() {
         const q = query(collection(db, "reels"), orderBy("time", "desc"));
         onSnapshot(q, (snapshot) => {
-            const container = document.getElementById('main-feed');
-            container.innerHTML = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                container.innerHTML += `
-                    <div class="reel-unit">
-                        <video class="reel-video" loop playsinline src="${data.videoUrl}"></video>
-                        <div class="ui-overlay">
-                            <p class="font-bold">@${data.name || 'GajanUser'}</p>
-                            <p class="text-xs opacity-80 mt-1">${data.caption || ''}</p>
-                        </div>
-                        <div class="side-btns">
-                            <i class="fa-solid fa-heart text-3xl"></i>
-                            <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${doc.id}'"></i>
-                            <i class="fa-solid fa-share text-2xl"></i>
-                        </div>
-                    </div>`;
-            });
-            setupPlayLogic();
-        });
+            const feedContainer = document.getElementById('reels-feed');
+            feedContainer.innerHTML = ""; // Old clear
 
-        // Swipe play logic
-        function setupPlayLogic() {
-            const videos = document.querySelectorAll('.reel-video');
+            snapshot.forEach(docSnap => {
+                const reel = docSnap.data();
+                const reelId = docSnap.id;
+                const likesArray = reel.likedBy || [];
+                const isLiked = likesArray.includes(currentUserId);
+                
+                // Create single reel html
+                const reelHtml = `
+                    <div class="reel-item">
+                        <video class="gajan-video" loop playsinline preload="auto" src="${reel.videoUrl}"></video>
+                        
+                        <div class="side-icons">
+                            <div class="like-container" onclick="toggleLike('${reelId}', ${isLiked})">
+                                <i class="fa-solid fa-heart text-3xl ${isLiked ? 'liked' : ''}"></i>
+                                <p class="like-count text-[10px] font-bold mt-1">${likesArray.length}</p>
+                            </div>
+                            </div>
+
+                        <div class="bottom-info">
+                             </div>
+                    </div>`;
+                
+                feedContainer.innerHTML += reelHtml;
+            });
+
+            // Fast Preload and Play Logic using Intersection Observer
+            const videos = document.querySelectorAll('.gajan-video');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
+                    const video = entry.target;
+                    const reelId = video.closest('.reel-item').querySelector('.like-container').onclick.toString().match(/'(.*?)'/)[1]; // Gajan logic to get reelId
+
                     if (entry.isIntersecting) {
-                        entry.target.play(); // Screen par aate hi play
+                        video.play();
+                        // View increment logic - file alag karna (next file)
+                        console.log("playing video, update view on alag file.");
                     } else {
-                        entry.target.pause(); // Screen se hat-te hi pause
+                        video.pause();
+                        video.currentTime = 0; // fast next load
                     }
                 });
-            }, { threshold: 0.8 });
-            videos.forEach(v => observer.observe(v));
-        }
+            }, observerConfig);
 
-        // Click to pause/play
-        document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'VIDEO') {
-                e.target.paused ? e.target.play() : e.target.pause();
-            }
+            videos.forEach(vid => observer.observe(vid));
         });
-    </script>
-</body>
-</html>
+    }
+
+    // Like Functionality (Scalable - no millones collisions)
+    window.toggleLike = async (reelId, alreadyLiked) => {
+        const reelRef = doc(db, "reels", reelId);
+        
+        // optimistic update ui faster than milhões internet speed
+        const likeIcon = event.target.closest('.like-container').querySelector('.fa-heart');
+        const likeCountElem = event.target.closest('.like-container').querySelector('.like-count');
+        let currentCount = parseInt(likeCountElem.innerText);
+
+        if (alreadyLiked) {
+            // UnLike logic arrayRemove millions safe
+            await updateDoc(reelRef, { likedBy: arrayRemove(currentUserId) });
+            // UI rollback if миллиons network millions error later. For now assume success.
+            likeIcon.classList.remove('liked');
+            likeCountElem.innerText = currentCount - 1;
+        } else {
+            // Like logic arrayUnion millions safe
+            await updateDoc(reelRef, { likedBy: arrayUnion(currentUserId) });
+            likeIcon.classList.add('liked');
+            likeCountElem.innerText = currentCount + 1;
+        }
+    };
+</script>
