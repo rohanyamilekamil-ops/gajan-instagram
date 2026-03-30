@@ -2,29 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Fast Feed</title>
+    <title>Gajan | Reels Official</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-        .feed-wrapper { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
-        .feed-wrapper::-webkit-scrollbar { display: none; }
-        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; background: #000; }
-        .side-icons { position: absolute; right: 12px; bottom: 120px; z-index: 20; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 20; color: white; width: 80%; }
-        .follow-badge { background: rgba(255,255,255,0.2); border: 1px solid white; padding: 2px 10px; border-radius: 6px; font-size: 11px; margin-left: 10px; font-weight: bold; }
-        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
+        .feed { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+        .feed::-webkit-scrollbar { display: none; }
+        .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .side-ui { position: absolute; right: 15px; bottom: 130px; z-index: 20; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 20; color: white; width: 75%; }
+        .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 80px; z-index: 30; pointer-events: none; }
+        .animate-heart { animation: pop 0.6s ease-out; }
+        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
     </style>
 </head>
 <body>
 
-    <div class="feed-wrapper" id="video-feed">
-        </div>
+    <div class="feed" id="main-reels"></div>
 
     <nav>
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-white"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
         <a href="search.html"><i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
@@ -33,66 +34,58 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        const q = query(collection(db, "reels"), orderBy("time", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const feed = document.getElementById('video-feed');
-            feed.innerHTML = "";
-            snapshot.forEach(reelDoc => {
-                const data = reelDoc.data();
-                feed.innerHTML += `
-                    <div class="reel-unit">
-                        <video class="g-video" data-id="${reelDoc.id}" loop playsinline muted src="${data.videoUrl}"></video>
-                        <div class="side-icons">
-                            <i class="fa-solid fa-heart text-3xl"></i>
-                            <p class="text-[11px] font-bold">${data.likedBy ? data.likedBy.length : 0}</p>
+        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
+            const container = document.getElementById('main-reels');
+            container.innerHTML = "";
+            sn.forEach(reelDoc => {
+                const d = reelDoc.data();
+                container.innerHTML += `
+                    <div class="reel" ondblclick="showHeart(this, '${reelDoc.id}')">
+                        <video class="rv" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
+                        <i class="fa-solid fa-heart heart-pop"></i>
+                        <div class="side-ui">
+                            <i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
                             <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${reelDoc.id}'"></i>
                             <i class="fa-solid fa-paper-plane text-2xl" onclick="window.location.href='share_menu.html?vid=${reelDoc.id}'"></i>
                         </div>
                         <div class="bottom-ui">
-                            <div class="flex items-center mb-2">
-                                <p class="font-bold text-sm">@${data.name || 'GajanUser'}</p>
-                                <button class="follow-badge">Follow</button>
-                            </div>
-                            <p class="text-xs opacity-90">${data.caption || ''}</p>
+                            <p class="font-bold text-sm">@${d.name || 'User'} <span class="ml-2 border px-2 py-0.5 rounded text-[10px]" onclick="location.href='users.html'">Follow</span></p>
+                            <p class="text-xs mt-1 opacity-80">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
-            setupFastSwipe();
+            initObserver();
         });
 
-        function setupFastSwipe() {
-            const vids = document.querySelectorAll('.g-video');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target;
-                    const rid = video.getAttribute('data-id');
-                    if (entry.isIntersecting) {
-                        video.play().catch(e => console.log("Auto-play blocked"));
-                        // Views increase quietly
-                        setTimeout(() => { updateDoc(doc(db, "reels", rid), { views: increment(1) }); }, 3000);
-                    } else {
-                        video.pause();
-                        video.currentTime = 0;
-                    }
+        function initObserver() {
+            const vids = document.querySelectorAll('.rv');
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.play();
+                        updateDoc(doc(db, "reels", e.target.dataset.id), { views: increment(1) });
+                    } else { e.target.pause(); e.target.currentTime = 0; }
                 });
-            }, { threshold: 0.6 });
-            vids.forEach(v => observer.observe(v));
+            }, { threshold: 0.8 });
+            vids.forEach(v => obs.observe(v));
         }
 
-        // Tap to Unmute/Pause (Instagram logic)
-        document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'VIDEO') {
-                const v = e.target;
-                if(v.muted) { v.muted = false; } 
-                else { v.paused ? v.play() : v.pause(); }
-            }
-        });
+        window.showHeart = (el, id) => {
+            const h = el.querySelector('.heart-pop');
+            h.classList.add('animate-heart');
+            setTimeout(() => h.classList.remove('animate-heart'), 600);
+            if(auth.currentUser) updateDoc(doc(db, "reels", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+        };
+
+        document.addEventListener('click', (e) => { if(e.target.tagName === 'VIDEO') e.target.muted = !e.target.muted; });
     </script>
 </body>
 </html>
