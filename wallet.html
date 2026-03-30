@@ -1,39 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Wallet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-50 p-6">
-    <div class="bg-black text-white p-6 rounded-[30px] shadow-xl mb-8">
-        <p class="text-xs opacity-60 uppercase font-bold tracking-widest">My Balance</p>
-        <h1 class="text-4xl font-bold mt-2">0 <span class="text-sm font-normal">Tokens</span></h1>
-    </div>
-
-    <h2 class="font-bold text-lg mb-4">Buy More Tokens</h2>
-    <div class="bg-white p-6 rounded-[30px] border text-center">
-        <p class="text-xs text-gray-400 mb-4 uppercase">Scan to Pay Admin</p>
-        <img id="admin-qr" src="https://via.placeholder.com/200?text=Scan+to+Pay" class="w-48 h-48 mx-auto mb-4 border-4 border-gray-100 p-2 rounded-xl">
-        <p class="text-sm font-bold text-pink-600 mb-6">Send Screenshot to Admin for Approval</p>
-        <button class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-xs">Upload Payment Receipt</button>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Admin ke QR ko real-time update karna
-        onSnapshot(doc(db, "admin", "settings"), (doc) => {
-            if(doc.exists()) {
-                document.getElementById('admin-qr').src = doc.data().qrUrl;
-            }
+onAuthStateChanged(auth, (user) => {
+    if(user) {
+        onSnapshot(doc(db, "wallets", user.uid), (doc) => {
+            const bal = doc.exists() ? doc.data().balance : 0;
+            document.getElementById('my-balance').innerText = bal;
         });
-    </script>
-</body>
-</html>
+    }
+});
