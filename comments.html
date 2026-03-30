@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Comments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white pb-20">
+
+    <header class="flex items-center p-4 border-b sticky top-0 bg-white z-50">
+        <button onclick="history.back()"><i class="fa-solid fa-arrow-left text-xl mr-4"></i></button>
+        <h1 class="font-bold text-lg">Comments</h1>
+    </header>
+
+    <div id="comments-list" class="p-4 space-y-4">
+        <p id="loading-text" class="text-center text-gray-400 text-sm py-10">Loading comments...</p>
+    </div>
+
+    <div class="fixed bottom-0 w-full p-3 bg-white border-t flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+            <img id="my-avatar" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+        </div>
+        <input id="comm-input" type="text" placeholder="Add a comment..." class="flex-1 bg-gray-100 rounded-full py-2 px-4 outline-none text-sm">
+        <button onclick="postComment()" class="text-blue-500 font-bold px-2">Post</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Get Reel ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const reelId = urlParams.get('id');
+
+        onAuthStateChanged(auth, user => {
+            if(!user) window.location.href = "index.html";
+            if(user.photoURL) document.getElementById('my-avatar').src = user.photoURL;
+            loadComments();
+        });
+
+        function loadComments() {
+            if(!reelId) return;
+            const q = query(collection(db, "reels", reelId, "comments"), orderBy("time", "desc"));
+            onSnapshot(q, (sn) => {
+                const list = document.getElementById('comments-list');
+                list.innerHTML = "";
+                document.getElementById('loading-text').classList.add('hidden');
+                
+                if(sn.empty) list.innerHTML = "<p class='text-center text-gray-400 py-10 text-xs'>No comments yet. Be the first!</p>";
+
+                sn.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `
+                        <div class="flex space-x-3 items-start">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                                <img src="${d.userImg || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold">${d.userName}</p>
+                                <p class="text-sm text-gray-700">${d.text}</p>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        window.postComment = async () => {
+            const txt = document.getElementById('comm-input').value;
+            if(!txt || !reelId) return;
+
+            const btn = document.querySelector('button');
+            btn.disabled = true;
+
+            try {
+                // Add to sub-collection
+                await addDoc(collection(db, "reels", reelId, "comments"), {
+                    text: txt,
+                    userName: auth.currentUser.displayName || "Gajan User",
+                    userImg: auth.currentUser.photoURL,
+                    uid: auth.currentUser.uid,
+                    time: serverTimestamp()
+                });
+
+                // Update main counter
+                await updateDoc(doc(db, "reels", reelId), {
+                    commentsCount: increment(1)
+                });
+
+                document.getElementById('comm-input').value = "";
+            } catch(e) { alert("Error!"); }
+            btn.disabled = false;
+        };
+    </script>
+</body>
+</html>
