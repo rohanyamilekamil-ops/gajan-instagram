@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Reels Official</title>
+    <title>Gajan | Fast Feed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -10,26 +10,23 @@
         body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
         .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .feed-container::-webkit-scrollbar { display: none; }
-        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        
-        /* Instagram Style Heart Animation */
+        .reel-box { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .side-ui { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; text-shadow: 0 1px 4px #000; }
         .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
         .animate-heart { animation: heartPop 0.8s ease-out; }
         @keyframes heartPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
-
-        .side-bar { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .bottom-info { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; text-shadow: 0 1px 4px #000; }
     </style>
 </head>
 <body>
 
-    <div class="feed-container" id="reels-feed"></div>
+    <div class="feed-container" id="reels-main"></div>
 
     <nav class="fixed bottom-0 w-full h-[75px] bg-gradient-to-t from-black flex justify-around items-center z-[100]">
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-white"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white border-b-2"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black border-2 border-white">G</div>
     </nav>
@@ -44,53 +41,43 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Load Reels and Keep UI Updated
-        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
-            const container = document.getElementById('reels-feed');
-            const scrollPos = container.scrollTop; // Position save karne ke liye
+        // Fetching Data (Ordered by Time)
+        const q = query(collection(db, "reels"), orderBy("time", "desc"));
+        onSnapshot(q, (sn) => {
+            const container = document.getElementById('reels-main');
             container.innerHTML = "";
             sn.forEach(reelDoc => {
                 const d = reelDoc.data();
-                const isLiked = d.likedBy && auth.currentUser && d.likedBy.includes(auth.currentUser.uid);
-                
                 container.innerHTML += `
-                    <div class="reel-unit" ondblclick="handleLike(this, '${reelDoc.id}')">
-                        <video class="v-file" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
+                    <div class="reel-box" ondblclick="doLike(this, '${reelDoc.id}')">
+                        <video class="v-tag" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
                         <i class="fa-solid fa-heart big-heart"></i>
-                        <div class="side-bar">
-                            <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}" onclick="handleLike(this.parentElement.parentElement, '${reelDoc.id}')"></i>
-                            <p class="text-[11px] font-bold mt-[-15px]">${d.likedBy ? d.likedBy.length : 0}</p>
-                            <i class="fa-solid fa-comment text-3xl"></i>
-                            <i class="fa-solid fa-paper-plane text-2xl" onclick="window.location.href='share_menu.html?vid=${reelDoc.id}'"></i>
-                            <div class="mt-2 text-center">
-                                <i class="fa-solid fa-eye text-xl opacity-70"></i>
-                                <p class="text-[9px] font-bold">${d.views || 0}</p>
-                            </div>
+                        <div class="side-ui">
+                            <i class="fa-solid fa-heart text-3xl" onclick="doLike(this.parentElement.parentElement, '${reelDoc.id}')"></i>
+                            <p class="text-[11px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
+                            <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${reelDoc.id}'"></i>
+                            <i class="fa-solid fa-eye text-2xl opacity-70"></i>
+                            <p class="text-[9px] font-bold">${d.views || 0}</p>
                         </div>
-                        <div class="bottom-info">
+                        <div class="bottom-ui">
                             <p class="font-bold text-sm">@${d.name || 'GajanUser'} <span class="ml-2 border border-white px-2 py-0.5 rounded text-[10px]" onclick="location.href='users.html'">Follow</span></p>
-                            <p class="text-xs mt-1 opacity-80 truncate w-[250px]">${d.caption || ''}</p>
+                            <p class="text-xs mt-1 opacity-80">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
-            container.scrollTop = scrollPos; // Swipe position wapas wahi rahegi
-            setupLogic();
+            initObserver();
         });
 
-        function setupLogic() {
-            const vids = document.querySelectorAll('.v-file');
+        function initObserver() {
+            const vids = document.querySelectorAll('.v-tag');
             const obs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
                     const video = e.target;
                     const rid = video.dataset.id;
                     if (e.isIntersecting) {
                         video.play().catch(() => {});
-                        // Logic: Agar user 2 second tak dekhe toh 1 view badhao
-                        setTimeout(() => {
-                            if (!video.paused) {
-                                updateDoc(doc(db, "reels", rid), { views: increment(1) });
-                            }
-                        }, 2500);
+                        // Direct View Update (Simplified for speed)
+                        updateDoc(doc(db, "reels", rid), { views: increment(1) });
                     } else {
                         video.pause();
                         video.currentTime = 0;
@@ -100,23 +87,20 @@
             vids.forEach(v => obs.observe(v));
         }
 
-        // Like Logic (Double Tap + Button)
-        window.handleLike = async (element, reelId) => {
+        // Like System (Double Tap & Button)
+        window.doLike = async (element, reelId) => {
             const heart = element.querySelector('.big-heart');
             heart.classList.add('animate-heart');
             setTimeout(() => heart.classList.remove('animate-heart'), 800);
 
             if(auth.currentUser) {
-                const reelRef = doc(db, "reels", reelId);
-                await updateDoc(reelRef, {
+                await updateDoc(doc(db, "reels", reelId), {
                     likedBy: arrayUnion(auth.currentUser.uid)
                 });
-            } else {
-                alert("Please Login to Like!");
             }
         };
 
-        // Tap for sound (Instagram logic)
+        // Click to Unmute/Play
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'VIDEO') {
                 e.target.muted = !e.target.muted;
