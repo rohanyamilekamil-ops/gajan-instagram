@@ -1,50 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gajan | Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
-        .reels-box { height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .reels-box::-webkit-scrollbar { display: none; }
-        .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background:#000; }
-        
-        /* EXACT INSTAGRAM FIT */
-        video {
-            height: 100%; width: 100%;
-            object-fit: cover; /* Isse black bars khatam ho jayengi */
-            object-position: center; /* Main object hamesha beech mein rahega */
-        }
-
-        .ui { position: absolute; bottom: 90px; left: 15px; color: white; z-index: 10; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        .side { position: absolute; right: 15px; bottom: 120px; z-index: 10; color: white; display: flex; flex-direction: column; gap: 20px; }
-        nav { position: fixed; bottom: 0; width: 100%; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; padding: 20px 0; z-index: 20; }
+        video { height: 100dvh; width: 100vw; object-fit: cover; }
+        .side { position: absolute; right: 15px; bottom: 120px; color: white; display: flex; flex-direction: column; gap: 25px; }
     </style>
 </head>
-<body>
-    <div class="reels-box" id="reels-container">
-        <div class="reel">
-            <video loop playsinline onclick="this.paused ? this.play() : this.pause()" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
-            <div class="side">
-                <i class="fa-solid fa-heart text-3xl"></i>
-                <i class="fa-solid fa-comment text-3xl"></i>
-                <i class="fa-solid fa-share text-2xl"></i>
-            </div>
-            <div class="ui">
-                <p class="font-bold">@mrgajan_</p>
-                <p class="text-xs">UHD Full Screen Mode Fixed 🔥</p>
-            </div>
-        </div>
+<body class="bg-black">
+    <video loop playsinline autoplay src="https://www.w3schools.com/html/mov_bbb.mp4" onclick="this.paused?this.play():this.pause()"></video>
+    <div class="side text-center">
+        <i class="fa-solid fa-heart text-3xl"></i><p class="text-xs">1.2M</p>
+        <i class="fa-solid fa-comment text-3xl"></i><p class="text-xs">10K</p>
     </div>
-
-    <nav>
+    <nav class="fixed bottom-0 w-full bg-black/50 backdrop-blur-md flex justify-around py-4">
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-500"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black">G</div></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-gray-400"></i></a>
     </nav>
 </body>
 </html>
