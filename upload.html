@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Create Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #fff; }
+        .insta-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <header class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white z-50">
+        <a href="profile.html"><i class="fa-solid fa-xmark text-2xl text-gray-500"></i></a>
+        <h1 class="font-bold text-lg">New Reel</h1>
+        <button id="post-btn" onclick="startUpload()" class="text-blue-500 font-bold text-lg">Share</button>
+    </header>
+
+    <main class="p-6">
+        <div class="w-full aspect-[9/16] bg-gray-100 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden mb-6" onclick="document.getElementById('file-input').click()">
+            <div id="placeholder-ui" class="text-center">
+                <i class="fa-solid fa-clapperboard text-5xl text-pink-500 mb-3"></i>
+                <p class="text-xs font-bold text-gray-400">SELECT HD VIDEO</p>
+            </div>
+            <video id="preview-player" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
+            <input type="file" id="file-input" class="hidden" accept="video/*" onchange="showPreview(this)">
+        </div>
+
+        <textarea id="caption" placeholder="Write a caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-32 resize-none border border-gray-100 focus:border-pink-300"></textarea>
+        
+        <div id="progress-container" class="hidden mt-6">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="insta-btn h-2 rounded-full transition-all" style="width: 0%"></div>
+            </div>
+            <p class="text-[10px] text-center mt-2 text-gray-500 font-bold">UPLOADING TO GAJAN CLOUD...</p>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan", 
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
+            messagingSenderId: "838023307513", 
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Preview Video
+        window.showPreview = (input) => {
+            const file = input.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const player = document.getElementById('preview-player');
+                player.src = url;
+                player.classList.remove('hidden');
+                document.getElementById('placeholder-ui').classList.add('hidden');
+            }
+        };
+
+        // Upload Logic
+        window.startUpload = async () => {
+            const file = document.getElementById('file-input').files[0];
+            const caption = document.getElementById('caption').value;
+            const btn = document.getElementById('post-btn');
+
+            if (!file) return alert("Pehle video select karein!");
+
+            btn.innerText = "Wait...";
+            btn.disabled = true;
+            document.getElementById('progress-container').classList.remove('hidden');
+            
+            // Progress animation (Fake but smooth)
+            let p = 0;
+            const interval = setInterval(() => { if(p < 90) p += 5; document.getElementById('progress-bar').style.width = p + "%"; }, 500);
+
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "gajan_live");
+
+            try {
+                // Cloudinary HD Upload
+                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
+                const data = await res.json();
+
+                if(data.secure_url) {
+                    // Save to Firebase
+                    await addDoc(collection(db, "reels"), {
+                        videoUrl: data.secure_url,
+                        caption: caption,
+                        userName: auth.currentUser.displayName,
+                        uid: auth.currentUser.uid,
+                        time: serverTimestamp()
+                    });
+                    
+                    clearInterval(interval);
+                    document.getElementById('progress-bar').style.width = "100%";
+                    alert("✅ Video Posted Successfully!");
+                    window.location.href = "profile.html";
+                } else { throw new Error(); }
+            } catch (err) {
+                alert("Upload Failed! Shayad file badi hai.");
+                btn.innerText = "Share";
+                btn.disabled = false;
+            }
+        };
+
+        onAuthStateChanged(auth, user => { if(!user) window.location.href = "index.html"; });
+    </script>
+</body>
+</html>
