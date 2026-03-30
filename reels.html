@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Stable Feed</title>
+    <title>Gajan | Fast & Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-        .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; background: #000; }
-        .feed-container::-webkit-scrollbar { display: none; }
-        .reel-item { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        .reels-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; background: #000; }
+        .reels-container::-webkit-scrollbar { display: none; }
+        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .side-ui { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; text-shadow: 0 1px 4px #000; }
+        .ui-right { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
+        .ui-left { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 75%; }
         nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
     </style>
 </head>
 <body>
 
-    <div class="feed-container" id="reels-list"></div>
+    <div class="reels-container" id="feed-box">
+        </div>
 
     <nav>
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
@@ -31,7 +32,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, getDocs, doc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -39,58 +40,65 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let viewedReels = new Set(); // Views ko control karne ke liye
+        let viewedAlready = new Set(); 
 
-        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
-            const container = document.getElementById('reels-list');
-            const currentScroll = container.scrollTop;
-            container.innerHTML = "";
-            sn.forEach(reelDoc => {
-                const d = reelDoc.data();
-                container.innerHTML += `
-                    <div class="reel-item">
-                        <video class="rvid" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
-                        <div class="side-ui">
-                            <i class="fa-solid fa-heart text-3xl" onclick="likePost('${reelDoc.id}')"></i>
-                            <p class="text-[11px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
+        // Millions of users ke liye 'getDocs' best hai (Data load once, No Loop)
+        async function fetchStableReels() {
+            const q = query(collection(db, "reels"), orderBy("time", "desc"));
+            const snapshot = await getDocs(q);
+            const box = document.getElementById('feed-box');
+            box.innerHTML = "";
+
+            snapshot.forEach(reelDoc => {
+                const data = reelDoc.data();
+                box.innerHTML += `
+                    <div class="reel-unit">
+                        <video class="reel-video" data-id="${reelDoc.id}" loop playsinline muted src="${data.videoUrl}"></video>
+                        <div class="ui-right">
+                            <i class="fa-solid fa-heart text-3xl" onclick="likeMe('${reelDoc.id}', this)"></i>
+                            <p class="text-[11px] font-bold">${data.likedBy ? data.likedBy.length : 0}</p>
                             <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${reelDoc.id}'"></i>
                             <i class="fa-solid fa-eye text-2xl opacity-70"></i>
-                            <p class="text-[9px] font-bold">${d.views || 0}</p>
+                            <p class="text-[9px] font-bold" id="v-${reelDoc.id}">${data.views || 0}</p>
                             <i class="fa-solid fa-paper-plane text-2xl" onclick="window.location.href='share_menu.html?vid=${reelDoc.id}'"></i>
                         </div>
-                        <div class="bottom-ui">
-                            <p class="font-bold text-sm">@${d.name || 'GajanUser'} <span class="ml-2 border px-2 py-0.5 rounded text-[10px]" onclick="location.href='users.html'">Follow</span></p>
-                            <p class="text-xs mt-1 opacity-80">${d.caption || ''}</p>
+                        <div class="ui-left">
+                            <p class="font-bold text-sm">@${data.name || 'GajanUser'}</p>
+                            <p class="text-xs mt-1 opacity-80">${data.caption || ''}</p>
                         </div>
                     </div>`;
             });
-            container.scrollTop = currentScroll;
-            initObserver();
-        });
+            initSwipeLogic();
+        }
 
-        function initObserver() {
-            const vids = document.querySelectorAll('.rvid');
-            const obs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    const video = e.target;
-                    const rid = video.dataset.id;
-                    if (e.isIntersecting) {
+        function initSwipeLogic() {
+            const vids = document.querySelectorAll('.reel-video');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        const rid = video.dataset.id;
                         video.play().catch(()=>{});
-                        // Sirf ek baar view count hoga jab tak page refresh na ho
-                        if (!viewedReels.has(rid)) {
-                            viewedReels.add(rid);
+                        
+                        // Silent View Update: Sirf 1 bar update hoga
+                        if (!viewedAlready.has(rid)) {
+                            viewedAlready.add(rid);
                             updateDoc(doc(db, "reels", rid), { views: increment(1) });
+                            // Screen par bina refresh kiye number update
+                            const vTxt = document.getElementById('v-'+rid);
+                            if(vTxt) vTxt.innerText = parseInt(vTxt.innerText) + 1;
                         }
                     } else {
-                        video.pause();
+                        entry.target.pause();
                     }
                 });
             }, { threshold: 0.6 });
-            vids.forEach(v => obs.observe(v));
+            vids.forEach(v => observer.observe(v));
         }
 
-        window.likePost = async (id) => {
+        window.likeMe = async (id, btn) => {
             if(auth.currentUser) {
+                btn.style.color = "red";
                 await updateDoc(doc(db, "reels", id), { likedBy: arrayUnion(auth.currentUser.uid) });
             }
         };
@@ -101,6 +109,8 @@
                 if(e.target.paused) e.target.play();
             }
         });
+
+        fetchStableReels();
     </script>
 </body>
 </html>
