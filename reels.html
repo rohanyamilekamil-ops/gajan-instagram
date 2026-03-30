@@ -3,72 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Reels</title>
+    <title>Gajan | Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .reel-container { height: 100vh; scroll-snap-type: y mandatory; overflow-y: scroll; scroll-behavior: smooth; }
-        .reel-video { height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .overlay-bottom { background: linear-gradient(transparent, rgba(0,0,0,0.8)); }
+        body { background-color: #000; margin: 0; overflow: hidden; }
+        .reels-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        .reels-container::-webkit-scrollbar { display: none; }
+        .reel-video {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-player { height: 100%; width: 100%; object-fit: cover; }
+        .overlay-content {
+            position: absolute;
+            bottom: 80px;
+            left: 15px;
+            right: 70px;
+            color: white;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+        }
+        .side-buttons {
+            position: absolute;
+            right: 15px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            color: white;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.9);
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            z-index: 100;
+        }
     </style>
 </head>
-<body class="bg-black no-scrollbar">
+<body>
 
-    <div class="reel-container no-scrollbar">
-
-        <div class="reel-video flex items-center justify-center">
-            <video class="h-full w-full object-cover" loop autoplay muted>
+    <div class="reels-container" id="reels-list">
+        
+        <div class="reel-video">
+            <video class="video-player" loop autoplay muted onclick="togglePlay(this)">
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             </video>
-
-            <div class="absolute top-5 w-full flex justify-center space-x-6 text-white font-bold opacity-80">
-                <span class="border-b-2 border-white pb-1">Reels</span>
-                <span class="text-gray-400">Friends</span>
-            </div>
-
-            <div class="absolute right-4 bottom-24 flex flex-col items-center space-y-6 text-white">
-                <div class="text-center">
-                    <i class="fa-regular fa-heart text-3xl"></i>
-                    <p class="text-xs mt-1">1.5M</p>
-                </div>
-                <div class="text-center">
-                    <i class="fa-regular fa-comment text-3xl"></i>
-                    <p class="text-xs mt-1">12K</p>
-                </div>
-                <i class="fa-regular fa-paper-plane text-2xl"></i>
+            
+            <div class="side-buttons">
+                <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] mt-1">1.2M</p></div>
+                <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] mt-1">45K</p></div>
+                <i class="fa-solid fa-paper-plane text-2xl"></i>
                 <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
-                <div class="w-8 h-8 rounded border-2 border-white overflow-hidden">
-                    <img src="https://via.placeholder.com/50" class="w-full h-full object-cover">
-                </div>
             </div>
 
-            <div class="absolute bottom-6 left-4 right-16 text-white overlay-bottom p-4 rounded-xl">
-                <div class="flex items-center space-x-2 mb-2">
+            <div class="overlay-content">
+                <div class="flex items-center space-x-3 mb-3">
                     <img src="https://via.placeholder.com/50" class="w-8 h-8 rounded-full border border-white">
                     <span class="font-bold text-sm">mrgajan_</span>
                     <button class="border border-white px-2 py-0.5 rounded text-[10px] font-bold">Follow</button>
                 </div>
-                <p class="text-xs mb-3 line-clamp-2">Hamara Jamnagar jannat se kam nahi! #jamnagar #gajan #viral</p>
-                <div class="flex items-center space-x-2 text-[10px]">
-                    <i class="fa-solid fa-music"></i>
-                    <marquee class="w-32">Original Audio - mrgajan_ • Surat News</marquee>
-                </div>
+                <p class="text-xs">Jamnagar ki shan! Gajan app par asli reels ka maza. ❤️ #gajan #jamnagar</p>
+                <div class="flex items-center mt-3 text-[10px]"><i class="fa-solid fa-music mr-2"></i> <span>Original Audio - mrgajan_</span></div>
             </div>
         </div>
 
-        <div class="reel-video flex items-center justify-center">
-             <div class="text-white opacity-20">Swipe Up for Next Reel...</div>
+        <div class="reel-video">
+            <video class="video-player" loop onclick="togglePlay(this)">
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-with-red-lips-and-long-hair-2856-large.mp4" type="video/mp4">
+            </video>
+            <div class="side-buttons">
+                <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] mt-1">800K</p></div>
+                <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] mt-1">12K</p></div>
+                <i class="fa-solid fa-paper-plane text-2xl"></i>
+                <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+            </div>
+            <div class="overlay-content">
+                <div class="flex items-center space-x-3 mb-3">
+                    <img src="https://via.placeholder.com/50" class="w-8 h-8 rounded-full border border-white">
+                    <span class="font-bold text-sm">gajan_official</span>
+                    <button class="border border-white px-2 py-0.5 rounded text-[10px] font-bold">Follow</button>
+                </div>
+                <p class="text-xs">Testing vertical swipe on Gajan App. 🚀 #viral #trending</p>
+            </div>
         </div>
 
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-transparent flex justify-around items-center py-4 z-50">
-        <a href="index.html"><i class="fa-solid fa-house text-2xl text-white opacity-70"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-white opacity-70"></i>
-        <i class="fa-solid fa-clapperboard text-2xl text-white"></i> <i class="fa-solid fa-wallet text-2xl text-pink-500"></i>
-        <div class="w-7 h-7 bg-gray-400 rounded-full border border-white"></div>
+    <nav class="bottom-nav">
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
+        <a href="profile.html"><div class="w-7 h-7 rounded-full border border-white flex items-center justify-center text-[10px] text-white">G</div></a>
     </nav>
 
+    <script>
+        function togglePlay(video) {
+            if (video.paused) video.play();
+            else video.pause();
+        }
+
+        // Auto-play video on scroll logic can be added here for standard performance
+    </script>
 </body>
 </html>
