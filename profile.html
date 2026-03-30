@@ -1,133 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .insta-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
-</head>
-<body class="bg-white pb-24 no-scrollbar">
+<script type="module">
+    // ... (Firebase init same rahega) ...
 
-    <header class="flex justify-between items-center px-5 py-3 border-b sticky top-0 bg-white z-50">
-        <h1 class="font-bold italic text-2xl">Gajan</h1>
-        <div class="flex space-x-6 items-center">
-            <i class="fa-regular fa-square-plus text-2xl cursor-pointer" onclick="openUpload()"></i>
-            <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl text-black"></i></a>
-            <i class="fa-solid fa-right-from-bracket text-red-500" onclick="logout()"></i>
-        </div>
-    </header>
+    window.uploadReel = async () => {
+        const videoFile = document.getElementById('reel-input').files[0];
+        const btn = document.getElementById('upload-btn');
+        if(!videoFile) return alert("Select video!");
 
-    <div class="p-6">
-        <div class="flex items-center space-x-8 mb-6">
-            <div class="relative w-24 h-24 rounded-full p-1 insta-gradient cursor-pointer" onclick="document.getElementById('profile-upload').click()">
-                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
-            </div>
-            <div class="flex-1 flex justify-around text-center">
-                <div><p class="font-bold text-lg">11</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
-                <div><p class="font-bold text-lg">191</p><p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p></div>
-                <div><p class="font-bold text-lg">120</p><p class="text-[10px] text-gray-400 font-bold uppercase">Following</p></div>
-            </div>
-        </div>
-        <p id="name" class="font-bold text-lg text-black">Gajan User</p>
-        <p class="text-sm text-gray-500 mb-5">Jamnagar • HD Video Mode 🚀</p>
-        <div class="flex space-x-2">
-            <button class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs border border-gray-200 text-black">Edit Profile</button>
-            <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2.5 rounded-xl font-bold text-xs border border-pink-100 text-center">Wallet</a>
-        </div>
-    </div>
+        btn.innerText = "Optimizing & Uploading...";
+        btn.disabled = true;
 
-    <div id="upload-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="font-bold text-black text-lg">New Post</h3>
-                <i class="fa-solid fa-xmark text-xl cursor-pointer text-gray-400" onclick="closeUpload()"></i>
-            </div>
-            
-            <div class="border-2 border-dashed border-pink-100 rounded-3xl p-8 text-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('reel-input').click()">
-                <i class="fa-solid fa-video text-4xl text-pink-500 mb-2"></i>
-                <p id="file-status" class="text-[10px] text-gray-500 font-bold">SELECT VIDEO (HD MP4)</p>
-                <input type="file" id="reel-input" class="hidden" accept="video/mp4,video/x-m4v,video/*">
-            </div>
+        const fd = new FormData();
+        fd.append("file", videoFile);
+        fd.append("upload_preset", "gajan_live");
+        // AUTO COMPRESSION TAGS
+        fd.append("quality", "auto"); 
+        fd.append("fetch_format", "auto");
 
-            <textarea id="reel-caption" placeholder="Write caption..." class="w-full mt-4 p-4 bg-gray-50 rounded-2xl text-sm outline-none h-20 border border-gray-100"></textarea>
-            
-            <button id="upload-btn" onclick="uploadReel()" class="w-full mt-4 py-4 insta-gradient text-white font-bold rounded-2xl shadow-lg active:scale-95 transition">Upload Video</button>
-        </div>
-    </div>
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
+            const data = await res.json();
 
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4 z-50">
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-black"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[10px] text-white font-bold">G</div></a>
-    </nav>
-
-    <input type="file" id="profile-upload" class="hidden" accept="image/*">
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        window.openUpload = () => document.getElementById('upload-modal').classList.remove('hidden');
-        window.closeUpload = () => document.getElementById('upload-modal').classList.add('hidden');
-
-        onAuthStateChanged(auth, user => {
-            if(!user) window.location.href = "index.html";
-            else {
-                document.getElementById('name').innerText = user.displayName || "Gajan User";
-                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
-            }
-        });
-
-        // FAST HD VIDEO UPLOAD
-        window.uploadReel = async () => {
-            const videoFile = document.getElementById('reel-input').files[0];
-            const caption = document.getElementById('reel-caption').value;
-            const btn = document.getElementById('upload-btn');
-
-            if(!videoFile) return alert("Pehle video select karein!");
-
-            btn.innerText = "Processing HD Video...";
-            btn.disabled = true;
-
-            const fd = new FormData();
-            fd.append("file", videoFile);
-            fd.append("upload_preset", "gajan_live");
-
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
-                const data = await res.json();
-
-                if(data.secure_url) {
-                    await addDoc(collection(db, "reels"), {
-                        videoUrl: data.secure_url,
-                        caption: caption,
-                        name: auth.currentUser.displayName,
-                        uid: auth.currentUser.uid,
-                        time: serverTimestamp()
-                    });
-                    alert("✅ Video Posted Successfully!");
-                    location.reload();
-                } else { throw new Error(); }
-            } catch (err) {
-                alert("Upload Failed! Shayad video ka size bahut bada hai. Chota HD video try karein.");
-                btn.innerText = "Upload Video";
-                btn.disabled = false;
-            }
-        };
-
-        window.logout = () => signOut(auth);
-    </script>
-</body>
-</html>
+            if(data.secure_url) {
+                await addDoc(collection(db, "reels"), {
+                    videoUrl: data.secure_url,
+                    uid: auth.currentUser.uid,
+                    time: serverTimestamp()
+                });
+                alert("✅ Uploaded!");
+                location.reload();
+            } else { alert("Error: Video too large for free plan."); }
+        } catch (err) {
+            alert("Network Error!");
+        } finally {
+            btn.innerText = "Upload Video";
+            btn.disabled = false;
+        }
+    };
+</script>
