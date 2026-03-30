@@ -2,32 +2,42 @@
 <html>
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Login</title>
+    <title>Gajan | Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gradient-to-tr from-orange-500 to-pink-600 h-screen flex items-center justify-center">
-    <div class="w-full max-w-sm p-8 text-center">
-        <h1 class="text-7xl text-white mb-8" style="font-family: 'Grand Hotel', cursive;">Gajan</h1>
-        <div class="bg-white/20 backdrop-blur-lg p-8 rounded-[30px] border border-white/30 space-y-5">
-            <input id="email" type="email" placeholder="Email" class="w-full p-4 bg-white/10 rounded-2xl outline-none text-white placeholder-white/70">
-            <input id="pass" type="password" placeholder="Password" class="w-full p-4 bg-white/10 rounded-2xl outline-none text-white placeholder-white/70">
-            <button onclick="login()" class="w-full py-4 bg-white text-pink-600 font-bold rounded-2xl shadow-xl">Log In</button>
+<body class="bg-white pb-20">
+    <header class="flex justify-between items-center px-5 py-4 border-b">
+        <h1 class="text-2xl font-bold italic">Gajan</h1>
+        <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl"></i></a>
+    </header>
+    <div class="p-6 flex flex-col items-center">
+        <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-yellow-400 to-pink-600 mb-4">
+            <img id="u-img" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
+        </div>
+        <h2 id="u-name" class="font-bold text-xl">Loading...</h2>
+        <p class="text-gray-500 text-sm">Jamnagar, Gujarat</p>
+        <div class="flex space-x-4 mt-6">
+            <a href="wallet.html" class="bg-pink-50 text-pink-600 px-10 py-2 rounded-xl font-bold border">Wallet</a>
         </div>
     </div>
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4">
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-black"></i></a>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-gray-300"></i></a>
+    </nav>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        window.login = () => {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            signInWithEmailAndPassword(auth, e, p)
-            .then(() => window.location.href = "profile.html")
-            .catch(err => alert("Email ya Password galat hai!"));
-        };
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                document.getElementById('u-name').innerText = user.displayName || "Gajan User";
+                if(user.photoURL) document.getElementById('u-img').src = user.photoURL;
+            } else { window.location.href = "index.html"; }
+        });
     </script>
 </body>
 </html>
