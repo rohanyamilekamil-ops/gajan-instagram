@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Camera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .filter-bw { filter: grayscale(1); }
+        .filter-sepia { filter: sepia(1); }
+    </style>
+</head>
+<body class="bg-black h-screen flex flex-col items-center">
+    <video id="webcam" autoplay playsinline class="w-full h-3/4 object-cover"></video>
+    
+    <div class="flex space-x-4 mt-10">
+        <button onclick="applyFilter('filter-bw')" class="bg-white p-2 rounded text-xs font-bold">B&W</button>
+        <button onclick="applyFilter('')" class="bg-white p-2 rounded text-xs font-bold">Normal</button>
+        <button onclick="startRecord()" class="bg-red-600 text-white p-5 rounded-full font-bold">REC</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => video.srcObject = stream);
+
+        window.applyFilter = (f) => {
+            video.className = "w-full h-3/4 object-cover " + f;
+        };
+
+        window.startRecord = () => {
+            alert("Recording started! (Feature being linked to Upload)");
+        };
+    </script>
+</body>
+</html>
