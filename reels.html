@@ -2,31 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Fast Feed</title>
+    <title>Gajan | Stable Feed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-        .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+        .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; background: #000; }
         .feed-container::-webkit-scrollbar { display: none; }
-        .reel-box { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        .reel-item { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         .side-ui { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
         .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; text-shadow: 0 1px 4px #000; }
-        .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
-        .animate-heart { animation: heartPop 0.8s ease-out; }
-        @keyframes heartPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
     </style>
 </head>
 <body>
 
-    <div class="feed-container" id="reels-main"></div>
+    <div class="feed-container" id="reels-list"></div>
 
-    <nav class="fixed bottom-0 w-full h-[75px] bg-gradient-to-t from-black flex justify-around items-center z-[100]">
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-white"></i></a>
+    <nav>
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white border-b-2"></i></a>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black border-2 border-white">G</div>
     </nav>
@@ -41,66 +39,62 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Fetching Data (Ordered by Time)
-        const q = query(collection(db, "reels"), orderBy("time", "desc"));
-        onSnapshot(q, (sn) => {
-            const container = document.getElementById('reels-main');
+        let viewedReels = new Set(); // Views ko control karne ke liye
+
+        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
+            const container = document.getElementById('reels-list');
+            const currentScroll = container.scrollTop;
             container.innerHTML = "";
             sn.forEach(reelDoc => {
                 const d = reelDoc.data();
                 container.innerHTML += `
-                    <div class="reel-box" ondblclick="doLike(this, '${reelDoc.id}')">
-                        <video class="v-tag" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
-                        <i class="fa-solid fa-heart big-heart"></i>
+                    <div class="reel-item">
+                        <video class="rvid" data-id="${reelDoc.id}" loop playsinline muted src="${d.videoUrl}"></video>
                         <div class="side-ui">
-                            <i class="fa-solid fa-heart text-3xl" onclick="doLike(this.parentElement.parentElement, '${reelDoc.id}')"></i>
+                            <i class="fa-solid fa-heart text-3xl" onclick="likePost('${reelDoc.id}')"></i>
                             <p class="text-[11px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
                             <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${reelDoc.id}'"></i>
                             <i class="fa-solid fa-eye text-2xl opacity-70"></i>
                             <p class="text-[9px] font-bold">${d.views || 0}</p>
+                            <i class="fa-solid fa-paper-plane text-2xl" onclick="window.location.href='share_menu.html?vid=${reelDoc.id}'"></i>
                         </div>
                         <div class="bottom-ui">
-                            <p class="font-bold text-sm">@${d.name || 'GajanUser'} <span class="ml-2 border border-white px-2 py-0.5 rounded text-[10px]" onclick="location.href='users.html'">Follow</span></p>
+                            <p class="font-bold text-sm">@${d.name || 'GajanUser'} <span class="ml-2 border px-2 py-0.5 rounded text-[10px]" onclick="location.href='users.html'">Follow</span></p>
                             <p class="text-xs mt-1 opacity-80">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
+            container.scrollTop = currentScroll;
             initObserver();
         });
 
         function initObserver() {
-            const vids = document.querySelectorAll('.v-tag');
+            const vids = document.querySelectorAll('.rvid');
             const obs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
                     const video = e.target;
                     const rid = video.dataset.id;
                     if (e.isIntersecting) {
-                        video.play().catch(() => {});
-                        // Direct View Update (Simplified for speed)
-                        updateDoc(doc(db, "reels", rid), { views: increment(1) });
+                        video.play().catch(()=>{});
+                        // Sirf ek baar view count hoga jab tak page refresh na ho
+                        if (!viewedReels.has(rid)) {
+                            viewedReels.add(rid);
+                            updateDoc(doc(db, "reels", rid), { views: increment(1) });
+                        }
                     } else {
                         video.pause();
-                        video.currentTime = 0;
                     }
                 });
-            }, { threshold: 0.8 });
+            }, { threshold: 0.6 });
             vids.forEach(v => obs.observe(v));
         }
 
-        // Like System (Double Tap & Button)
-        window.doLike = async (element, reelId) => {
-            const heart = element.querySelector('.big-heart');
-            heart.classList.add('animate-heart');
-            setTimeout(() => heart.classList.remove('animate-heart'), 800);
-
+        window.likePost = async (id) => {
             if(auth.currentUser) {
-                await updateDoc(doc(db, "reels", reelId), {
-                    likedBy: arrayUnion(auth.currentUser.uid)
-                });
+                await updateDoc(doc(db, "reels", id), { likedBy: arrayUnion(auth.currentUser.uid) });
             }
         };
 
-        // Click to Unmute/Play
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'VIDEO') {
                 e.target.muted = !e.target.muted;
