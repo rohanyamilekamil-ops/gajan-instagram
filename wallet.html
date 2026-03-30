@@ -1,87 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gajan | Wallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .wallet-gradient { background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
-    </style>
 </head>
-<body class="bg-gray-50 h-screen flex flex-col">
-
+<body class="bg-gray-50 pb-24">
     <header class="p-4 bg-white border-b flex items-center space-x-4">
-        <a href="index.html"><i class="fa-solid fa-arrow-left text-xl"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl"></i></a>
         <h1 class="text-xl font-bold">Gajan Pay</h1>
     </header>
 
-    <main class="p-6 flex-1 overflow-y-auto">
-        <div class="wallet-gradient rounded-3xl p-8 text-white shadow-2xl mb-8 relative overflow-hidden">
-            <p class="text-sm opacity-80 font-bold uppercase tracking-widest">Total Tokens</p>
-            <h2 class="text-5xl font-bold mt-2" id="token-balance">0</h2>
+    <main class="p-6">
+        <div class="rounded-3xl p-8 text-white shadow-2xl mb-8 relative overflow-hidden" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">
+            <p class="text-sm opacity-80 uppercase tracking-widest font-bold">Current Balance</p>
+            <h2 class="text-6xl font-bold mt-2" id="token-balance">0</h2>
+            <p class="text-sm mt-1">Tokens Available</p>
             <i class="fa-solid fa-coins absolute -right-4 -bottom-4 text-9xl opacity-20"></i>
         </div>
 
         <div class="grid grid-cols-2 gap-4 mb-8">
-            <button class="bg-white border p-5 rounded-2xl shadow-sm text-center" onclick="alert('Buy Token Section Coming Soon!')">
-                <i class="fa-solid fa-plus-circle text-pink-500 text-3xl mb-2"></i>
+            <button class="bg-white border p-6 rounded-2xl shadow-sm text-center" onclick="alert('Scan to Buy Coming Soon!')">
+                <i class="fa-solid fa-circle-plus text-pink-500 text-3xl mb-2"></i>
                 <p class="text-xs font-bold">Buy Tokens</p>
             </button>
-            <button class="bg-white border p-5 rounded-2xl shadow-sm text-center" onclick="handleWithdraw()">
+            <button class="bg-white border p-6 rounded-2xl shadow-sm text-center" onclick="handleWithdraw()">
                 <i class="fa-solid fa-money-bill-transfer text-indigo-500 text-3xl mb-2"></i>
                 <p class="text-xs font-bold">Withdraw</p>
             </button>
         </div>
 
         <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <h3 class="text-sm font-bold text-blue-800 mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Withdrawal Rules</h3>
-            <ul class="text-[10px] text-blue-600 space-y-1">
-                <li>• Minimum withdrawal: 100 Tokens.</li>
-                <li>• Admin approvals take 24-48 hours.</li>
-                <li>• Token to INR conversion: 1 Token = 1 Rupee (Demo).</li>
-            </ul>
+            <h3 class="text-sm font-bold text-blue-800 mb-1">Important Info</h3>
+            <p class="text-[10px] text-blue-600">Minimum 100 Tokens are required for withdrawal. Admin approval takes 24 hours.</p>
         </div>
     </main>
+
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4 z-50">
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-300"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
+        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white font-bold">G</div></a>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
-            authDomain: "tiktok-clone-gajan.firebaseapp.com",
-            projectId: "tiktok-clone-gajan",
-            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
-            messagingSenderId: "838023307513",
-            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, user => {
             if (user) {
-                // Real-time balance listener
                 onSnapshot(doc(db, "users", user.uid), (doc) => {
-                    const data = doc.data();
-                    document.getElementById('token-balance').innerText = data.tokens || 0;
+                    document.getElementById('token-balance').innerText = doc.data()?.tokens || 0;
                 });
-            } else {
-                window.location.href = "index.html";
-            }
+            } else { window.location.href = "index.html"; }
         });
 
         window.handleWithdraw = () => {
             const bal = parseInt(document.getElementById('token-balance').innerText);
-            if(bal < 100) {
-                alert("Aapka balance 100 tokens se kam hai!");
-            } else {
-                alert("Withdrawal feature standard mode mein activate ho raha hai...");
-            }
+            if(bal < 100) alert("Need at least 100 Tokens!");
+            else alert("Withdrawal request sent!");
         };
     </script>
 </body>
