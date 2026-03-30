@@ -3,120 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Modern Platform</title>
+    <title>Gajan | Official</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #ffffff; overflow-x: hidden; }
-        .gajan-logo { font-family: 'Grand Hotel', cursive; }
-        .attractive-bg { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); background-attachment: fixed; }
-        .glass-card { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 25px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .active-tab { border-bottom: 2px solid #000; color: #000 !important; }
-        .screen { display: none; min-height: 100vh; }
+        body { font-family: 'Poppins', sans-serif; background: #fafafa; color: #262626; }
+        .gajan-logo { font-family: 'Grand Hotel', cursive; font-size: 2.5rem; }
+        .insta-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .nav-active { color: #000 !important; transform: scale(1.1); }
+        .screen { display: none; min-height: 100vh; animation: fadeIn 0.3s ease-in; }
         .active-screen { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="no-scrollbar">
 
-    <div id="auth-screen" class="screen active-screen flex flex-col items-center justify-center p-6 attractive-bg">
-        <h1 class="text-white text-8xl gajan-logo mb-10">Gajan</h1>
-        <div id="login-form" class="glass-card w-full max-w-sm p-8 space-y-6">
-            <input id="login-email" type="email" placeholder="Email" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white placeholder-white/70">
-            <input id="login-password" type="password" placeholder="Password" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white placeholder-white/70">
-            <button onclick="handleLogin()" class="w-full py-3 bg-white text-pink-600 font-bold rounded-xl shadow-lg">Log In</button>
-            <p class="text-center text-sm text-white">Naya account? <button onclick="toggleAuth()" class="font-bold underline">Sign Up</button></p>
+    <div id="auth-screen" class="screen active-screen flex flex-col items-center justify-center p-6 insta-gradient text-white">
+        <h1 class="gajan-logo text-8xl mb-8 drop-shadow-lg">Gajan</h1>
+        <div id="login-form" class="w-full max-w-sm bg-white/10 backdrop-blur-md p-8 rounded-[30px] border border-white/20 space-y-5">
+            <input id="login-email" type="email" placeholder="Email" class="w-full p-4 bg-white/20 rounded-2xl outline-none placeholder-white/70">
+            <input id="login-password" type="password" placeholder="Password" class="w-full p-4 bg-white/20 rounded-2xl outline-none placeholder-white/70">
+            <button onclick="handleLogin()" class="w-full py-4 bg-white text-pink-600 font-bold rounded-2xl shadow-xl active:scale-95 transition">Log In</button>
+            <p class="text-center text-sm">Account nahi hai? <button onclick="toggleAuth()" class="font-bold underline">Sign Up</button></p>
         </div>
-        <div id="signup-form" class="glass-card w-full max-w-sm p-8 space-y-4 hidden">
-            <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
-            <input id="reg-email" type="email" placeholder="Email" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
-            <input id="reg-password" type="password" placeholder="Password" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
-            <button onclick="handleSignup()" class="w-full py-3 bg-pink-500 text-white font-bold rounded-xl">Sign Up</button>
-            <p class="text-center text-sm text-white">Account hai? <button onclick="toggleAuth()" class="font-bold underline">Log In</button></p>
+        <div id="signup-form" class="hidden w-full max-w-sm bg-white/10 backdrop-blur-md p-8 rounded-[30px] border border-white/20 space-y-4 text-white">
+            <h2 class="text-center font-bold">Join Gajan</h2>
+            <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 bg-white/20 rounded-2xl outline-none">
+            <input id="reg-email" type="email" placeholder="Email" class="w-full p-4 bg-white/20 rounded-2xl outline-none">
+            <input id="reg-password" type="password" placeholder="Password" class="w-full p-4 bg-white/20 rounded-2xl outline-none">
+            <button onclick="handleSignup()" class="w-full py-4 bg-indigo-500 text-white font-bold rounded-2xl shadow-xl">Create Account</button>
+            <p class="text-center text-sm">Pahle se account hai? <button onclick="toggleAuth()" class="font-bold underline">Log In</button></p>
         </div>
     </div>
 
-    <div id="profile-screen" class="screen">
-        <header class="flex justify-between items-center px-4 py-2 border-b sticky top-0 bg-white z-50">
-            <h1 class="gajan-logo text-3xl">Gajan</h1>
-            <div class="flex space-x-6 items-center">
-                <i class="fa-regular fa-square-plus text-2xl" onclick="document.getElementById('post-upload').click()"></i>
-                <i class="fa-brands fa-facebook-messenger text-2xl" onclick="showScreen('chat-screen')"></i>
-                <button onclick="logout()" class="text-red-500 font-bold text-[10px]">LOGOUT</button>
+    <div id="main-app" class="hidden pb-20">
+        
+        <header id="app-header" class="flex justify-between items-center px-5 py-2 bg-white border-b sticky top-0 z-50">
+            <h1 class="gajan-logo">Gajan</h1>
+            <div class="flex space-x-6 items-center text-2xl">
+                <i class="fa-regular fa-square-plus cursor-pointer" onclick="document.getElementById('post-upload').click()"></i>
+                <i class="fa-brands fa-facebook-messenger cursor-pointer" onclick="showScreen('chat-screen')"></i>
+                <i class="fa-solid fa-right-from-bracket text-red-500 text-sm" onclick="logout()"></i>
             </div>
         </header>
 
-        <div class="p-5">
-            <div class="flex items-center space-x-8 mb-6">
-                <div class="relative group" onclick="document.getElementById('profile-upload').click()">
-                    <img id="user-avatar" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border-2 border-pink-500 p-0.5 object-cover">
-                    <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-[10px]"><i class="fa-solid fa-plus"></i></div>
+        <div id="profile-screen" class="screen">
+            <div class="p-6">
+                <div class="flex items-center space-x-8 mb-8">
+                    <div class="relative cursor-pointer" onclick="document.getElementById('profile-upload').click()">
+                        <div class="w-24 h-24 rounded-full p-1 insta-gradient">
+                            <img id="user-avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-white object-cover">
+                        </div>
+                        <div class="absolute bottom-1 right-1 bg-blue-500 border-2 border-white text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px]"><i class="fa-solid fa-plus"></i></div>
+                    </div>
+                    <div class="flex-1 flex justify-around text-center">
+                        <div><p class="font-bold text-lg">11</p><p class="text-xs text-gray-400">Posts</p></div>
+                        <div><p class="font-bold text-lg">191</p><p class="text-xs text-gray-400">Followers</p></div>
+                        <div><p class="font-bold text-lg">120</p><p class="text-xs text-gray-400">Following</p></div>
+                    </div>
                 </div>
-                <div class="flex-1 flex justify-around text-center">
-                    <div><p class="font-bold">11</p><p class="text-[10px] text-gray-400">POSTS</p></div>
-                    <div><p class="font-bold">191</p><p class="text-[10px] text-gray-400">FOLLOWERS</p></div>
-                    <div><p class="font-bold">120</p><p class="text-[10px] text-gray-400">FOLLOWING</p></div>
+                <div class="px-2 mb-6">
+                    <p id="display-name" class="font-bold text-lg">Gajan User</p>
+                    <p class="text-sm text-gray-500">Jamnagar • Standard Core Edition ❤️</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button class="flex-1 py-2.5 bg-gray-100 rounded-xl font-bold text-xs border border-gray-200">Edit Profile</button>
+                    <button onclick="showScreen('wallet-screen')" class="flex-1 py-2.5 bg-pink-50 text-pink-600 rounded-xl font-bold text-xs border border-pink-100">Wallet</button>
                 </div>
             </div>
-            <div class="mb-4">
-                <p id="display-name" class="font-bold text-sm">Gajan User</p>
-                <p class="text-xs text-gray-600">Standard Core Gajan Edition ❤️</p>
+            <div class="flex border-t border-gray-100">
+                <div class="flex-1 py-3 text-center border-b-2 border-black"><i class="fa-solid fa-table-cells text-xl"></i></div>
+                <div class="flex-1 py-3 text-center text-gray-300"><i class="fa-solid fa-clapperboard text-xl"></i></div>
+                <div class="flex-1 py-3 text-center text-gray-300"><i class="fa-solid fa-user-tag text-xl"></i></div>
             </div>
-            <div class="flex space-x-2">
-                <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs border">Edit profile</button>
-                <button onclick="showScreen('wallet-screen')" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs text-pink-600 border"><i class="fa-solid fa-wallet mr-1"></i>Wallet</button>
+            <div class="grid grid-cols-3 gap-0.5" id="posts-grid">
+                <img src="https://picsum.photos/400/400?random=1" class="aspect-square object-cover">
+                <img src="https://picsum.photos/400/400?random=2" class="aspect-square object-cover">
+                <img src="https://picsum.photos/400/400?random=3" class="aspect-square object-cover">
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-0.5 mt-4 pb-24">
-            <img src="https://picsum.photos/300/300?random=1" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/300/300?random=2" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/300/300?random=3" class="aspect-square w-full object-cover">
+        <div id="wallet-screen" class="screen bg-white">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-6 flex items-center"><i class="fa-solid fa-chevron-left mr-4" onclick="showScreen('profile-screen')"></i>My Wallet</h2>
+                <div class="insta-gradient p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden mb-8">
+                    <p class="text-sm opacity-80 uppercase tracking-widest font-bold">Total Tokens</p>
+                    <h2 class="text-6xl font-bold mt-2" id="token-balance">0</h2>
+                    <i class="fa-solid fa-coins absolute -right-6 -bottom-6 text-9xl opacity-20 rotate-12"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-6 rounded-3xl text-center border border-gray-100"><i class="fa-solid fa-qrcode text-pink-500 text-3xl mb-2"></i><p class="font-bold text-xs text-gray-600">Scan & Pay</p></div>
+                    <div class="bg-gray-50 p-6 rounded-3xl text-center border border-gray-100" onclick="alert('100 Tokens Needed')"><i class="fa-solid fa-hand-holding-dollar text-indigo-500 text-3xl mb-2"></i><p class="font-bold text-xs text-gray-600">Withdraw</p></div>
+                </div>
+            </div>
         </div>
+
+        <div id="chat-screen" class="screen bg-white flex flex-col h-screen">
+            <header class="p-4 border-b flex items-center space-x-4 glass sticky top-0">
+                <i class="fa-solid fa-chevron-left text-xl" onclick="showScreen('profile-screen')"></i>
+                <h2 class="font-bold">Gajan Community Chat</h2>
+            </header>
+            <div id="chat-window" class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar bg-gray-50"></div>
+            <div class="p-4 bg-white border-t flex items-center space-x-3">
+                <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm">
+                <button onclick="sendGajanMsg()" class="text-blue-500 font-bold p-2"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+            </div>
+        </div>
+
+        <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 flex justify-around items-center py-3 z-[100]">
+            <i class="fa-solid fa-house text-2xl nav-active" onclick="showScreen('profile-screen')"></i>
+            <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
+            <i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i>
+            <i class="fa-solid fa-wallet text-2xl text-gray-300" onclick="showScreen('wallet-screen')"></i>
+            <div class="w-8 h-8 rounded-full border-2 border-black flex items-center justify-center font-bold text-[10px]">G</div>
+        </nav>
     </div>
 
-    <div id="wallet-screen" class="screen bg-gray-50">
-        <header class="p-4 bg-white border-b flex items-center space-x-4">
-            <i class="fa-solid fa-arrow-left text-xl" onclick="showScreen('profile-screen')"></i>
-            <h1 class="text-xl font-bold">Gajan Pay</h1>
-        </header>
-        <div class="p-6">
-            <div class="attractive-bg rounded-3xl p-8 text-white shadow-xl mb-6 relative overflow-hidden">
-                <p class="text-xs opacity-80 uppercase font-bold">Token Balance</p>
-                <h2 class="text-6xl font-bold mt-2" id="token-balance">0</h2>
-                <i class="fa-solid fa-coins absolute -right-4 -bottom-4 text-9xl opacity-20"></i>
-            </div>
-            <button class="w-full bg-white border-2 border-pink-500 text-pink-500 p-4 rounded-2xl font-bold shadow-sm mb-4">Buy Tokens</button>
-            <button onclick="alert('Minimum 100 Tokens required!')" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Withdraw Now</button>
-        </div>
-    </div>
-
-    <div id="chat-screen" class="screen flex flex-col">
-        <header class="p-4 border-b flex items-center space-x-4 bg-white sticky top-0">
-            <i class="fa-solid fa-arrow-left text-xl" onclick="showScreen('profile-screen')"></i>
-            <h1 class="font-bold">Global Messenger</h1>
-        </header>
-        <main id="chat-window" class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar bg-gray-50 h-[70vh]">
-            </main>
-        <div class="p-4 border-t bg-white sticky bottom-0">
-            <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 border">
-                <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent outline-none text-sm">
-                <button onclick="sendGajanMsg()" class="text-blue-500 font-bold ml-2">Send</button>
-            </div>
-        </div>
-    </div>
-
-    <input type="file" id="profile-upload" class="hidden" accept="image/*">
-    <input type="file" id="post-upload" class="hidden" accept="image/*,video/*">
-
-    <nav id="bottom-nav" class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-4 z-[60] hidden">
-        <i class="fa-solid fa-house text-2xl text-black" onclick="showScreen('profile-screen')"></i>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
-        <i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i>
-        <i class="fa-solid fa-wallet text-2xl text-pink-500" onclick="showScreen('wallet-screen')"></i>
-        <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold">G</div>
-    </nav>
+    <input type="file" id="profile-upload" class="hidden">
+    <input type="file" id="post-upload" class="hidden">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -131,15 +138,16 @@
             messagingSenderId: "838023307513",
             appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
         };
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Screen Switching
+        // UI Logic
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
             document.getElementById(id).classList.add('active-screen');
+            // Header hide logic for chat/wallet
+            document.getElementById('app-header').style.display = (id === 'profile-screen') ? 'flex' : 'none';
         };
 
         window.toggleAuth = () => {
@@ -147,41 +155,17 @@
             document.getElementById('signup-form').classList.toggle('hidden');
         };
 
-        window.handleSignup = async () => {
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            try {
-                const res = await createUserWithEmailAndPassword(auth, email, pass);
-                await updateProfile(res.user, { displayName: name });
-                await setDoc(doc(db, "users", res.user.uid), { name, tokens: 0, photoURL: "" });
-                location.reload();
-            } catch (e) { alert(e.message); }
-        };
-
-        window.handleLogin = async () => {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Login failed!"); }
-        };
-
-        window.logout = () => signOut(auth);
-
+        // Firebase Auth & Cloudinary Integration
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                showScreen('profile-screen');
                 document.getElementById('auth-screen').classList.remove('active-screen');
-                document.getElementById('bottom-nav').classList.remove('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                showScreen('profile-screen');
                 document.getElementById('display-name').innerText = user.displayName || "Gajan User";
                 if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
                 
-                // Live Tokens
-                onSnapshot(doc(db, "users", user.uid), (d) => {
-                    document.getElementById('token-balance').innerText = d.data()?.tokens || 0;
-                });
-
-                // Live Chat
-                const q = query(collection(db, "global_chat"), orderBy("time", "asc"));
+                // Real-time Chat
+                const q = query(collection(db, "chats"), orderBy("time", "asc"));
                 onSnapshot(q, (sn) => {
                     const win = document.getElementById('chat-window');
                     win.innerHTML = "";
@@ -189,8 +173,8 @@
                         const m = d.data();
                         const isMe = m.uid === user.uid;
                         win.innerHTML += `
-                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                                <div class="${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200'} p-3 rounded-2xl text-xs max-w-[80%] shadow-sm">
+                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-fadeIn">
+                                <div class="${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200'} p-3 rounded-2xl max-w-[80%] text-sm shadow-sm">
                                     <p class="font-bold text-[8px] mb-1 opacity-70">${m.name}</p>
                                     <p>${m.text}</p>
                                 </div>
@@ -199,42 +183,36 @@
                     win.scrollTop = win.scrollHeight;
                 });
             } else {
-                showScreen('auth-screen');
-                document.getElementById('bottom-nav').classList.add('hidden');
+                document.getElementById('auth-screen').classList.add('active-screen');
+                document.getElementById('main-app').classList.add('hidden');
             }
         });
 
-        // Chat Sending
-        window.sendGajanMsg = async () => {
-            const inp = document.getElementById('chat-input');
-            if(!inp.value) return;
-            await addDoc(collection(db, "global_chat"), {
-                text: inp.value,
-                name: auth.currentUser.displayName,
-                uid: auth.currentUser.uid,
-                time: serverTimestamp()
-            });
-            inp.value = "";
-        };
-
-        // Cloudinary Final Fix
-        const CLOUD_NAME = "dvfgzrxs7";
-        const PRESET = "gajan_live"; // Aapne jo naya banaya screenshot wala
-
+        // Cloudinary Final
+        const CLOUD = "dvfgzrxs7", PRESET = "gajan_live";
         document.getElementById('profile-upload').onchange = async (e) => {
             const file = e.target.files[0];
             const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", PRESET);
+            fd.append("file", file); fd.append("upload_preset", PRESET);
             try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd });
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method: "POST", body: fd });
                 const data = await res.json();
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: data.secure_url });
                 await updateProfile(auth.currentUser, { photoURL: data.secure_url });
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: data.secure_url });
                 document.getElementById('user-avatar').src = data.secure_url;
-                alert("Profile Updated!");
-            } catch (err) { alert("Upload Failed! Check Cloudinary Settings."); }
+                alert("✨ Profile Updated!");
+            } catch (err) { alert("Upload Failed!"); }
         };
+
+        window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+        window.handleSignup = async () => {
+            const res = await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
+            await updateProfile(res.user, { displayName: document.getElementById('reg-name').value });
+            await setDoc(doc(db, "users", res.user.uid), { name: document.getElementById('reg-name').value, tokens: 0 });
+            location.reload();
+        };
+        window.logout = () => signOut(auth);
+        window.sendGajanMsg = () => addDoc(collection(db, "chats"), { text: document.getElementById('chat-input').value, name: auth.currentUser.displayName, uid: auth.currentUser.uid, time: serverTimestamp() }).then(() => document.getElementById('chat-input').value = "");
     </script>
 </body>
 </html>
