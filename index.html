@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Standard Edition</title>
+    <title>Gajan | Official Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .insta-gradient { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-tab { border-bottom: 2px solid #000; color: #000 !important; }
+        .insta-story { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); padding: 2px; }
         a { text-decoration: none; color: inherit; }
     </style>
 </head>
@@ -20,10 +20,10 @@
             <h1 class="text-4xl font-bold italic text-white mb-10">Gajan</h1>
             <input type="text" placeholder="Phone number, username, or email" class="w-full p-3 bg-[#121212] border border-gray-800 rounded-md text-white outline-none focus:border-gray-600">
             <input type="password" placeholder="Password" class="w-full p-3 bg-[#121212] border border-gray-800 rounded-md text-white outline-none focus:border-gray-600">
-            <button onclick="loginSuccess()" class="w-full py-3 bg-[#0095f6] text-white font-bold rounded-lg">Log In</button>
+            <button onclick="loginSuccess()" class="w-full py-3 bg-[#0095f6] text-white font-bold rounded-lg hover:bg-blue-600">Log In</button>
             <div class="flex items-center space-x-2 py-4">
                 <div class="h-[1px] bg-gray-800 flex-1"></div>
-                <span class="text-gray-500 text-xs">OR</span>
+                <span class="text-gray-500 text-xs font-bold text-gray-500">OR</span>
                 <div class="h-[1px] bg-gray-800 flex-1"></div>
             </div>
             <button class="text-[#0095f6] font-bold text-sm"><i class="fa-brands fa-facebook mr-2"></i>Log in with Facebook</button>
@@ -32,56 +32,63 @@
 
     <div id="main-app" class="hidden pb-20">
         
-        <header class="p-4 border-b">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-2">
-                    <span class="font-bold text-xl">mrgajan_</span>
-                    <i class="fa-solid fa-chevron-down text-xs"></i>
-                </div>
-                <div class="flex space-x-6">
-                    <i class="fa-solid fa-plus-square text-2xl"></i>
-                    <i class="fa-solid fa-bars text-2xl"></i>
-                </div>
+        <header class="flex justify-between items-center px-4 py-2 bg-white border-b sticky top-0 z-50">
+            <h1 class="text-2xl font-bold italic text-black">Gajan</h1>
+            <div class="flex space-x-5 items-center">
+                <i class="fa-regular fa-square-plus text-2xl"></i>
+                <i class="fa-regular fa-heart text-2xl"></i>
+                <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl"></i></a>
             </div>
+        </header>
 
-            <div class="flex items-center space-x-8 px-2">
-                <div class="relative">
-                    <img src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 border-gray-200">
+        <div class="flex space-x-4 p-4 overflow-x-auto no-scrollbar border-b">
+            <div class="flex flex-col items-center space-y-1">
+                <div class="w-16 h-16 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden">
+                    <img src="https://via.placeholder.com/150" class="w-full h-full object-cover">
                 </div>
+                <span class="text-[10px]">Your Story</span>
+            </div>
+            <div class="flex flex-col items-center space-y-1"><div class="w-16 h-16 rounded-full insta-story"><img src="https://picsum.photos/100/100?random=1" class="rounded-full border-2 border-white w-full h-full object-cover"></div><span class="text-[10px]">user_1</span></div>
+            <div class="flex flex-col items-center space-y-1"><div class="w-16 h-16 rounded-full insta-story"><img src="https://picsum.photos/100/100?random=2" class="rounded-full border-2 border-white w-full h-full object-cover"></div><span class="text-[10px]">user_2</span></div>
+            <div class="flex flex-col items-center space-y-1"><div class="w-16 h-16 rounded-full insta-story"><img src="https://picsum.photos/100/100?random=3" class="rounded-full border-2 border-white w-full h-full object-cover"></div><span class="text-[10px]">user_3</span></div>
+        </div>
+
+        <div class="p-4">
+            <div class="flex items-center space-x-8 mb-4 px-2">
+                <div class="w-20 h-20 rounded-full border p-1"><img src="https://via.placeholder.com/150" class="rounded-full w-full h-full object-cover"></div>
                 <div class="flex-1 flex justify-around text-center">
                     <div><p class="font-bold">11</p><p class="text-xs text-gray-500">Posts</p></div>
                     <div><p class="font-bold">191</p><p class="text-xs text-gray-500">Followers</p></div>
                     <div><p class="font-bold">120</p><p class="text-xs text-gray-500">Following</p></div>
                 </div>
             </div>
-            <div class="mt-4 px-2">
+            <div class="px-2 mb-4">
                 <p class="font-bold text-sm">jamnagar</p>
-                <p class="text-sm text-gray-600 font-medium">Hamara Jamnagar jannat se kam nahi ❤️</p>
+                <p class="text-sm text-gray-600">Standard Core Gajan Edition ❤️</p>
             </div>
-            <div class="flex space-x-2 mt-4">
-                <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs">Edit profile</button>
-                <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs">Share profile</button>
+            <div class="flex space-x-2">
+                <button class="flex-1 bg-gray-100 py-1.5 rounded-md font-bold text-xs">Edit profile</button>
+                <button class="flex-1 bg-gray-100 py-1.5 rounded-md font-bold text-xs">Share profile</button>
             </div>
-        </header>
+        </div>
 
-        <div class="flex border-b">
+        <div class="flex border-t">
             <button class="flex-1 py-3 text-xl active-tab"><i class="fa-solid fa-table-cells"></i></button>
             <a href="reels.html" class="flex-1 py-3 text-xl text-gray-400 text-center"><i class="fa-solid fa-clapperboard"></i></a>
             <button class="flex-1 py-3 text-xl text-gray-400"><i class="fa-solid fa-user-tag"></i></button>
         </div>
-
-        <div class="grid grid-cols-3 gap-0.5 mt-0.5">
+        <div class="grid grid-cols-3 gap-0.5">
+            <div class="aspect-square bg-gray-200"><img src="https://picsum.photos/300/300?random=10" class="w-full h-full object-cover"></div>
             <div class="aspect-square bg-gray-200"><img src="https://picsum.photos/300/300?random=11" class="w-full h-full object-cover"></div>
             <div class="aspect-square bg-gray-200"><img src="https://picsum.photos/300/300?random=12" class="w-full h-full object-cover"></div>
-            <div class="aspect-square bg-gray-200"><img src="https://picsum.photos/300/300?random=13" class="w-full h-full object-cover"></div>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-3 z-50">
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-3 z-[60]">
         <a href="index.html"><i class="fa-solid fa-house text-2xl"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-400"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-500"></i></a>
         <div class="w-7 h-7 bg-gray-300 rounded-full border border-black overflow-hidden">
             <img src="https://via.placeholder.com/50" class="w-full h-full object-cover">
         </div>
