@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan - Instagram Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #fafafa; font-family: sans-serif; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #dbdbdb; display: flex; justify-content: space-around; padding: 10px 0; }
+        .story-circle { width: 65px; height: 65px; border-radius: 50%; border: 3px solid #e1306c; padding: 2px; }
+    </style>
+</head>
+<body>
+
+    <header class="flex justify-between items-center px-4 py-3 bg-white border-b sticky top-0 z-50">
+        <h1 class="text-2xl font-bold italic text-pink-600">Gajan</h1>
+        <div class="space-x-4">
+            <i class="fa-regular fa-heart text-xl"></i>
+            <i class="fa-brands fa-facebook-messenger text-xl"></i>
+        </div>
+    </header>
+
+    <div class="flex space-x-4 p-4 overflow-x-auto bg-white border-b no-scrollbar">
+        <div class="text-center"><img src="https://via.placeholder.com/65" class="story-circle"><p class="text-xs mt-1">Your Story</p></div>
+        <div class="text-center"><img src="https://via.placeholder.com/65" class="story-circle"><p class="text-xs mt-1">User1</p></div>
+        <div class="text-center"><img src="https://via.placeholder.com/65" class="story-circle"><p class="text-xs mt-1">User2</p></div>
+        <div class="text-center"><img src="https://via.placeholder.com/65" class="story-circle"><p class="text-xs mt-1">User3</p></div>
+    </div>
+
+    <main class="mb-20">
+        <div class="bg-white border mt-4">
+            <div class="p-3 flex items-center space-x-2">
+                <div class="w-8 h-8 bg-gray-300 rounded-full"></div>
+                <span class="font-semibold text-sm">Gajan_Official</span>
+            </div>
+            <img src="https://via.placeholder.com/500" class="w-full h-80 object-cover">
+            <div class="p-3">
+                <div class="flex space-x-4 text-xl mb-2">
+                    <i class="fa-regular fa-heart cursor-pointer"></i>
+                    <i class="fa-regular fa-comment"></i>
+                    <i class="fa-regular fa-paper-plane"></i>
+                </div>
+                <p class="text-sm">Liked by <b>user123</b> and <b>others</b></p>
+                <p class="text-sm mt-1"><b>Gajan_Official</b> Welcome to our new platform! 🚀</p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <i class="fa-solid fa-house text-xl"></i>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
+        <i class="fa-solid fa-circle-plus text-xl text-gray-500"></i>
+        <i class="fa-solid fa-wallet text-xl text-pink-500"></i> <div class="w-6 h-6 bg-gray-400 rounded-full"></div>
+    </nav>
+
+</body>
+</html>
