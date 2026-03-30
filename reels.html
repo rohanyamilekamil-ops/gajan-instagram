@@ -1,42 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Reels</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan | Reels Full Screen</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #000; overflow: hidden; }
-        .reels-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        
+        /* Container for snap scrolling */
+        .reels-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
         .reels-container::-webkit-scrollbar { display: none; }
-        .reel { height: 100vh; scroll-snap-align: start; position: relative; }
-        video { height: 100%; width: 100%; object-fit: cover; }
-        .overlay { position: absolute; bottom: 100px; left: 15px; right: 70px; color: white; }
-        .side { position: absolute; right: 15px; bottom: 120px; color: white; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Each Reel Section */
+        .reel {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            position: relative;
+            background: #000;
+        }
+
+        /* Full Screen Video Fix */
+        video {
+            height: 100%;
+            width: 100%;
+            object-fit: cover; /* Isse video pura screen cover karega */
+        }
+
+        /* Gradient Overlay for text visibility */
+        .overlay-bottom {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            pointer-events: none;
+        }
+
+        .side-actions {
+            position: absolute;
+            right: 10px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            color: white;
+            z-index: 10;
+        }
+
+        /* Bottom Nav Fix */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            z-index: 100;
+            border-top: 1px solid #222;
+        }
     </style>
 </head>
 <body>
+
     <div class="reels-container">
+        
         <div class="reel">
-            <video loop autoplay muted src="https://www.w3schools.com/html/mov_bbb.mp4" onclick="this.paused ? this.play() : this.pause()"></video>
-            <div class="side text-center">
-                <i class="fa-solid fa-heart text-3xl"></i><p class="text-xs">1.5M</p>
-                <i class="fa-solid fa-comment text-3xl"></i><p class="text-xs">10K</p>
-                <i class="fa-solid fa-share text-2xl"></i>
+            <video id="v1" loop playsinline onclick="handlePlay(this)">
+                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            </video>
+
+            <div id="mute-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                <i class="fa-solid fa-volume-xmark text-white text-4xl" id="vol-icon"></i>
             </div>
-            <div class="overlay">
-                <p class="font-bold">@mrgajan_</p>
-                <p class="text-xs mt-1">Jamnagar ki shan! 🔥 #jamnagar #gajan</p>
+
+            <div class="side-actions">
+                <div class="flex flex-col items-center"><i class="fa-solid fa-heart text-3xl"></i><span class="text-[10px]">1.5M</span></div>
+                <div class="flex flex-col items-center"><i class="fa-solid fa-comment text-3xl"></i><span class="text-[10px]">10K</span></div>
+                <i class="fa-solid fa-paper-plane text-2xl"></i>
+                <i class="fa-solid fa-ellipsis text-xl"></i>
             </div>
-        </div>
+
+            <div class="overlay-bottom">
+                <p class="font-bold text-white text-sm">@mrgajan_</p>
+                <p class="text-white text-xs mt-1">Full Screen Mode Active! 🔥 Tap for sound.</p>
+            </div>
         </div>
 
-    <nav class="fixed bottom-0 w-full bg-black border-t border-gray-800 flex justify-around py-4 z-50">
+    </div>
+
+    <nav>
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white border-b-2 border-white pb-1"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[10px] text-black font-bold">G</div></a>
+        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs text-black font-bold">G</div></a>
     </nav>
+
+    <script>
+        function handlePlay(video) {
+            const icon = document.getElementById('vol-icon');
+            const hint = document.getElementById('mute-hint');
+
+            if (video.paused) {
+                video.play();
+                video.muted = false; // Sound chalu ho jayega
+                hint.classList.add('hidden');
+            } else {
+                video.pause();
+                hint.classList.remove('hidden');
+            }
+        }
+
+        // Browser policy ke wajah se pehla video click par hi sound dega
+        window.addEventListener('load', () => {
+            alert("Tap on video for Sound and Play!");
+        });
+    </script>
 </body>
 </html>
