@@ -3,140 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Fast Reels</title>
+    <title>Gajan | Pro Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-
-        .reels-container {
-            height: 100dvh; width: 100vw;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
+        .reels-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .reels-container::-webkit-scrollbar { display: none; }
-
-        .reel-item {
-            height: 100dvh; width: 100vw;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        video {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        /* Instagram Logo Animation at the end */
-        .insta-brand-logo {
-            position: absolute;
-            bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            opacity: 0.8;
-            font-family: 'Grand Hotel', cursive;
-            color: white;
-            font-size: 1.5rem;
-            pointer-events: none;
-            animation: fadeInOut 2s infinite;
-        }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.9; }
-        }
-
-        /* UI Overlays */
-        .side-icons {
-            position: absolute; right: 15px; bottom: 120px;
-            z-index: 10; display: flex; flex-direction: column; gap: 22px; color: white;
-        }
-        .bottom-info {
-            position: absolute; bottom: 90px; left: 15px;
-            z-index: 10; color: white; width: 70%;
-        }
+        .reel-item { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        
+        /* UI Layers */
+        .side-bar { position: absolute; right: 12px; bottom: 130px; z-index: 10; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
+        .user-info { position: absolute; bottom: 95px; left: 15px; z-index: 10; color: white; width: 80%; }
+        .follow-btn { background: rgba(255,255,255,0.2); border: 1px solid #fff; padding: 2px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; }
+        
+        /* Record Button */
+        .record-trigger { position: fixed; top: 20px; right: 20px; z-index: 100; background: rgba(0,0,0,0.5); border-radius: 50%; width: 45px; height: 45px; display: flex; items-center; justify-content: center; border: 2px solid #fff; color: #fff; }
+        
+        .liked { color: #ff2d55 !important; }
+        nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
     </style>
 </head>
 <body>
 
+    <a href="camera.html" class="record-trigger">
+        <i class="fa-solid fa-camera text-xl"></i>
+    </a>
+
     <div class="reels-container" id="reels-feed">
         </div>
 
-    <div class="insta-brand-logo italic font-bold">Gajan</div>
-
-    <nav class="fixed bottom-0 w-full h-[70px] bg-gradient-to-t from-black to-transparent flex justify-around items-center z-[100]">
+    <nav>
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
+        <a href="search.html"><i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black border-2 border-white">G</div></a>
+        <a href="profile.html"><div id="user-p" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black border-2 border-white">G</div></a>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const container = document.getElementById('reels-feed');
+        let userUID = "";
+        onAuthStateChanged(auth, user => { if(user) { userUID = user.uid; loadProReels(); } else { window.location.href="index.html"; } });
 
-        // Fast Algorithm: Load videos and observe them
-        const q = query(collection(db, "reels"), orderBy("time", "desc"));
-        onSnapshot(q, (sn) => {
-            container.innerHTML = "";
-            sn.forEach(doc => {
-                const d = doc.data();
-                const reelHtml = `
-                    <div class="reel-item">
-                        <video class="gajan-video" loop playsinline preload="auto" src="${d.videoUrl}"></video>
-                        <div class="side-icons text-center">
-                            <i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold">1.5M</p>
-                            <i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] font-bold">10K</p>
-                            <i class="fa-solid fa-share text-2xl"></i>
-                        </div>
-                        <div class="bottom-info">
-                            <p class="font-bold">@${d.name || 'GajanUser'}</p>
-                            <p class="text-xs mt-1 opacity-90">${d.caption || ''}</p>
-                        </div>
-                    </div>`;
-                container.innerHTML += reelHtml;
+        function loadProReels() {
+            const q = query(collection(db, "reels"), orderBy("time", "desc"));
+            onSnapshot(q, (sn) => {
+                const container = document.getElementById('reels-feed');
+                container.innerHTML = "";
+                sn.forEach(reelDoc => {
+                    const d = reelDoc.data();
+                    const id = reelDoc.id;
+                    const isLiked = d.likedBy && d.likedBy.includes(userUID);
+                    
+                    container.innerHTML += `
+                        <div class="reel-item">
+                            <video class="g-vid" data-id="${id}" loop playsinline preload="auto" src="${d.videoUrl}"></video>
+                            
+                            <div class="side-bar">
+                                <div onclick="doLike('${id}', ${isLiked})">
+                                    <i class="fa-solid fa-heart text-3xl ${isLiked ? 'liked' : ''}"></i>
+                                    <p class="text-[10px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
+                                </div>
+                                <div onclick="window.location.href='comments.html?id=${id}'">
+                                    <i class="fa-solid fa-comment text-3xl"></i>
+                                    <p class="text-[10px] font-bold">${d.commentsCount || 0}</p>
+                                </div>
+                                <div>
+                                    <i class="fa-solid fa-eye text-2xl"></i>
+                                    <p class="text-[10px] font-bold">${d.views || 0}</p>
+                                </div>
+                                <i class="fa-solid fa-repeat text-2xl" onclick="alert('Remix Coming Soon!')"></i>
+                            </div>
+
+                            <div class="user-info">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <img src="${d.userPhoto || 'https://via.placeholder.com/50'}" class="w-8 h-8 rounded-full border border-white">
+                                    <p class="font-bold text-sm">@${d.name || 'GajanUser'}</p>
+                                    <button class="follow-btn" onclick="followUser('${d.uid}')">Follow</button>
+                                </div>
+                                <p class="text-xs opacity-90">${d.caption || ''}</p>
+                            </div>
+                        </div>`;
+                });
+                startProObserver();
             });
-            setupObserver();
-        });
+        }
 
-        // Fast Algorithm: Intersection Observer (Auto-play when visible)
-        function setupObserver() {
-            const videos = document.querySelectorAll('.gajan-video');
+        function startProObserver() {
+            const videos = document.querySelectorAll('.g-vid');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.play();
-                        entry.target.muted = false; // Sound Auto-On jaisa Instagram mein hota hai
+                        // Views System: Jab video visible hoga, view count badhega
+                        const rid = entry.target.getAttribute('data-id');
+                        updateDoc(doc(db, "reels", rid), { views: increment(1) });
                     } else {
                         entry.target.pause();
-                        entry.target.currentTime = 0; // Reset for fast next play
                     }
                 });
             }, { threshold: 0.8 });
-
             videos.forEach(v => observer.observe(v));
         }
 
-        // Tap to Mute/Unmute toggle like Insta
-        document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'VIDEO') {
-                e.target.muted = !e.target.muted;
-            }
-        });
+        window.doLike = async (id, liked) => {
+            const ref = doc(db, "reels", id);
+            if(liked) { await updateDoc(ref, { likedBy: arrayRemove(userUID) }); }
+            else { await updateDoc(ref, { likedBy: arrayUnion(userUID) }); }
+        };
+
+        window.followUser = (targetId) => {
+            alert("Following system linked! You followed user: " + targetId);
+            // Future logic for followers table
+        };
+
+        document.addEventListener('click', (e) => { if(e.target.tagName === 'VIDEO') e.target.paused ? e.target.play() : e.target.pause(); });
     </script>
 </body>
 </html>
