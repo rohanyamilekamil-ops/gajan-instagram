@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Reels Fast</title>
+    <title>Gajan | Reels Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
 
-        /* Yeh container swiping ko smooth banayega */
-        .reels-container {
+        /* Smooth Vertical Swipe Container */
+        .reels-wrapper {
             height: 100dvh;
             width: 100vw;
             overflow-y: scroll;
@@ -19,36 +19,39 @@
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
-        .reels-container::-webkit-scrollbar { display: none; }
+        .reels-wrapper::-webkit-scrollbar { display: none; }
 
-        .reel-item {
+        .reel-unit {
             height: 100dvh;
             width: 100vw;
             scroll-snap-align: start;
             position: relative;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Video pure screen par dikhega bina dabe */
+        /* Video Fit System */
         video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Instagram style full screen */
             z-index: 1;
         }
 
-        /* Right Side Icons */
-        .side-bar {
-            position: absolute; right: 15px; bottom: 120px;
-            z-index: 10; display: flex; flex-direction: column; gap: 25px; color: white; text-align: center;
+        /* Basic UI Overlay */
+        .ui-overlay {
+            position: absolute; bottom: 100px; left: 15px; z-index: 10; color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
         }
 
-        /* Bottom Info */
-        .bottom-ui {
-            position: absolute; bottom: 90px; left: 15px;
-            z-index: 10; color: white;
+        .side-btns {
+            position: absolute; right: 15px; bottom: 140px; z-index: 10;
+            display: flex; flex-direction: column; gap: 25px; color: white;
         }
 
+        /* Navigation */
         nav {
             position: fixed; bottom: 0; width: 100%; height: 70px;
             background: linear-gradient(transparent, #000);
@@ -58,7 +61,7 @@
 </head>
 <body>
 
-    <div class="reels-container" id="reels-feed">
+    <div class="reels-wrapper" id="main-feed">
         </div>
 
     <nav>
@@ -71,7 +74,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
@@ -85,56 +88,46 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Load Reels
+        // Load Reels from Database
         const q = query(collection(db, "reels"), orderBy("time", "desc"));
-        onSnapshot(q, (sn) => {
-            const container = document.getElementById('reels-feed');
+        onSnapshot(q, (snapshot) => {
+            const container = document.getElementById('main-feed');
             container.innerHTML = "";
-            sn.forEach(reelDoc => {
-                const d = reelDoc.data();
-                const id = reelDoc.id;
-                
+            snapshot.forEach(doc => {
+                const data = doc.data();
                 container.innerHTML += `
-                    <div class="reel-item">
-                        <video class="v-play" data-id="${id}" loop playsinline src="${d.videoUrl}"></video>
-                        <div class="side-bar">
-                            <i class="fa-solid fa-heart text-3xl"></i>
-                            <p class="text-[10px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
-                            <i class="fa-solid fa-comment text-3xl"></i>
-                            <i class="fa-solid fa-eye text-2xl"></i>
-                            <p class="text-[10px] font-bold">${d.views || 0}</p>
+                    <div class="reel-unit">
+                        <video class="reel-video" loop playsinline src="${data.videoUrl}"></video>
+                        <div class="ui-overlay">
+                            <p class="font-bold">@${data.name || 'GajanUser'}</p>
+                            <p class="text-xs opacity-80 mt-1">${data.caption || ''}</p>
                         </div>
-                        <div class="bottom-ui">
-                            <p class="font-bold">@${d.name || 'GajanUser'}</p>
-                            <p class="text-xs opacity-80">${d.caption || ''}</p>
+                        <div class="side-btns">
+                            <i class="fa-solid fa-heart text-3xl"></i>
+                            <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${doc.id}'"></i>
+                            <i class="fa-solid fa-share text-2xl"></i>
                         </div>
                     </div>`;
             });
-            initVideoLogic();
+            setupPlayLogic();
         });
 
-        // Video Play/Pause on Scroll
-        function initVideoLogic() {
-            const videos = document.querySelectorAll('.v-play');
+        // Swipe play logic
+        function setupPlayLogic() {
+            const videos = document.querySelectorAll('.reel-video');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const vid = entry.target;
-                    const rid = vid.getAttribute('data-id');
-
                     if (entry.isIntersecting) {
-                        vid.play();
-                        // View Count badhane ka logic
-                        updateDoc(doc(db, "reels", rid), { views: increment(1) });
+                        entry.target.play(); // Screen par aate hi play
                     } else {
-                        vid.pause();
-                        vid.currentTime = 0;
+                        entry.target.pause(); // Screen se hat-te hi pause
                     }
                 });
             }, { threshold: 0.8 });
             videos.forEach(v => observer.observe(v));
         }
 
-        // Tap to Pause
+        // Click to pause/play
         document.addEventListener('click', (e) => {
             if(e.target.tagName === 'VIDEO') {
                 e.target.paused ? e.target.play() : e.target.pause();
