@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Profile & Upload</title>
+    <title>Gajan | Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .insta-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -33,30 +32,30 @@
                 <div><p class="font-bold text-lg">120</p><p class="text-[10px] text-gray-400 font-bold uppercase">Following</p></div>
             </div>
         </div>
-        <p id="name" class="font-bold text-lg">Gajan User</p>
-        <p class="text-sm text-gray-500 mb-5">Jamnagar • UHD Mode Active 🔥</p>
+        <p id="name" class="font-bold text-lg text-black">Gajan User</p>
+        <p class="text-sm text-gray-500 mb-5">Jamnagar • HD Video Mode 🚀</p>
         <div class="flex space-x-2">
-            <button class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs border">Edit Profile</button>
-            <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2.5 rounded-xl font-bold text-xs border text-center">Wallet</a>
+            <button class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs border border-gray-200 text-black">Edit Profile</button>
+            <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2.5 rounded-xl font-bold text-xs border border-pink-100 text-center">Wallet</a>
         </div>
     </div>
 
-    <div id="upload-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-6">
-        <div class="glass-modal w-full max-w-sm rounded-[30px] p-6 shadow-2xl scale-95 transition-transform">
+    <div id="upload-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[30px] p-6 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="font-bold text-lg text-gray-800">New Reel</h3>
+                <h3 class="font-bold text-black text-lg">New Post</h3>
                 <i class="fa-solid fa-xmark text-xl cursor-pointer text-gray-400" onclick="closeUpload()"></i>
             </div>
             
-            <div class="border-2 border-dashed border-pink-200 rounded-3xl p-8 text-center cursor-pointer hover:bg-pink-50 transition" onclick="document.getElementById('reel-input').click()">
-                <i class="fa-solid fa-clapperboard text-5xl text-pink-500 mb-3"></i>
-                <p id="file-status" class="text-xs text-gray-500 font-medium">Tap to Select UHD Video</p>
-                <input type="file" id="reel-input" class="hidden" accept="video/*" onchange="updateFileStatus(this)">
+            <div class="border-2 border-dashed border-pink-100 rounded-3xl p-8 text-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('reel-input').click()">
+                <i class="fa-solid fa-video text-4xl text-pink-500 mb-2"></i>
+                <p id="file-status" class="text-[10px] text-gray-500 font-bold">SELECT VIDEO (HD MP4)</p>
+                <input type="file" id="reel-input" class="hidden" accept="video/mp4,video/x-m4v,video/*">
             </div>
 
-            <textarea id="reel-caption" placeholder="Write a viral caption..." class="w-full mt-4 p-4 bg-gray-100 rounded-2xl text-sm outline-none h-24 resize-none border-none focus:ring-2 focus:ring-pink-300"></textarea>
+            <textarea id="reel-caption" placeholder="Write caption..." class="w-full mt-4 p-4 bg-gray-50 rounded-2xl text-sm outline-none h-20 border border-gray-100"></textarea>
             
-            <button id="upload-btn" onclick="uploadReel()" class="w-full mt-4 py-4 insta-gradient text-white font-bold rounded-2xl shadow-lg active:scale-95 transition">Post UHD Reel</button>
+            <button id="upload-btn" onclick="uploadReel()" class="w-full mt-4 py-4 insta-gradient text-white font-bold rounded-2xl shadow-lg active:scale-95 transition">Upload Video</button>
         </div>
     </div>
 
@@ -65,14 +64,14 @@
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">G</div></a>
+        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[10px] text-white font-bold">G</div></a>
     </nav>
 
     <input type="file" id="profile-upload" class="hidden" accept="image/*">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -80,12 +79,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // UI Helpers
         window.openUpload = () => document.getElementById('upload-modal').classList.remove('hidden');
         window.closeUpload = () => document.getElementById('upload-modal').classList.add('hidden');
-        window.updateFileStatus = (input) => {
-            if(input.files[0]) document.getElementById('file-status').innerText = "Video Ready: " + input.files[0].name;
-        }
 
         onAuthStateChanged(auth, user => {
             if(!user) window.location.href = "index.html";
@@ -95,45 +90,40 @@
             }
         });
 
-        // UHD VIDEO UPLOAD LOGIC
+        // FAST HD VIDEO UPLOAD
         window.uploadReel = async () => {
             const videoFile = document.getElementById('reel-input').files[0];
             const caption = document.getElementById('reel-caption').value;
             const btn = document.getElementById('upload-btn');
 
-            if(!videoFile) return alert("Select a video first!");
+            if(!videoFile) return alert("Pehle video select karein!");
 
-            btn.innerText = "Uploading UHD Video...";
+            btn.innerText = "Processing HD Video...";
             btn.disabled = true;
-            btn.style.opacity = "0.5";
 
             const fd = new FormData();
             fd.append("file", videoFile);
             fd.append("upload_preset", "gajan_live");
 
             try {
-                // Cloudinary Video Upload (UHD Optimized)
                 const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, { method: "POST", body: fd });
                 const data = await res.json();
 
-                // Save Reel to Firebase
-                await addDoc(collection(db, "reels"), {
-                    videoUrl: data.secure_url,
-                    caption: caption,
-                    userName: auth.currentUser.displayName,
-                    userPhoto: auth.currentUser.photoURL,
-                    uid: auth.currentUser.uid,
-                    likes: 0,
-                    time: serverTimestamp()
-                });
-
-                alert("🔥 Reel Posted Successfully!");
-                location.reload();
+                if(data.secure_url) {
+                    await addDoc(collection(db, "reels"), {
+                        videoUrl: data.secure_url,
+                        caption: caption,
+                        name: auth.currentUser.displayName,
+                        uid: auth.currentUser.uid,
+                        time: serverTimestamp()
+                    });
+                    alert("✅ Video Posted Successfully!");
+                    location.reload();
+                } else { throw new Error(); }
             } catch (err) {
-                alert("Upload Failed! Check your internet or Cloudinary.");
-                btn.innerText = "Post UHD Reel";
+                alert("Upload Failed! Shayad video ka size bahut bada hai. Chota HD video try karein.");
+                btn.innerText = "Upload Video";
                 btn.disabled = false;
-                btn.style.opacity = "1";
             }
         };
 
