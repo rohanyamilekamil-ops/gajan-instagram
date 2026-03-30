@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Reels Full Screen</title>
+    <title>Gajan | Ultra HD Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        body, html { 
+            margin: 0; padding: 0; 
+            height: 100vh; width: 100vw; 
+            overflow: hidden; 
+            background-color: #000;
+            font-family: 'Poppins', sans-serif;
+            overscroll-behavior-y: none; /* Smooth feel on scroll */
+        }
         
-        /* Container for snap scrolling */
-        .reels-container {
+        /* main container for swipe */
+        .reels-scroller {
             height: 100vh;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* VVIP for smooth mobile swipe */
         }
-        .reels-container::-webkit-scrollbar { display: none; }
+        .reels-scroller::-webkit-scrollbar { display: none; }
 
-        /* Each Reel Section */
+        /* Each reel section */
         .reel {
             height: 100vh;
             width: 100vw;
@@ -27,35 +38,24 @@
             background: #000;
         }
 
-        /* Full Screen Video Fix */
+        /* VVIP UHD VIDEO SETTINGS */
         video {
             height: 100%;
             width: 100%;
-            object-fit: cover; /* Isse video pura screen cover karega */
+            object-fit: cover; /* Cover full screen */
+            
+            /* High-Performance Rendering (Smoothness Fix) */
+            will-change: transform;
+            transform: translateZ(0); 
+            
+            /* Remove default browser bars */
+            outline: none;
+            -webkit-media-controls-play-button { display: none; }
         }
 
-        /* Gradient Overlay for text visibility */
-        .overlay-bottom {
-            position: absolute;
-            bottom: 80px;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            pointer-events: none;
-        }
-
-        .side-actions {
-            position: absolute;
-            right: 10px;
-            bottom: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            color: white;
-            z-index: 10;
-        }
+        /* Floating elements visibility */
+        .overlay-elements { pointer-events: none; }
+        .interactive-icon { pointer-events: auto; }
 
         /* Bottom Nav Fix */
         nav {
@@ -67,64 +67,67 @@
             justify-content: space-around;
             padding: 15px 0;
             z-index: 100;
-            border-top: 1px solid #222;
+            border-top: 1px solid #1a1a1a;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
         }
+        
+        a { text-decoration: none; color: inherit; }
     </style>
 </head>
-<body>
+<body class="no-scrollbar">
 
-    <div class="reels-container">
+    <div class="reels-scroller">
         
         <div class="reel">
-            <video id="v1" loop playsinline onclick="handlePlay(this)">
+            <video loop preload="auto" playsinline id="v1" onclick="handleReelAction(this)">
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             </video>
 
-            <div id="mute-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
-                <i class="fa-solid fa-volume-xmark text-white text-4xl" id="vol-icon"></i>
+            <div id="hint-1" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50 z-20">
+                <i class="fa-solid fa-volume-xmark text-white text-5xl" id="vol-1"></i>
             </div>
 
-            <div class="side-actions">
-                <div class="flex flex-col items-center"><i class="fa-solid fa-heart text-3xl"></i><span class="text-[10px]">1.5M</span></div>
-                <div class="flex flex-col items-center"><i class="fa-solid fa-comment text-3xl"></i><span class="text-[10px]">10K</span></div>
-                <i class="fa-solid fa-paper-plane text-2xl"></i>
-                <i class="fa-solid fa-ellipsis text-xl"></i>
+            <div class="side-actions absolute right-4 bottom-[120px] z-30 text-white flex flex-col items-center gap-7">
+                <div class="flex flex-col items-center interactive-icon"><i class="fa-solid fa-heart text-3xl"></i><span class="text-[11px] font-bold">1.5M</span></div>
+                <div class="flex flex-col items-center interactive-icon"><i class="fa-solid fa-comment text-3xl"></i><span class="text-[11px] font-bold">10K</span></div>
+                <i class="fa-solid fa-share-nodes text-2xl interactive-icon"></i>
+                <i class="fa-solid fa-ellipsis text-xl interactive-icon"></i>
             </div>
 
-            <div class="overlay-bottom">
-                <p class="font-bold text-white text-sm">@mrgajan_</p>
-                <p class="text-white text-xs mt-1">Full Screen Mode Active! 🔥 Tap for sound.</p>
+            <div class="overlay-elements absolute bottom-[100px] left-4 right-[80px] z-30 text-white p-4 rounded-xl" style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
+                <p class="font-bold text-base">@gajan_premium</p>
+                <p class="text-xs mt-1 leading-relaxed">UHD 4k mode active! Experience the smoothness. Tap to unmute. 🔥 #gajan #premium #jamnagar</p>
             </div>
         </div>
 
     </div>
 
     <nav>
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-600"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-600"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs text-black font-bold">G</div></a>
+        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs text-black font-bold border border-black">G</div></a>
     </nav>
 
     <script>
-        function handlePlay(video) {
-            const icon = document.getElementById('vol-icon');
-            const hint = document.getElementById('mute-hint');
+        function handleReelAction(video) {
+            const vIcon = document.getElementById('vol-1');
+            const vHint = document.getElementById('hint-1');
 
             if (video.paused) {
                 video.play();
-                video.muted = false; // Sound chalu ho jayega
-                hint.classList.add('hidden');
+                video.muted = false; // Unmute on click
+                vHint.classList.add('hidden');
             } else {
                 video.pause();
-                hint.classList.remove('hidden');
+                vHint.classList.remove('hidden');
             }
         }
 
-        // Browser policy ke wajah se pehla video click par hi sound dega
+        // Browser policy: Pehla video hamesha click se hi sound dega.
         window.addEventListener('load', () => {
-            alert("Tap on video for Sound and Play!");
+            alert("✨ Welcome to Gajan UHD! Tap on the video to play with Sound.");
         });
     </script>
 </body>
