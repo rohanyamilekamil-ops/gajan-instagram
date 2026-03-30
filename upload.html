@@ -2,39 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Secure Upload</title>
+    <title>Gajan | Fast Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .gajan-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        #bar-fill { transition: width 0.2s linear; }
+        .insta-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        #bar { transition: width 0.3s ease; }
     </style>
 </head>
 <body class="bg-white">
 
     <header class="flex items-center justify-between px-5 py-4 border-b">
-        <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl"></i></a>
-        <h1 class="font-bold text-lg">Post HD Reel</h1>
-        <button id="post-btn" onclick="startGajanUpload()" class="text-blue-500 font-bold text-lg">Share</button>
+        <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl text-gray-700"></i></a>
+        <h1 class="font-bold text-lg">New Post</h1>
+        <button id="post-btn" onclick="startUpload()" class="text-blue-500 font-bold text-lg">Post</button>
     </header>
 
     <main class="p-6">
         <div class="w-full aspect-[9/16] bg-gray-50 rounded-[30px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden mb-6" onclick="document.getElementById('file-input').click()">
-            <div id="ui-box" class="text-center">
-                <i class="fa-solid fa-clapperboard text-5xl text-pink-500 mb-3"></i>
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Select HD Video</p>
+            <div id="ui-box" class="text-center p-4">
+                <i class="fa-solid fa-video text-5xl text-pink-500 mb-4"></i>
+                <p class="text-xs font-bold text-gray-400">SELECT VIDEO</p>
             </div>
             <video id="preview" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
-            <input type="file" id="file-input" class="hidden" accept="video/*" onchange="loadPreview(this)">
+            <input type="file" id="file-input" class="hidden" accept="video/*" onchange="previewVideo(this)">
         </div>
 
-        <textarea id="caption" placeholder="Write caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100 mb-6"></textarea>
+        <textarea id="caption" placeholder="Write caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-20 border border-gray-100 mb-6"></textarea>
         
-        <div id="progress-box" class="hidden">
-            <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                <div id="bar-fill" class="gajan-btn h-full w-0"></div>
+        <div id="loader" class="hidden">
+            <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div id="bar" class="insta-btn h-full w-0"></div>
             </div>
-            <p id="status-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold">STARTING SECURE UPLOAD...</p>
+            <p id="p-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold uppercase tracking-widest">Uploading...</p>
         </div>
     </main>
 
@@ -56,7 +56,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.loadPreview = (input) => {
+        window.previewVideo = (input) => {
             if(input.files[0]){
                 document.getElementById('preview').src = URL.createObjectURL(input.files[0]);
                 document.getElementById('preview').classList.remove('hidden');
@@ -64,68 +64,57 @@
             }
         };
 
-        window.startGajanUpload = () => {
+        window.startUpload = async () => {
             const file = document.getElementById('file-input').files[0];
-            if(!file) return alert("Select Video First!");
-
             const btn = document.getElementById('post-btn');
-            const bar = document.getElementById('bar-fill');
-            const status = document.getElementById('status-text');
+            const caption = document.getElementById('caption').value;
+
+            if(!file) return alert("Pehle video select karein!");
 
             btn.disabled = true;
-            btn.innerText = "WAIT";
-            document.getElementById('progress-box').classList.remove('hidden');
+            btn.innerText = "...";
+            document.getElementById('loader').classList.remove('hidden');
 
-            const cloudName = "dvfgzrxs7";
-            const unsignedUploadPreset = "gajan_live";
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "gajan_live");
 
-            // Chunked Upload using XHR
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true);
+            xhr.open("POST", "https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", true);
 
             xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    bar.style.width = percent + "%";
-                    status.innerText = "UPLOADING: " + percent + "% (DO NOT CLOSE)";
-                }
+                const progress = Math.round((e.loaded / e.total) * 100);
+                document.getElementById('bar').style.width = progress + "%";
+                document.getElementById('p-text').innerText = "Uploading: " + progress + "%";
             };
 
             xhr.onload = async () => {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status === 200 && response.secure_url) {
-                    status.innerText = "SAVING TO GAJAN FEED...";
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    document.getElementById('p-text').innerText = "Sharing to Feed...";
+                    
                     try {
+                        // Direct Save to Firebase
                         await addDoc(collection(db, "reels"), {
                             videoUrl: response.secure_url,
-                            caption: document.getElementById('caption').value,
+                            caption: caption,
                             name: auth.currentUser.displayName || "Gajan User",
                             uid: auth.currentUser.uid,
                             time: serverTimestamp()
                         });
-                        alert("✅ Post Success!");
+                        alert("✅ Post Successful!");
                         window.location.replace("profile.html");
                     } catch (e) {
-                        alert("Database Error!");
+                        alert("Firebase Error: Rules check karein!");
                         location.reload();
                     }
                 } else {
-                    alert("Server Refused: Use a shorter HD Video.");
+                    alert("Upload Failed! Check Cloudinary Settings.");
                     location.reload();
                 }
             };
 
-            xhr.onerror = () => {
-                alert("Network Error! Check your 5G/4G connection.");
-                location.reload();
-            };
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', unsignedUploadPreset);
-            formData.append('resource_type', 'video');
-
-            xhr.send(formData);
+            xhr.send(fd);
         };
     </script>
 </body>
