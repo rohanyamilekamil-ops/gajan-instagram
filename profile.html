@@ -28,15 +28,25 @@
             </div>
             <div class="flex-1 flex justify-around text-center">
                 <div><p class="font-bold text-lg" id="p-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
-                <div><p class="font-bold text-lg">191</p><p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p></div>
-                <div><p class="font-bold text-lg">120</p><p class="text-[10px] text-gray-400 font-bold uppercase">Following</p></div>
+                
+                <a href="users.html" class="block">
+                    <p class="font-bold text-lg">191</p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p>
+                </a>
+
+                <a href="users.html" class="block">
+                    <p class="font-bold text-lg">120</p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Following</p>
+                </a>
             </div>
         </div>
-        <h2 id="u-name" class="font-bold text-lg">Loading Profile...</h2>
+        
+        <h2 id="u-name" class="font-bold text-lg text-black">Loading...</h2>
         <p class="text-sm text-gray-500 mb-5">Jamnagar, Gujarat ❤️</p>
+        
         <div class="flex space-x-2">
-            <button class="flex-1 bg-gray-100 py-2 rounded-xl font-bold text-xs border">Edit Profile</button>
-            <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2 rounded-xl font-bold text-xs border text-center">Wallet</a>
+            <a href="users.html" class="flex-1 bg-black text-white py-2.5 rounded-xl font-bold text-xs text-center">Find People</a>
+            <a href="wallet.html" class="flex-1 bg-pink-50 text-pink-600 py-2.5 rounded-xl font-bold text-xs border text-center">Wallet</a>
         </div>
     </div>
 
@@ -45,10 +55,9 @@
 
     <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4 z-50">
         <a href="profile.html"><i class="fa-solid fa-house nav-icon text-black"></i></a>
-        <i class="fa-solid fa-magnifying-glass nav-icon"></i>
+        <a href="users.html"><i class="fa-solid fa-magnifying-glass nav-icon"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard nav-icon"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet nav-icon text-pink-500"></i></a>
-        <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">G</div>
     </nav>
 
     <script type="module">
@@ -63,10 +72,10 @@
 
         onAuthStateChanged(auth, user => {
             if(user) {
-                document.getElementById('u-name').innerText = user.displayName || "Gajan User";
+                document.getElementById('u-name').innerText = user.displayName || "Gajan Member";
                 if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
 
-                // Load User Videos
+                // Load User Specific Videos
                 const q = query(collection(db, "reels"), where("uid", "==", user.uid));
                 onSnapshot(q, (sn) => {
                     const grid = document.getElementById('video-grid');
@@ -74,7 +83,7 @@
                     document.getElementById('p-count').innerText = sn.size;
                     sn.forEach(doc => {
                         const d = doc.data();
-                        grid.innerHTML += `<div class="aspect-[9/16] bg-black"><video src="${d.videoUrl}" class="w-full h-full object-cover"></video></div>`;
+                        grid.innerHTML += `<div class="aspect-[9/16] bg-black border-white border-[0.5px]"><video src="${d.videoUrl}" class="w-full h-full object-cover"></video></div>`;
                     });
                 });
             } else { window.location.href = "index.html"; }
