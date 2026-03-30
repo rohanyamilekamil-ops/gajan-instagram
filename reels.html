@@ -1,127 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Reels Ultra</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gajan | Live Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-
-        /* Container for vertical swipe */
-        .reels-container {
-            height: 100dvh;
-            width: 100vw;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
-        .reels-container::-webkit-scrollbar { display: none; }
-
-        /* Each individual reel */
-        .reel-item {
-            height: 100dvh;
-            width: 100vw;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-        }
-
-        /* VVIP: Video Full Screen Stretch & Cover */
-        video {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important; /* Isse video dabe ga nahi aur puri screen bharega */
-            z-index: 1;
-        }
-
-        /* Gradient overlay taaki text aur icons saaf dikhein */
-        .overlay {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%; height: 50%;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        /* User Info (Bottom Left) */
-        .user-details {
-            position: absolute;
-            bottom: 90px;
-            left: 15px;
-            right: 80px;
-            z-index: 10;
-            color: white;
-            pointer-events: none;
-        }
-
-        /* Side Icons (Bottom Right) */
-        .side-bar {
-            position: absolute;
-            right: 15px;
-            bottom: 120px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
-            color: white;
-        }
-
-        /* Navigation Bar (Persistent) */
-        nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 70px;
-            background: linear-gradient(transparent, #000);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
+        body, html { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
+        .reels-box { height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .reels-box::-webkit-scrollbar { display: none; }
+        .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background:#000; }
+        video { height: 100%; width: 100%; object-fit: cover; }
+        .side { position: absolute; right: 15px; bottom: 120px; z-index: 10; color: white; display: flex; flex-direction: column; gap: 20px; }
+        nav { position: fixed; bottom: 0; width: 100%; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; padding: 20px 0; z-index: 20; }
     </style>
 </head>
 <body>
-
-    <div class="reels-container">
-        <div class="reel-item">
-            <video loop playsinline preload="auto" onclick="this.paused ? this.play() : this.pause()">
-                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-            </video>
-
-            <div class="overlay"></div>
-
-            <div class="user-details">
-                <div class="flex items-center space-x-2 mb-2">
-                    <div class="w-8 h-8 rounded-full border border-white bg-indigo-500 flex items-center justify-center font-bold text-xs">G</div>
-                    <p class="font-bold">@mrgajan_</p>
-                </div>
-                <p class="text-xs">UHD Full Screen Fixed. Experience the smoothness! 🔥</p>
-            </div>
-
-            <div class="side-bar">
-                <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold mt-1">1.5M</p></div>
-                <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] font-bold mt-1">10K</p></div>
-                <i class="fa-solid fa-share text-2xl"></i>
-                <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
-            </div>
+    <div class="reels-box" id="reels-container">
         </div>
-    </div>
 
     <nav>
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <a href="profile.html"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] text-black font-bold">G</div></a>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white border-b-2"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-500"></i></a>
     </nav>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const q = query(collection(db, "reels"), orderBy("time", "desc"));
+        onSnapshot(q, (sn) => {
+            const container = document.getElementById('reels-container');
+            container.innerHTML = "";
+            sn.forEach(doc => {
+                const data = doc.data();
+                container.innerHTML += `
+                    <div class="reel">
+                        <video loop playsinline onclick="this.paused ? this.play() : this.pause()" src="${data.videoUrl}"></video>
+                        <div class="side text-center">
+                            <i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px]">1.5M</p>
+                            <i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px]">10K</p>
+                        </div>
+                        <div class="absolute bottom-24 left-4 text-white">
+                            <p class="font-bold">@${data.name || 'GajanUser'}</p>
+                            <p class="text-xs opacity-80">${data.caption || ''}</p>
+                        </div>
+                    </div>`;
+            });
+        });
+    </script>
 </body>
 </html>
