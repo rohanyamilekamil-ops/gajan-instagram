@@ -3,76 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Ultra HD Fullscreen</title>
+    <title>Gajan | Full Screen UHD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Force Full Screen Background */
+        /* Base Setup */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
+        html, body { 
             height: 100%; width: 100%; 
-            background-color: #000; 
-            overflow: hidden;
-            position: fixed; /* Address bar scroll prevent karne ke liye */
+            background: #000; overflow: hidden; 
+            position: fixed; /* Scroll bars lock karne ke liye */
         }
 
-        .reels-wrapper {
-            height: 100dvh; /* Dynamic Viewport Height for mobile */
+        /* Full Screen Container */
+        .reels-container {
+            height: 100dvh; /* Dynamic height for mobile address bar */
             width: 100vw;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             -webkit-overflow-scrolling: touch;
         }
-        .reels-wrapper::-webkit-scrollbar { display: none; }
+        .reels-container::-webkit-scrollbar { display: none; }
 
-        .reel-unit {
+        /* Individual Reel */
+        .reel-slide {
             height: 100dvh;
             width: 100vw;
             scroll-snap-align: start;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: #000;
         }
 
-        /* VVIP: Force Video to Stretch & Cover */
+        /* FORCE FULL SCREEN VIDEO */
         video {
             position: absolute;
             top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ye video ko pura khinch lega */
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important; /* Isse video pura khinch jayega aur bars khatam hongi */
             z-index: 1;
         }
 
-        /* UI Elements Layer */
-        .ui-layer {
+        /* Content Overlay (Bottom Text) */
+        .content-overlay {
             position: absolute;
+            bottom: 90px; /* Nav bar ke upar */
+            left: 15px;
+            right: 80px;
             z-index: 10;
-            width: 100%;
-            height: 100%;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(0,0,0,0.6) 100%);
         }
 
-        .side-bar {
+        /* Side Actions (Icons) */
+        .side-actions {
             position: absolute;
             right: 15px;
             bottom: 120px;
+            z-index: 20;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 22px;
+            gap: 25px;
             color: white;
-            pointer-events: auto;
         }
 
-        .bottom-nav {
+        /* Bottom Nav */
+        nav {
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -82,40 +80,37 @@
             justify-content: space-around;
             align-items: center;
             z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom); /* iPhone notch support */
         }
     </style>
 </head>
 <body>
 
-    <div class="reels-wrapper">
-        
-        <div class="reel-unit">
-            <video loop playsinline preload="auto" id="main-video" onclick="toggleReel(this)">
+    <div class="reels-container">
+        <div class="reel-slide">
+            <video loop playsinline preload="auto" onclick="toggleVideo(this)">
                 <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
             </video>
 
-            <div id="mute-overlay" class="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none z-20">
+            <div id="status-icon" class="absolute inset-0 flex items-center justify-center z-20 opacity-40 pointer-events-none">
                 <i class="fa-solid fa-volume-xmark text-white text-6xl" id="v-icon"></i>
             </div>
 
-            <div class="ui-layer">
-                <div class="mb-16">
-                    <p class="font-bold text-white text-lg">@gajan_premium</p>
-                    <p class="text-white text-sm mt-1 opacity-90">UHD 4K Stretch Mode. Smooth Swipe Active! 🔥</p>
-                </div>
+            <div class="content-overlay">
+                <p class="font-bold text-lg">@gajan_premium</p>
+                <p class="text-xs mt-1">UHD Mode: No more black bars! 🔥 Smooth Full Screen experience.</p>
             </div>
 
-            <div class="side-bar">
+            <div class="side-actions">
                 <div class="text-center"><i class="fa-solid fa-heart text-3xl"></i><p class="text-[10px] font-bold">1.5M</p></div>
                 <div class="text-center"><i class="fa-solid fa-comment text-3xl"></i><p class="text-[10px] font-bold">10K</p></div>
                 <i class="fa-solid fa-share text-2xl"></i>
                 <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
             </div>
         </div>
-
     </div>
 
-    <nav class="bottom-nav">
+    <nav>
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
@@ -124,23 +119,20 @@
     </nav>
 
     <script>
-        function toggleReel(vid) {
+        function toggleVideo(vid) {
             const icon = document.getElementById('v-icon');
-            const overlay = document.getElementById('mute-overlay');
+            const statusBox = document.getElementById('status-icon');
 
             if (vid.paused) {
                 vid.play();
-                vid.muted = false;
-                overlay.classList.add('hidden');
+                vid.muted = false; // Sound chalu
+                statusBox.classList.add('hidden');
             } else {
                 vid.pause();
-                overlay.classList.remove('hidden');
+                statusBox.classList.remove('hidden');
                 icon.className = "fa-solid fa-play text-white text-6xl";
             }
         }
-
-        // Address bar ko hide karne ka attempt
-        window.scrollTo(0, 1);
     </script>
 </body>
 </html>
