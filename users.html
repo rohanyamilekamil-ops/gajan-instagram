@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Discover People</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white pb-20">
+    <header class="p-4 border-b flex items-center">
+        <i class="fa-solid fa-arrow-left text-xl mr-4" onclick="history.back()"></i>
+        <h1 class="font-bold text-lg">Discover Users</h1>
+    </header>
+
+    <div id="all-users" class="p-4 space-y-6">
+        <p class="text-center text-gray-400 py-10">Searching for Gajan members...</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        async function loadUsers() {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            const list = document.getElementById('all-users');
+            list.innerHTML = "";
+
+            querySnapshot.forEach((userDoc) => {
+                const userData = userDoc.data();
+                if(userDoc.id === auth.currentUser.uid) return; // Khud ko list mein mat dikhao
+
+                list.innerHTML += `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <img src="${userData.photo || 'https://via.placeholder.com/50'}" class="w-12 h-12 rounded-full object-cover border">
+                            <div>
+                                <p class="font-bold text-sm">${userData.name || 'Gajan Member'}</p>
+                                <p class="text-[10px] text-gray-400 uppercase">Jamnagar Network</p>
+                            </div>
+                        </div>
+                        <button onclick="followUser('${userDoc.id}')" class="bg-black text-white text-[10px] font-bold px-4 py-2 rounded-lg">Follow</button>
+                    </div>`;
+            });
+        }
+
+        window.followUser = async (targetId) => {
+            const myRef = doc(db, "users", auth.currentUser.uid);
+            await updateDoc(myRef, { following: arrayUnion(targetId) });
+            alert("Success: You are now following this user!");
+        };
+
+        auth.onAuthStateChanged(user => { if(user) loadUsers(); });
+    </script>
+</body>
+</html>
