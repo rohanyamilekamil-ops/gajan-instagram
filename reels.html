@@ -1,100 +1,93 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gajan | Reels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
+        .reels-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+        .reels-container::-webkit-scrollbar { display: none; }
+        .reel-item { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+    </style>
+</head>
+<body>
 
-    const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_DOMAIN", projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_STORAGE_BUCKET", messagingSenderId: "YOUR_SENDER_ID", appId: "YOUR_APP_APP_ID" }; // Use YOUR config here
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    <div class="reels-container" id="reels-feed">
+        </div>
 
-    let currentUserId = null;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            currentUserId = user.uid;
-            document.getElementById('nav-avatar').innerText = user.displayName ? user.displayName.charAt(0) : "G";
-            renderFeed();
-        } else {
-            window.location.href = "index.html"; // Login par bhej do
-        }
-    });
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan", 
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
+            messagingSenderId: "838023307513", 
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
+        };
 
-    const observerConfig = { threshold: 0.8 }; // 80% video screen par aana chahiye play hone ke liye
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    function renderFeed() {
-        const q = query(collection(db, "reels"), orderBy("time", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const feedContainer = document.getElementById('reels-feed');
-            feedContainer.innerHTML = ""; // Old clear
+        // Crucial: Only load data if user is authenticated
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadReels();
+            } else {
+                // If not logged in, THEN go to index.html
+                window.location.href = "index.html";
+            }
+        });
 
-            snapshot.forEach(docSnap => {
-                const reel = docSnap.data();
-                const reelId = docSnap.id;
-                const likesArray = reel.likedBy || [];
-                const isLiked = likesArray.includes(currentUserId);
-                
-                // Create single reel html
-                const reelHtml = `
-                    <div class="reel-item">
-                        <video class="gajan-video" loop playsinline preload="auto" src="${reel.videoUrl}"></video>
-                        
-                        <div class="side-icons">
-                            <div class="like-container" onclick="toggleLike('${reelId}', ${isLiked})">
-                                <i class="fa-solid fa-heart text-3xl ${isLiked ? 'liked' : ''}"></i>
-                                <p class="like-count text-[10px] font-bold mt-1">${likesArray.length}</p>
-                            </div>
-                            </div>
-
-                        <div class="bottom-info">
-                             </div>
-                    </div>`;
-                
-                feedContainer.innerHTML += reelHtml;
+        function loadReels() {
+            const q = query(collection(db, "reels"), orderBy("time", "desc"));
+            onSnapshot(q, (sn) => {
+                const container = document.getElementById('reels-feed');
+                container.innerHTML = "";
+                sn.forEach(doc => {
+                    const d = doc.data();
+                    container.innerHTML += `
+                        <div class="reel-item">
+                            <video class="gajan-video" loop playsinline src="${d.videoUrl}"></video>
+                        </div>`;
+                });
+                setupObserver();
             });
+        }
 
-            // Fast Preload and Play Logic using Intersection Observer
+        function setupObserver() {
             const videos = document.querySelectorAll('.gajan-video');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const video = entry.target;
-                    const reelId = video.closest('.reel-item').querySelector('.like-container').onclick.toString().match(/'(.*?)'/)[1]; // Gajan logic to get reelId
-
                     if (entry.isIntersecting) {
-                        video.play();
-                        // View increment logic - file alag karna (next file)
-                        console.log("playing video, update view on alag file.");
+                        entry.target.play();
                     } else {
-                        video.pause();
-                        video.currentTime = 0; // fast next load
+                        entry.target.pause();
                     }
                 });
-            }, observerConfig);
-
-            videos.forEach(vid => observer.observe(vid));
-        });
-    }
-
-    // Like Functionality (Scalable - no millones collisions)
-    window.toggleLike = async (reelId, alreadyLiked) => {
-        const reelRef = doc(db, "reels", reelId);
-        
-        // optimistic update ui faster than milhões internet speed
-        const likeIcon = event.target.closest('.like-container').querySelector('.fa-heart');
-        const likeCountElem = event.target.closest('.like-container').querySelector('.like-count');
-        let currentCount = parseInt(likeCountElem.innerText);
-
-        if (alreadyLiked) {
-            // UnLike logic arrayRemove millions safe
-            await updateDoc(reelRef, { likedBy: arrayRemove(currentUserId) });
-            // UI rollback if миллиons network millions error later. For now assume success.
-            likeIcon.classList.remove('liked');
-            likeCountElem.innerText = currentCount - 1;
-        } else {
-            // Like logic arrayUnion millions safe
-            await updateDoc(reelRef, { likedBy: arrayUnion(currentUserId) });
-            likeIcon.classList.add('liked');
-            likeCountElem.innerText = currentCount + 1;
+            }, { threshold: 0.8 });
+            videos.forEach(v => observer.observe(v));
         }
-    };
-</script>
+
+        // Tap to play/pause ONLY (No redirection here)
+        document.addEventListener('click', (e) => {
+            if(e.target.tagName === 'VIDEO') {
+                if (e.target.paused) {
+                    e.target.play();
+                } else {
+                    e.target.pause();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
