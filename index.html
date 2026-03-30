@@ -3,105 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Official Platform</title>
+    <title>Gajan | Modern Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #ffffff; }
-        .gajan-logo { font-family: 'Grand Hotel', cursive; font-size: 2.8rem; }
-        .attractive-bg { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); background-attachment: fixed; }
-        .glass-card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 30px; }
+        body { font-family: 'Poppins', sans-serif; background-color: #ffffff; overflow-x: hidden; }
+        .gajan-logo { font-family: 'Grand Hotel', cursive; }
+        .attractive-bg { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); background-attachment: fixed; }
+        .glass-card { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 25px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .active-tab { border-bottom: 2px solid #000; color: #000 !important; }
-        a { text-decoration: none; color: inherit; }
+        .screen { display: none; min-height: 100vh; }
+        .active-screen { display: block; }
     </style>
 </head>
 <body class="no-scrollbar">
 
-    <div id="auth-section" class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 attractive-bg">
-        <h1 class="text-white text-8xl gajan-logo mb-10 shadow-xl">Gajan</h1>
-        
-        <div id="login-card" class="glass-card w-full max-w-sm p-10 space-y-6">
-            <input id="login-email" type="email" placeholder="Email" class="w-full p-4 bg-white/20 border border-white/30 rounded-2xl outline-none text-white placeholder-white/70">
-            <input id="login-password" type="password" placeholder="Password" class="w-full p-4 bg-white/20 border border-white/30 rounded-2xl outline-none text-white placeholder-white/70">
-            <button onclick="handleLogin()" class="w-full py-4 bg-white text-pink-600 font-bold rounded-2xl shadow-2xl hover:scale-105 transition">Log In</button>
-            <p class="text-center text-sm text-white">Naya account banayein? <button onclick="toggleAuth()" class="font-bold underline">Sign Up</button></p>
+    <div id="auth-screen" class="screen active-screen flex flex-col items-center justify-center p-6 attractive-bg">
+        <h1 class="text-white text-8xl gajan-logo mb-10">Gajan</h1>
+        <div id="login-form" class="glass-card w-full max-w-sm p-8 space-y-6">
+            <input id="login-email" type="email" placeholder="Email" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white placeholder-white/70">
+            <input id="login-password" type="password" placeholder="Password" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white placeholder-white/70">
+            <button onclick="handleLogin()" class="w-full py-3 bg-white text-pink-600 font-bold rounded-xl shadow-lg">Log In</button>
+            <p class="text-center text-sm text-white">Naya account? <button onclick="toggleAuth()" class="font-bold underline">Sign Up</button></p>
         </div>
-
-        <div id="signup-card" class="glass-card w-full max-w-sm p-10 space-y-4 hidden">
-            <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 bg-white/20 border border-white/30 rounded-2xl outline-none text-white">
-            <input id="reg-email" type="email" placeholder="Email Address" class="w-full p-4 bg-white/20 border border-white/30 rounded-2xl outline-none text-white">
-            <input id="reg-password" type="password" placeholder="Create Password" class="w-full p-4 bg-white/20 border border-white/30 rounded-2xl outline-none text-white">
-            <button onclick="handleSignup()" class="w-full py-4 bg-pink-500 text-white font-bold rounded-2xl shadow-2xl hover:scale-105 transition">Sign Up</button>
-            <p class="text-center text-sm text-white">Pahle se account hai? <button onclick="toggleAuth()" class="font-bold underline">Log In</button></p>
+        <div id="signup-form" class="glass-card w-full max-w-sm p-8 space-y-4 hidden">
+            <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
+            <input id="reg-email" type="email" placeholder="Email" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
+            <input id="reg-password" type="password" placeholder="Password" class="w-full p-3 bg-white/20 border border-white/30 rounded-xl outline-none text-white">
+            <button onclick="handleSignup()" class="w-full py-3 bg-pink-500 text-white font-bold rounded-xl">Sign Up</button>
+            <p class="text-center text-sm text-white">Account hai? <button onclick="toggleAuth()" class="font-bold underline">Log In</button></p>
         </div>
     </div>
 
-    <div id="main-app" class="hidden h-screen overflow-y-auto no-scrollbar bg-white">
-        
-        <header class="flex justify-between items-center px-5 py-3 border-b sticky top-0 bg-white z-50">
-            <h1 class="gajan-logo text-black">Gajan</h1>
+    <div id="profile-screen" class="screen">
+        <header class="flex justify-between items-center px-4 py-2 border-b sticky top-0 bg-white z-50">
+            <h1 class="gajan-logo text-3xl">Gajan</h1>
             <div class="flex space-x-6 items-center">
-                <i class="fa-regular fa-square-plus text-2xl cursor-pointer" onclick="document.getElementById('post-upload').click()"></i>
-                <a href="messenger.html"><i class="fa-brands fa-facebook-messenger text-2xl"></i></a>
-                <button onclick="logout()" class="text-red-500 font-bold text-xs uppercase tracking-tighter">Logout</button>
+                <i class="fa-regular fa-square-plus text-2xl" onclick="document.getElementById('post-upload').click()"></i>
+                <i class="fa-brands fa-facebook-messenger text-2xl" onclick="showScreen('chat-screen')"></i>
+                <button onclick="logout()" class="text-red-500 font-bold text-[10px]">LOGOUT</button>
             </div>
         </header>
 
-        <input type="file" id="profile-upload" class="hidden" accept="image/*">
-        <input type="file" id="post-upload" class="hidden" accept="image/*,video/*">
-
         <div class="p-5">
-            <div class="flex items-center space-x-10 mb-6">
-                <div class="relative cursor-pointer group" onclick="document.getElementById('profile-upload').click()">
-                    <img id="user-avatar" src="https://via.placeholder.com/150" class="w-24 h-24 rounded-full border-4 border-pink-500 p-1 object-cover">
-                    <div class="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-camera text-white"></i></div>
+            <div class="flex items-center space-x-8 mb-6">
+                <div class="relative group" onclick="document.getElementById('profile-upload').click()">
+                    <img id="user-avatar" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border-2 border-pink-500 p-0.5 object-cover">
+                    <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-white text-[10px]"><i class="fa-solid fa-plus"></i></div>
                 </div>
                 <div class="flex-1 flex justify-around text-center">
-                    <div><p class="font-bold text-lg">11</p><p class="text-[10px] text-gray-400 font-bold">POSTS</p></div>
-                    <div><p class="font-bold text-lg">191</p><p class="text-[10px] text-gray-400 font-bold">FOLLOWERS</p></div>
-                    <div><p class="font-bold text-lg">120</p><p class="text-[10px] text-gray-400 font-bold">FOLLOWING</p></div>
+                    <div><p class="font-bold">11</p><p class="text-[10px] text-gray-400">POSTS</p></div>
+                    <div><p class="font-bold">191</p><p class="text-[10px] text-gray-400">FOLLOWERS</p></div>
+                    <div><p class="font-bold">120</p><p class="text-[10px] text-gray-400">FOLLOWING</p></div>
                 </div>
             </div>
-            <div class="mb-5 px-1">
-                <p id="display-name" class="font-bold text-base">Gajan User</p>
-                <p class="text-sm text-gray-600">Standard Core Gajan Edition ❤️ Jamnagar</p>
+            <div class="mb-4">
+                <p id="display-name" class="font-bold text-sm">Gajan User</p>
+                <p class="text-xs text-gray-600">Standard Core Gajan Edition ❤️</p>
             </div>
-            <div class="flex space-x-3">
-                <button class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs border border-gray-200">Edit profile</button>
-                <a href="wallet.html" class="flex-1 bg-gray-100 py-2.5 rounded-xl font-bold text-xs text-pink-600 border border-gray-200 text-center flex items-center justify-center"><i class="fa-solid fa-wallet mr-2"></i>Wallet</a>
+            <div class="flex space-x-2">
+                <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs border">Edit profile</button>
+                <button onclick="showScreen('wallet-screen')" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-xs text-pink-600 border"><i class="fa-solid fa-wallet mr-1"></i>Wallet</button>
             </div>
         </div>
 
-        <div class="flex border-t mt-4 sticky top-14 bg-white z-40">
-            <button class="flex-1 py-4 text-2xl active-tab text-black"><i class="fa-solid fa-table-cells"></i></button>
-            <a href="reels.html" class="flex-1 py-4 text-2xl text-gray-300 text-center"><i class="fa-solid fa-clapperboard"></i></a>
-            <button class="flex-1 py-4 text-2xl text-gray-300"><i class="fa-solid fa-user-tag"></i></button>
+        <div class="grid grid-cols-3 gap-0.5 mt-4 pb-24">
+            <img src="https://picsum.photos/300/300?random=1" class="aspect-square w-full object-cover">
+            <img src="https://picsum.photos/300/300?random=2" class="aspect-square w-full object-cover">
+            <img src="https://picsum.photos/300/300?random=3" class="aspect-square w-full object-cover">
         </div>
-        
-        <div class="grid grid-cols-3 gap-0.5 pb-24" id="posts-grid">
-            <img src="https://picsum.photos/400/400?random=101" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/400/400?random=102" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/400/400?random=103" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/400/400?random=104" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/400/400?random=105" class="aspect-square w-full object-cover">
-            <img src="https://picsum.photos/400/400?random=106" class="aspect-square w-full object-cover">
-        </div>
-
-        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-4 z-[60] shadow-2xl">
-            <a href="index.html"><i class="fa-solid fa-house text-2xl text-black"></i></a>
-            <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
-            <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
-            <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-500"></i></a>
-            <div class="w-8 h-8 bg-indigo-600 rounded-full border border-black flex items-center justify-center text-[10px] text-white font-bold">G</div>
-        </nav>
     </div>
+
+    <div id="wallet-screen" class="screen bg-gray-50">
+        <header class="p-4 bg-white border-b flex items-center space-x-4">
+            <i class="fa-solid fa-arrow-left text-xl" onclick="showScreen('profile-screen')"></i>
+            <h1 class="text-xl font-bold">Gajan Pay</h1>
+        </header>
+        <div class="p-6">
+            <div class="attractive-bg rounded-3xl p-8 text-white shadow-xl mb-6 relative overflow-hidden">
+                <p class="text-xs opacity-80 uppercase font-bold">Token Balance</p>
+                <h2 class="text-6xl font-bold mt-2" id="token-balance">0</h2>
+                <i class="fa-solid fa-coins absolute -right-4 -bottom-4 text-9xl opacity-20"></i>
+            </div>
+            <button class="w-full bg-white border-2 border-pink-500 text-pink-500 p-4 rounded-2xl font-bold shadow-sm mb-4">Buy Tokens</button>
+            <button onclick="alert('Minimum 100 Tokens required!')" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold shadow-lg">Withdraw Now</button>
+        </div>
+    </div>
+
+    <div id="chat-screen" class="screen flex flex-col">
+        <header class="p-4 border-b flex items-center space-x-4 bg-white sticky top-0">
+            <i class="fa-solid fa-arrow-left text-xl" onclick="showScreen('profile-screen')"></i>
+            <h1 class="font-bold">Global Messenger</h1>
+        </header>
+        <main id="chat-window" class="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar bg-gray-50 h-[70vh]">
+            </main>
+        <div class="p-4 border-t bg-white sticky bottom-0">
+            <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 border">
+                <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent outline-none text-sm">
+                <button onclick="sendGajanMsg()" class="text-blue-500 font-bold ml-2">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="profile-upload" class="hidden" accept="image/*">
+    <input type="file" id="post-upload" class="hidden" accept="image/*,video/*">
+
+    <nav id="bottom-nav" class="fixed bottom-0 w-full bg-white border-t flex justify-around items-center py-4 z-[60] hidden">
+        <i class="fa-solid fa-house text-2xl text-black" onclick="showScreen('profile-screen')"></i>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
+        <i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i>
+        <i class="fa-solid fa-wallet text-2xl text-pink-500" onclick="showScreen('wallet-screen')"></i>
+        <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold">G</div>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
@@ -116,10 +136,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- AUTH LOGIC ---
+        // Screen Switching
+        window.showScreen = (id) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(id).classList.add('active-screen');
+        };
+
         window.toggleAuth = () => {
-            document.getElementById('login-card').classList.toggle('hidden');
-            document.getElementById('signup-card').classList.toggle('hidden');
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('signup-form').classList.toggle('hidden');
         };
 
         window.handleSignup = async () => {
@@ -129,55 +154,86 @@
             try {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 await updateProfile(res.user, { displayName: name });
-                await setDoc(doc(db, "users", res.user.uid), { name, email, tokens: 0, photoURL: "" });
+                await setDoc(doc(db, "users", res.user.uid), { name, tokens: 0, photoURL: "" });
                 location.reload();
-            } catch (err) { alert(err.message); }
+            } catch (e) { alert(e.message); }
         };
 
         window.handleLogin = async () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } catch (err) { alert("Invalid credentials!"); }
+            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Login failed!"); }
         };
 
         window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
+                showScreen('profile-screen');
+                document.getElementById('auth-screen').classList.remove('active-screen');
+                document.getElementById('bottom-nav').classList.remove('hidden');
                 document.getElementById('display-name').innerText = user.displayName || "Gajan User";
                 if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                
+                // Live Tokens
+                onSnapshot(doc(db, "users", user.uid), (d) => {
+                    document.getElementById('token-balance').innerText = d.data()?.tokens || 0;
+                });
+
+                // Live Chat
+                const q = query(collection(db, "global_chat"), orderBy("time", "asc"));
+                onSnapshot(q, (sn) => {
+                    const win = document.getElementById('chat-window');
+                    win.innerHTML = "";
+                    sn.forEach(d => {
+                        const m = d.data();
+                        const isMe = m.uid === user.uid;
+                        win.innerHTML += `
+                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                                <div class="${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200'} p-3 rounded-2xl text-xs max-w-[80%] shadow-sm">
+                                    <p class="font-bold text-[8px] mb-1 opacity-70">${m.name}</p>
+                                    <p>${m.text}</p>
+                                </div>
+                            </div>`;
+                    });
+                    win.scrollTop = win.scrollHeight;
+                });
             } else {
-                document.getElementById('auth-section').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('hidden');
+                showScreen('auth-screen');
+                document.getElementById('bottom-nav').classList.add('hidden');
             }
         });
 
-        // --- CLOUDINARY ENGINE ---
+        // Chat Sending
+        window.sendGajanMsg = async () => {
+            const inp = document.getElementById('chat-input');
+            if(!inp.value) return;
+            await addDoc(collection(db, "global_chat"), {
+                text: inp.value,
+                name: auth.currentUser.displayName,
+                uid: auth.currentUser.uid,
+                time: serverTimestamp()
+            });
+            inp.value = "";
+        };
+
+        // Cloudinary Final Fix
         const CLOUD_NAME = "dvfgzrxs7";
-        const UPLOAD_PRESET = "gajan_uploads";
+        const PRESET = "gajan_live"; // Aapne jo naya banaya screenshot wala
 
         document.getElementById('profile-upload').onchange = async (e) => {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", UPLOAD_PRESET);
-            
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", PRESET);
             try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd });
                 const data = await res.json();
                 await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: data.secure_url });
                 await updateProfile(auth.currentUser, { photoURL: data.secure_url });
                 document.getElementById('user-avatar').src = data.secure_url;
-                alert("Profile Photo Updated!");
-            } catch (err) { alert("Upload failed!"); }
-        };
-
-        document.getElementById('post-upload').onchange = async (e) => {
-            const file = e.target.files[0];
-            alert("Uploading post to Gajan Feed...");
-            // Yaha aap post upload ka logic add kar sakte hain
+                alert("Profile Updated!");
+            } catch (err) { alert("Upload Failed! Check Cloudinary Settings."); }
         };
     </script>
 </body>
