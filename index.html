@@ -1,25 +1,150 @@
-<div class="bg-white border mt-2" id="post-container">
-    <div class="p-3 flex items-center space-x-2">
-        <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white text-xs">G</div>
-        <span class="font-semibold text-sm">Gajan_Official</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan - Official Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script> </head>
+<body class="bg-gray-50">
+
+    <div id="login-screen" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-6 hidden">
+        <h1 class="text-4xl font-bold italic text-pink-600 mb-8">Gajan</h1>
+        <button onclick="handleLogin()" class="bg-blue-500 text-white px-8 py-2 rounded font-bold w-full max-w-xs">
+            Continue with Google
+        </button>
     </div>
-    
-    <img src="https://picsum.photos/500/500" class="w-full aspect-square object-cover">
-    
-    <div class="p-3">
-        <div class="flex space-x-4 text-2xl mb-2">
-            <button onclick="handleLike()"><i id="like-icon" class="fa-regular fa-heart text-gray-700"></i></button>
-            <i class="fa-regular fa-comment"></i>
-        </div>
-        
-        <p class="text-sm font-bold"><span id="like-count">0</span> Likes</p>
-        
-        <div id="comment-list" class="mt-2 text-sm space-y-1 max-h-32 overflow-y-auto">
+
+    <div id="app-content">
+        <header class="flex justify-between items-center px-4 py-3 bg-white border-b sticky top-0 z-50">
+            <h1 class="text-2xl font-bold italic text-pink-600">Gajan</h1>
+            <div class="flex space-x-4 items-center">
+                <span id="user-tokens" class="bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-sm font-bold">0 Tokens</span>
+            </div>
+        </header>
+
+        <main class="pb-24 pt-4 px-3 space-y-4">
+
+            <div class="bg-white p-4 rounded-lg border">
+                <h2 class="font-bold text-gray-800 mb-3">Buy Gajan Tokens</h2>
+                <div class="space-y-2">
+                    <button class="w-full bg-pink-500 text-white text-sm py-2 rounded font-bold" onclick="buyTokensRequest(100)">Buy 100 Tokens (INR 100)</button>
+                    <button class="w-full bg-pink-600 text-white text-sm py-2 rounded font-bold" onclick="buyTokensRequest(500)">Buy 500 Tokens (INR 450)</button>
+                </div>
             </div>
 
-        <div class="mt-3 flex border-t pt-2">
-            <input id="comment-input" type="text" placeholder="Add a comment..." class="flex-1 text-sm outline-none">
-            <button onclick="postComment()" class="text-blue-500 font-bold text-sm ml-2">Post</button>
+            <div class="bg-white border rounded-lg overflow-hidden">
+                <div class="p-3 flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white text-xs">G</div>
+                    <span class="font-semibold text-sm">Gajan_Admin</span>
+                </div>
+                <img src="https://picsum.photos/500/500" class="w-full aspect-square object-cover">
+                <div class="p-3">
+                    <div class="flex space-x-4 text-2xl mb-2">
+                        <i class="fa-regular fa-heart"></i>
+                        <i class="fa-regular fa-comment"></i>
+                    </div>
+                    <p class="text-sm">Welcome to our platform. Tokens available via purchase!</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-lg border">
+                <h2 class="font-bold text-gray-800 mb-3">Wallet Services</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-gray-100 text-gray-800 text-xs py-2 rounded font-bold" onclick="showScanQR()">Scan to Send</button>
+                    <button class="bg-gray-100 text-gray-800 text-xs py-2 rounded font-bold" onclick="alert('My QR logic incoming...')">My Wallet QR</button>
+                </div>
+            </div>
+
+        </main>
+
+        <div id="qr-modal" class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center p-6 hidden">
+            <div id="reader" class="w-full max-w-sm h-80 bg-white"></div>
+            <button onclick="closeQRModal()" class="mt-4 text-white font-bold">Close Scanner</button>
         </div>
+
+        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-4">
+            <i class="fa-solid fa-house text-xl text-gray-700"></i>
+            <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+            <i class="fa-solid fa-circle-plus text-xl text-gray-400"></i>
+            <i class="fa-solid fa-wallet text-xl text-pink-500" onclick="alert('Withdraw limit is 100.')"></i>
+            <div id="nav-user-avatar" class="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-xs text-white"></div>
+        </nav>
     </div>
-</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase Setup
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q",
+            authDomain: "tiktok-clone-gajan.firebaseapp.com",
+            projectId: "tiktok-clone-gajan",
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app",
+            messagingSenderId: "838023307513",
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // 1. Auth Logic
+        window.handleLogin = () => signInWithPopup(auth, provider);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                // User database doc check/create
+                const userRef = doc(db, "users", user.uid);
+                await setDoc(userRef, { name: user.displayName, email: user.email, tokens: increment(0) }, { merge: true });
+                updateTokenUI(user.uid);
+                // Avatar UI
+                document.getElementById('nav-user-avatar').innerText = user.displayName.charAt(0);
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        });
+
+        // 2. Token Display Logic
+        async function updateTokenUI(uid) {
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) {
+                document.getElementById('user-tokens').innerText = (userDoc.data().tokens || 0) + " Tokens";
+            }
+        }
+
+        // 3. Buyer Token System (Create Request for Admin)
+        window.buyTokensRequest = async (amount) => {
+            const user = auth.currentUser;
+            if (!user) return;
+            // Admin Panel par approval ke liye request bhejte hain
+            await addDoc(collection(db, "buy_requests"), {
+                uid: user.uid,
+                username: user.displayName,
+                tokens: amount,
+                status: "pending",
+                timestamp: new Date()
+            });
+            alert(`Purchase request for ${amount} tokens sent! Please complete payment (QR upcoming...). Admin will approve soon.`);
+        }
+
+        // 4. Wallet QR Transfer Logic (Demo structure)
+        window.showScanQR = () => {
+            document.getElementById('qr-modal').classList.remove('hidden');
+            const html5QrCode = new Html5Qrcode("reader");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                closeQRModal();
+                const receiverUid = decodedText; // Scanning gives UID
+                prompt(`Sending tokens to: ${decodedText}. Enter Amount (Max 100):`);
+            };
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, qrCodeSuccessCallback);
+        }
+        window.closeQRModal = () => document.getElementById('qr-modal').classList.add('hidden');
+
+    </script>
+</body>
+</html>
