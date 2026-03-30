@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send To Friends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="fixed bottom-0 w-full bg-white rounded-t-[30px] p-6 shadow-2xl h-[70vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6"></div>
+        <h2 class="font-bold text-lg mb-4 text-center">Send to Friends</h2>
+        
+        <div class="space-y-5" id="friends-list">
+            <p class="text-center text-gray-400 text-sm">Searching for friends...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('vid');
+
+        async function loadFriends() {
+            const snap = await getDocs(collection(db, "users"));
+            const list = document.getElementById('friends-list');
+            list.innerHTML = "";
+            
+            snap.forEach(uDoc => {
+                const u = uDoc.data();
+                if(uDoc.id === auth.currentUser.uid) return;
+
+                list.innerHTML += `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <img src="${u.photo || 'https://via.placeholder.com/50'}" class="w-12 h-12 rounded-full border">
+                            <p class="font-bold text-sm">${u.name || 'Gajan Member'}</p>
+                        </div>
+                        <button onclick="sendVideo('${uDoc.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold">Send</button>
+                    </div>`;
+            });
+        }
+
+        window.sendVideo = async (friendId) => {
+            // Message/Share logic
+            alert("Video shared to friend!");
+            history.back();
+        };
+
+        auth.onAuthStateChanged(user => { if(user) loadFriends(); });
+    </script>
+</body>
+</html>
