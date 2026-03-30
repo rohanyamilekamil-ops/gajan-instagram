@@ -2,39 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Fast Upload</title>
+    <title>Gajan | Secure Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .gajan-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        #bar-fill { transition: width 0.4s ease; }
+        #bar-fill { transition: width 0.2s linear; }
     </style>
 </head>
 <body class="bg-white">
 
     <header class="flex items-center justify-between px-5 py-4 border-b">
         <a href="profile.html"><i class="fa-solid fa-arrow-left text-xl"></i></a>
-        <h1 class="font-bold text-lg text-black">New Post</h1>
+        <h1 class="font-bold text-lg">Post HD Reel</h1>
         <button id="post-btn" onclick="startGajanUpload()" class="text-blue-500 font-bold text-lg">Share</button>
     </header>
 
     <main class="p-6">
         <div class="w-full aspect-[9/16] bg-gray-50 rounded-[30px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center relative overflow-hidden mb-6" onclick="document.getElementById('file-input').click()">
             <div id="ui-box" class="text-center">
-                <i class="fa-solid fa-video text-5xl text-pink-500 mb-3"></i>
-                <p class="text-[10px] font-bold text-gray-400">TAP TO SELECT HD VIDEO</p>
+                <i class="fa-solid fa-clapperboard text-5xl text-pink-500 mb-3"></i>
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Select HD Video</p>
             </div>
             <video id="preview" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
             <input type="file" id="file-input" class="hidden" accept="video/*" onchange="loadPreview(this)">
         </div>
 
-        <textarea id="caption" placeholder="Write a caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100 mb-6"></textarea>
+        <textarea id="caption" placeholder="Write caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-24 border border-gray-100 mb-6"></textarea>
         
         <div id="progress-box" class="hidden">
             <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                 <div id="bar-fill" class="gajan-btn h-full w-0"></div>
             </div>
-            <p id="status-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold">SENDING TO SERVER...</p>
+            <p id="status-text" class="text-[10px] text-center mt-2 text-gray-500 font-bold">STARTING SECURE UPLOAD...</p>
         </div>
     </main>
 
@@ -64,59 +64,68 @@
             }
         };
 
-        window.startGajanUpload = async () => {
+        window.startGajanUpload = () => {
             const file = document.getElementById('file-input').files[0];
             if(!file) return alert("Select Video First!");
 
             const btn = document.getElementById('post-btn');
+            const bar = document.getElementById('bar-fill');
+            const status = document.getElementById('status-text');
+
             btn.disabled = true;
+            btn.innerText = "WAIT";
             document.getElementById('progress-box').classList.remove('hidden');
 
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", "gajan_live");
+            const cloudName = "dvfgzrxs7";
+            const unsignedUploadPreset = "gajan_live";
 
-            try {
-                // Percentage simulation
-                let p = 0;
-                const interval = setInterval(() => {
-                    if(p < 95) {
-                        p += 5;
-                        document.getElementById('bar-fill').style.width = p + "%";
-                        document.getElementById('status-text').innerText = "UPLOADING: " + p + "%";
+            // Chunked Upload using XHR
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    bar.style.width = percent + "%";
+                    status.innerText = "UPLOADING: " + percent + "% (DO NOT CLOSE)";
+                }
+            };
+
+            xhr.onload = async () => {
+                const response = JSON.parse(xhr.responseText);
+                if (xhr.status === 200 && response.secure_url) {
+                    status.innerText = "SAVING TO GAJAN FEED...";
+                    try {
+                        await addDoc(collection(db, "reels"), {
+                            videoUrl: response.secure_url,
+                            caption: document.getElementById('caption').value,
+                            name: auth.currentUser.displayName || "Gajan User",
+                            uid: auth.currentUser.uid,
+                            time: serverTimestamp()
+                        });
+                        alert("✅ Post Success!");
+                        window.location.replace("profile.html");
+                    } catch (e) {
+                        alert("Database Error!");
+                        location.reload();
                     }
-                }, 500);
-
-                const res = await fetch(`https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload`, {
-                    method: "POST",
-                    body: fd
-                });
-                
-                const data = await res.json();
-                clearInterval(interval);
-
-                if(data.secure_url) {
-                    document.getElementById('bar-fill').style.width = "100%";
-                    document.getElementById('status-text').innerText = "SAVING TO GAJAN FEED...";
-                    
-                    await addDoc(collection(db, "reels"), {
-                        videoUrl: data.secure_url,
-                        caption: document.getElementById('caption').value,
-                        name: auth.currentUser.displayName || "Gajan User",
-                        uid: auth.currentUser.uid,
-                        time: serverTimestamp()
-                    });
-
-                    alert("✅ Post Successful!");
-                    window.location.replace("profile.html");
                 } else {
-                    alert("Cloudinary Error: Check if your Preset is 'Unsigned'");
+                    alert("Server Refused: Use a shorter HD Video.");
                     location.reload();
                 }
-            } catch (err) {
-                alert("Network Error!");
+            };
+
+            xhr.onerror = () => {
+                alert("Network Error! Check your 5G/4G connection.");
                 location.reload();
-            }
+            };
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', unsignedUploadPreset);
+            formData.append('resource_type', 'video');
+
+            xhr.send(formData);
         };
     </script>
 </body>
