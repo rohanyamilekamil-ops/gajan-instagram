@@ -2,44 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Wallet</title>
+    <title>Gajan | Wallet Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .g-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        body { background: #f8f9fa; }
-    </style>
 </head>
-<body class="pb-24">
-
+<body class="bg-gray-50 pb-24">
     <header class="p-6 flex items-center justify-between bg-white shadow-sm sticky top-0 z-50">
-        <h1 class="font-bold text-xl tracking-tighter">Gajan Wallet</h1>
+        <h1 class="font-bold text-xl tracking-tighter italic">Gajan Wallet</h1>
         <a href="profile.html"><i class="fa-solid fa-xmark text-2xl text-gray-400"></i></a>
     </header>
 
-    <div class="m-6 p-8 rounded-[40px] g-gradient text-white shadow-2xl relative overflow-hidden">
-        <p class="text-xs font-bold uppercase opacity-70 tracking-widest">My Gajan Tokens</p>
-        <div class="flex items-center mt-3">
-            <i class="fa-solid fa-coins text-4xl mr-4 text-yellow-300"></i>
+    <div class="m-6 p-8 rounded-[40px] bg-gradient-to-br from-pink-600 to-purple-800 text-white shadow-2xl">
+        <p class="text-[10px] font-bold uppercase opacity-70 tracking-widest">Available Balance</p>
+        <div class="flex items-center mt-2">
+            <i class="fa-solid fa-coins text-3xl mr-3 text-yellow-400"></i>
             <h2 id="my-balance" class="text-5xl font-black">0</h2>
         </div>
-        <p class="mt-6 text-[10px] font-bold opacity-60">ID: <span id="u-id-txt">Loading...</span></p>
+        <p class="mt-6 text-[9px] font-bold opacity-50">MY UID: <span id="u-id-txt" class="select-all text-white font-black">Loading...</span></p>
     </div>
 
-    <div class="mx-6 p-8 bg-white rounded-[40px] border border-gray-100 shadow-sm text-center">
-        <h3 class="font-bold text-lg mb-2">Recharge Wallet</h3>
-        <p class="text-xs text-gray-400 mb-6">Scan QR & Send Screenshot to Admin</p>
+    <div class="mx-6 p-8 bg-white rounded-[40px] border shadow-sm text-center">
+        <h3 class="font-bold text-lg">Buy Tokens</h3>
+        <p class="text-[10px] text-gray-400 mb-6 uppercase">Scan QR & Upload Screenshot</p>
         
-        <div class="w-56 h-56 mx-auto bg-gray-50 rounded-3xl flex items-center justify-center border-4 border-gray-100 p-2 mb-6">
-            <img id="admin-qr" src="https://via.placeholder.com/300?text=Scan+to+Pay" class="w-full h-full object-cover rounded-2xl">
+        <img id="admin-qr" src="https://via.placeholder.com/300?text=Scan+QR" class="w-52 h-52 mx-auto rounded-3xl mb-6 border-4 border-gray-50 p-2">
+
+        <div class="mb-6 p-4 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer bg-gray-50" onclick="document.getElementById('receipt-input').click()">
+            <p id="receipt-status" class="text-[10px] font-bold text-gray-400 uppercase">Tap to Select Screenshot</p>
+            <input type="file" id="receipt-input" class="hidden" accept="image/*" onchange="previewReceipt(this)">
         </div>
 
-        <button onclick="alert('Admin ko payment receipt bhein!')" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-lg active:scale-95 transition">Submit Payment</button>
+        <button id="submit-pay-btn" onclick="sendProofToAdmin()" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition">Submit Request</button>
     </div>
 
     <nav class="fixed bottom-0 w-full h-[75px] bg-white border-t flex justify-around items-center z-50">
         <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-300"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-gray-300"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
     </nav>
@@ -47,32 +44,52 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        let currentUser = null;
+
+        window.previewReceipt = (input) => {
+            if (input.files[0]) {
+                document.getElementById('receipt-status').innerText = "✅ PHOTO READY";
+                document.getElementById('receipt-status').style.color = "green";
+            }
+        };
+
+        window.sendProofToAdmin = async () => {
+            const file = document.getElementById('receipt-input').files[0];
+            if (!file) return alert("Pehle screenshot select karein!");
+            
+            const btn = document.getElementById('submit-pay-btn');
+            btn.disabled = true;
+            document.getElementById('receipt-status').innerText = "SENDING TO ADMIN...";
+
+            try {
+                await addDoc(collection(db, "paymentRequests"), {
+                    uid: currentUser.uid,
+                    userName: currentUser.displayName || "Gajan User",
+                    time: serverTimestamp(),
+                    status: "pending"
+                });
+                alert("✅ Request Sent! Admin will approve soon.");
+                location.reload();
+            } catch (e) { alert("Error! Try again."); btn.disabled = false; }
+        };
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                currentUser = user;
                 document.getElementById('u-id-txt').innerText = user.uid;
-
-                // 1. Listen for Balance Update
-                onSnapshot(doc(db, "wallets", user.uid), (walletDoc) => {
-                    if (walletDoc.exists()) {
-                        document.getElementById('my-balance').innerText = walletDoc.data().balance;
-                    }
+                onSnapshot(doc(db, "wallets", user.uid), (d) => {
+                    if(d.exists()) document.getElementById('my-balance').innerText = d.data().balance;
                 });
-
-                // 2. Listen for Admin QR Update
-                onSnapshot(doc(db, "admin", "settings"), (adminDoc) => {
-                    if (adminDoc.exists()) {
-                        document.getElementById('admin-qr').src = adminDoc.data().qrUrl;
-                    }
+                onSnapshot(doc(db, "admin", "settings"), (d) => {
+                    if(d.exists()) document.getElementById('admin-qr').src = d.data().qrUrl;
                 });
-            } else {
-                window.location.href = "index.html";
             }
         });
     </script>
