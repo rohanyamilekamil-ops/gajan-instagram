@@ -9,19 +9,20 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .active-icon { color: black !important; }
     </style>
 </head>
 <body class="bg-white pb-20">
 
     <header class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-50">
-        <i class="fa-solid fa-chevron-left text-xl"></i>
-        <h1 id="topUsername" class="font-bold text-lg">Gajan</h1>
-        <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+        <button onclick="window.history.back()"><i class="fa-solid fa-chevron-left text-xl"></i></button>
+        <h1 id="topUsername" class="font-bold text-lg text-center flex-1">Gajan</h1>
+        <button onclick="alert('Settings coming soon!')"><i class="fa-solid fa-ellipsis-vertical text-xl"></i></button>
     </header>
 
     <main class="p-4">
         <div class="flex items-center space-x-8 mb-6">
-            <div class="relative">
+            <div class="relative cursor-pointer">
                 <img id="displayPic" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
                 <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white">
                     <i class="fa-solid fa-plus text-[10px]"></i>
@@ -29,9 +30,18 @@
             </div>
             
             <div class="flex space-x-8 text-center flex-1 justify-around">
-                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Posts</p></div>
-                <div><p id="followerCount" class="font-bold">0</p><p class="text-sm text-gray-sm">Followers</p></div>
-                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Following</p></div>
+                <div class="cursor-pointer">
+                    <p class="font-bold">0</p>
+                    <p class="text-sm text-gray-500">Posts</p>
+                </div>
+                <div class="cursor-pointer">
+                    <p id="followerCount" class="font-bold">0</p>
+                    <p class="text-sm text-gray-500">Followers</p>
+                </div>
+                <div class="cursor-pointer">
+                    <p class="font-bold">0</p>
+                    <p class="text-sm text-gray-500">Following</p>
+                </div>
             </div>
         </div>
 
@@ -41,35 +51,36 @@
         </div>
 
         <div class="flex space-x-2 mb-6">
-            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
-            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm">Follow</button>
-            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg"><i class="fa-solid fa-wallet"></i></a>
+            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200">Edit Profile</button>
+            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm transition-all">Follow</button>
+            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-wallet"></i></a>
         </div>
     </main>
 
-    <div class="grid grid-cols-3 gap-1">
-        <div class="aspect-square bg-gray-200"></div>
-        <div class="aspect-square bg-gray-200"></div>
-        <div class="aspect-square bg-gray-200"></div>
+    <div class="grid grid-cols-3 gap-1 px-1">
+        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
+        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
+        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
     </div>
 
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6">
-            <h3 class="text-lg font-bold mb-4">Edit Profile</h3>
-            <input id="newNameInput" type="text" placeholder="Enter new name" class="w-full border p-2 rounded mb-4 outline-none">
+        <div class="bg-white w-full max-w-sm rounded-xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold mb-4 border-b pb-2 text-center">Edit Profile</h3>
+            <label class="text-xs text-gray-500 mb-1 block">Full Name</label>
+            <input id="newNameInput" type="text" class="w-full border p-2 rounded mb-4 outline-none focus:border-blue-500">
             <div class="flex space-x-3">
-                <button id="cancelBtn" class="flex-1 bg-gray-200 py-2 rounded-lg">Cancel</button>
-                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg">Save</button>
+                <button id="cancelBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold">Cancel</button>
+                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold">Save</button>
             </div>
         </div>
     </div>
 
     <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl z-50">
         <a href="index.html"><i class="fa-solid fa-house text-gray-400"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-        <i class="fa-regular fa-square-plus text-gray-400"></i>
-        <i class="fa-solid fa-clapperboard text-gray-400"></i>
-        <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
+        <a href="search.html"><i class="fa-solid fa-magnifying-glass text-gray-400"></i></a>
+        <a href="create-post.html"><i class="fa-regular fa-square-plus text-gray-400"></i></a>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-400"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-user active-icon"></i></a>
     </footer>
 
     <script>
@@ -84,7 +95,7 @@
         const profileName = document.getElementById('profileName');
         const topUsername = document.getElementById('topUsername');
 
-        // 1. Follow/Unfollow Logic
+        // Follow Logic
         let isFollowing = false;
         let count = 0;
 
@@ -93,19 +104,19 @@
                 isFollowing = true;
                 count++;
                 followBtn.innerText = "Following";
-                followBtn.classList.replace('bg-blue-500', 'bg-gray-200');
-                followBtn.classList.replace('text-white', 'text-black');
+                followBtn.classList.remove('bg-blue-500', 'text-white');
+                followBtn.classList.add('bg-gray-200', 'text-black');
             } else {
                 isFollowing = false;
                 count--;
                 followBtn.innerText = "Follow";
-                followBtn.classList.replace('bg-gray-200', 'bg-blue-500');
-                followBtn.classList.replace('text-black', 'text-white');
+                followBtn.classList.remove('bg-gray-200', 'text-black');
+                followBtn.classList.add('bg-blue-500', 'text-white');
             }
             followerCount.innerText = count;
         });
 
-        // 2. Edit Profile Modal Logic
+        // Modal Logic
         editBtn.addEventListener('click', () => {
             editModal.classList.remove('hidden');
             newNameInput.value = profileName.innerText;
@@ -116,12 +127,20 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            if(newNameInput.value.trim() !== "") {
-                profileName.innerText = newNameInput.value;
-                topUsername.innerText = newNameInput.value;
+            const val = newNameInput.value.trim();
+            if(val !== "") {
+                profileName.innerText = val;
+                topUsername.innerText = val;
                 editModal.classList.add('hidden');
             }
         });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == editModal) {
+                editModal.classList.add('hidden');
+            }
+        }
     </script>
 </body>
 </html>
