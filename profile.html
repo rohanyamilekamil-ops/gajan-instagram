@@ -2,153 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Master Profile</title>
+    <title>Gajan | Profile Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: white; font-family: -apple-system, sans-serif; overflow-x: hidden; }
-        .g-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        
-        /* 📜 Sidebar Menu Animation */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; }
+        .g-logo-box { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); rotate: -3deg; }
         #side-menu { position: fixed; top: 0; right: -100%; width: 75%; height: 100%; background: white; z-index: 200; transition: 0.3s; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
         #side-menu.open { right: 0; }
-        .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 0.5px solid #efefef; font-weight: 500; }
+        .menu-item { padding: 18px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 0.5px solid #f0f0f0; font-weight: 600; font-size: 14px; }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; }
     </style>
 </head>
-<body class="pb-20">
+<body class="bg-white pb-20">
 
     <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
     <div id="side-menu">
         <div class="p-6 border-b"><h3 class="font-bold text-lg">Settings</h3></div>
         <div class="menu-item"><i class="fa-solid fa-gear"></i> Settings and privacy</div>
-        <div class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Your activity</div>
-        <div class="menu-item text-red-600" onclick="logoutUser()">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </div>
+        <div class="menu-item text-red-600" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
     </div>
 
     <header class="flex justify-between items-center px-4 py-3 border-b sticky top-0 bg-white z-50">
-        <h1 class="font-black text-2xl italic select-none cursor-pointer" onclick="secretAdminTrigger()">Gajan</h1>
-        <div class="flex items-center space-x-6">
-            <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl text-black"></i></a>
+        <div class="flex items-center gap-2 cursor-pointer" onclick="secretAdminTrigger()">
+            <div class="w-9 h-9 flex items-center justify-center g-logo-box rounded-xl shadow-lg relative">
+                <span class="text-white font-black text-xl italic">G</span>
+                <i class="fa-solid fa-crown absolute -top-2 -right-2 text-yellow-400 text-[10px] rotate-12"></i>
+            </div>
+            <h1 class="text-xl font-black italic tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600">Gajan</h1>
+        </div>
+        <div class="flex items-center space-x-5">
+            <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl"></i></a>
             <i class="fa-solid fa-bars text-2xl cursor-pointer" onclick="toggleMenu()"></i>
         </div>
     </header>
 
     <div class="p-4">
         <div class="flex items-center space-x-8 mb-6">
-            <div class="w-20 h-20 rounded-full p-[2px] g-gradient">
+            <div class="w-20 h-20 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 to-fuchsia-600">
                 <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-2 border-white object-cover">
             </div>
             <div class="flex-1 flex justify-around text-center">
                 <div><p class="font-bold text-base" id="post-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
                 <div><p class="font-bold text-base" id="follower-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p></div>
-                <div><p class="font-bold text-base" id="total-views-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Total Views</p></div>
+                <div><p class="font-bold text-base" id="total-views-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Views</p></div>
             </div>
         </div>
-        <h2 id="u-name" class="font-bold text-sm mb-1">@GajanUser</h2>
-        <p class="text-[11px] text-gray-500">Jamnagar, Gujarat | Official Gajan App 👑</p>
-        
+        <h2 id="u-name" class="font-bold text-sm">@User</h2>
+        <p class="text-[11px] text-gray-400">Jamnagar, Gujarat | Official Gajan 👑</p>
         <div class="flex mt-6 space-x-2">
             <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Edit Profile</button>
-            <button onclick="sendTokenToFriend()" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Send Tokens</button>
+            <button onclick="sendTokens()" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Send Tokens</button>
         </div>
     </div>
 
-    <div id="video-grid" class="grid grid-cols-3 gap-0.5 border-t"></div>
+    <div id="video-grid" class="grid grid-cols-3 gap-0.5 border-t mt-4"></div>
 
     <nav class="fixed bottom-0 w-full h-[60px] bg-white border-t flex justify-around items-center z-50">
-        <a href="reels.html"><i class="fa-solid fa-house text-xl text-black"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-400"></i></a>
-        <div class="w-6 h-6 rounded-full bg-black border border-gray-300"></div>
+        <a href="reels.html"><i class="fa-solid fa-house text-xl text-gray-300"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-300"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-300"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-300"></i></a>
+        <div class="w-6 h-6 rounded-full bg-black border border-gray-200"></div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, onSnapshot, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 🟢 3-Lines Menu Toggle
         window.toggleMenu = () => {
             document.getElementById('side-menu').classList.toggle('open');
             const overlay = document.getElementById('overlay');
             overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block';
         };
 
-        // 🔴 Logout System
-        window.logoutUser = () => {
-            if(confirm("Logout from Gajan?")) {
-                signOut(auth).then(() => location.href = "index.html");
-            }
-        };
+        window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(()=>location.href="index.html"); };
 
-        // 🔐 Underground Admin Trigger (5 Taps on Logo)
         let taps = 0;
         window.secretAdminTrigger = () => {
             taps++;
             if(taps === 5) {
-                const pass = prompt("Enter Master Key:");
-                if(pass === "Abdul6353738585@") location.href = "admin.html";
+                const p = prompt("Admin Key:");
+                if(p === "Abdul6353738585@") location.href="admin.html";
                 taps = 0;
             }
-            setTimeout(() => taps = 0, 3000);
-        };
-
-        // 💸 User-to-User Token Send (Safe & Secure)
-        window.sendTokenToFriend = async () => {
-            const friendUid = prompt("Enter Friend's UID:");
-            const amt = parseInt(prompt("How many tokens to send?"));
-            if(!friendUid || isNaN(amt) || amt <= 0) return alert("Invalid Details!");
-
-            try {
-                await runTransaction(db, async (t) => {
-                    const myWalletRef = doc(db, "wallets", auth.currentUser.uid);
-                    const friendWalletRef = doc(db, "wallets", friendUid);
-                    const myWallet = await t.get(myWalletRef);
-
-                    if(!myWallet.exists() || myWallet.data().balance < amt) throw "Insufficient Balance!";
-                    
-                    t.update(myWalletRef, { balance: increment(-amt) });
-                    t.set(friendWalletRef, { balance: increment(amt) }, { merge: true });
-                });
-                alert("✅ tokens sent successfully!");
-            } catch(e) { alert(e); }
+            setTimeout(()=>taps=0, 2000);
         };
 
         onAuthStateChanged(auth, user => {
             if(user) {
                 document.getElementById('u-name').innerText = "@" + (user.displayName || "GajanUser");
                 if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
-
-                // Load Stats
-                onSnapshot(doc(db, "users", user.uid), (snap) => {
-                    if(snap.exists()) {
-                        const d = snap.data();
-                        document.getElementById('total-views-count').innerText = d.totalViews || 0;
-                        document.getElementById('follower-count').innerText = d.followers ? d.followers.length : 0;
+                onSnapshot(doc(db, "users", user.uid), (s) => {
+                    if(s.exists()) {
+                        document.getElementById('total-views-count').innerText = s.data().totalViews || 0;
+                        document.getElementById('follower-count').innerText = s.data().followers?.length || 0;
                     }
                 });
-
-                // Load Grid
                 const q = query(collection(db, "reels"), where("uid", "==", user.uid));
                 onSnapshot(q, (sn) => {
-                    const grid = document.getElementById('video-grid');
-                    grid.innerHTML = "";
+                    const grid = document.getElementById('video-grid'); grid.innerHTML = "";
                     document.getElementById('post-count').innerText = sn.size;
-                    sn.forEach(docSnap => {
-                        grid.innerHTML += `<div class="aspect-square bg-gray-100"><video src="${docSnap.data().videoUrl}" class="w-full h-full object-cover"></video></div>`;
+                    sn.forEach(d => {
+                        grid.innerHTML += `<div class="aspect-square border-[0.5px] border-white"><video src="${d.data().videoUrl}" class="w-full h-full object-cover"></video></div>`;
                     });
                 });
-            } else { location.href = "index.html"; }
+            } else { location.href="index.html"; }
         });
     </script>
 </body>
