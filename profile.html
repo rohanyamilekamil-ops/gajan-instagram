@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Official Profile</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan | Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .active-icon { color: black !important; }
     </style>
 </head>
@@ -17,143 +14,54 @@
     <header class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-50">
         <button onclick="window.history.back()"><i class="fa-solid fa-chevron-left text-xl"></i></button>
         <h1 id="topUsername" class="font-bold text-lg text-center flex-1">Gajan</h1>
-        <button onclick="alert('Settings coming soon!')"><i class="fa-solid fa-ellipsis-vertical text-xl"></i></button>
+        <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
     </header>
 
     <main class="p-4">
         <div class="flex items-center space-x-8 mb-6">
-            <div id="photoContainer" class="relative cursor-pointer" onclick="openFilePicker()">
+            <div class="relative" onclick="document.getElementById('imageInput').click()">
                 <img id="displayPic" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
-                <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white">
-                    <i class="fa-solid fa-plus text-[10px]"></i>
-                </div>
                 <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
             </div>
-            
-            <div class="flex space-x-8 text-center flex-1 justify-around">
-                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Posts</p></div>
-                <div><p id="followerCount" class="font-bold">0</p><p class="text-sm text-gray-500">Followers</p></div>
-                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Following</p></div>
+            <div class="flex space-x-8 text-center flex-1 justify-around text-sm">
+                <div><p class="font-bold">0</p><p class="text-gray-500">Posts</p></div>
+                <div><p id="followerCount" class="font-bold">0</p><p class="text-gray-500">Followers</p></div>
+                <div><p class="font-bold">0</p><p class="text-gray-500">Following</p></div>
             </div>
         </div>
-
         <div class="mb-6">
-            <h2 id="profileName" class="font-bold text-sm">Gajan</h2>
+            <h2 id="profileName" class="font-bold">Gajan</h2>
             <p class="text-sm text-gray-600">Jamnagar, Gujarat | Official Gajan App 👑</p>
         </div>
-
-        <div class="flex space-x-2 mb-6">
-            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
+        <div class="flex space-x-2">
+            <button class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
             <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm">Follow</button>
-            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg flex items-center justify-center"><i class="fa-solid fa-wallet"></i></a>
         </div>
     </main>
-
-    <div class="grid grid-cols-3 gap-1 px-1">
-        <div class="aspect-square bg-gray-200 flex items-center justify-center text-gray-400 font-bold uppercase text-[10px]">No Posts</div>
-    </div>
-
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6">
-            <h3 class="text-lg font-bold mb-4">Edit Profile</h3>
-            <input id="newNameInput" type="text" class="w-full border p-2 rounded mb-4 outline-none">
-            <div class="flex space-x-3">
-                <button id="cancelBtn" class="flex-1 bg-gray-100 py-2 rounded-lg">Cancel</button>
-                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg">Save</button>
-            </div>
-        </div>
-    </div>
 
     <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl z-50">
         <a href="index.html"><i class="fa-solid fa-house text-gray-400"></i></a>
         <a href="search.html"><i class="fa-solid fa-magnifying-glass text-gray-400"></i></a>
-        <a href="create-post.html"><i class="fa-regular fa-square-plus text-gray-400"></i></a>
+        <a href="upload.html"><i class="fa-regular fa-square-plus text-gray-400"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-400"></i></a>
         <a href="profile.html"><i class="fa-solid fa-user active-icon"></i></a>
     </footer>
 
     <script>
-        const followBtn = document.getElementById('followBtn');
-        const followerCount = document.getElementById('followerCount');
-        const profileName = document.getElementById('profileName');
-        const topUsername = document.getElementById('topUsername');
-        const displayPic = document.getElementById('displayPic');
-        const imageInput = document.getElementById('imageInput');
-        const editModal = document.getElementById('editModal');
-        const newNameInput = document.getElementById('newNameInput');
-
-        // Refresh hone par data wapas lana
+        // Data Memory Logic
         window.onload = () => {
-            if(localStorage.getItem('gajan_name')) {
-                const savedName = localStorage.getItem('gajan_name');
-                profileName.innerText = savedName;
-                topUsername.innerText = savedName;
-            }
-            if(localStorage.getItem('gajan_follow_count')) {
-                followerCount.innerText = localStorage.getItem('gajan_follow_count');
-                if(localStorage.getItem('gajan_is_following') === 'true') {
-                    setFollowingUI();
-                }
-            }
-            if(localStorage.getItem('gajan_profile_pic')) {
-                displayPic.src = localStorage.getItem('gajan_profile_pic');
-            }
+            if(localStorage.getItem('g_pic')) document.getElementById('displayPic').src = localStorage.getItem('g_pic');
+            if(localStorage.getItem('g_follow')) document.getElementById('followerCount').innerText = localStorage.getItem('g_follow');
         };
 
-        // Follow Logic
-        let isFollowing = localStorage.getItem('gajan_is_following') === 'true';
-        let count = parseInt(localStorage.getItem('gajan_follow_count')) || 0;
-
-        followBtn.addEventListener('click', () => {
-            if(!isFollowing) {
-                isFollowing = true; count++; setFollowingUI();
-            } else {
-                isFollowing = false; count--; setFollowUI();
-            }
-            followerCount.innerText = count;
-            localStorage.setItem('gajan_follow_count', count);
-            localStorage.setItem('gajan_is_following', isFollowing);
-        });
-
-        function setFollowingUI() {
-            followBtn.innerText = "Following";
-            followBtn.classList.remove('bg-blue-500', 'text-white');
-            followBtn.classList.add('bg-gray-200', 'text-black');
-        }
-        function setFollowUI() {
-            followBtn.innerText = "Follow";
-            followBtn.classList.remove('bg-gray-200', 'text-black');
-            followBtn.classList.add('bg-blue-500', 'text-white');
-        }
-
-        // Edit Profile
-        document.getElementById('editBtn').addEventListener('click', () => {
-            editModal.classList.remove('hidden');
-            newNameInput.value = profileName.innerText;
-        });
-
-        document.getElementById('cancelBtn').addEventListener('click', () => editModal.classList.add('hidden'));
-
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            const val = newNameInput.value.trim();
-            if(val !== "") {
-                profileName.innerText = val;
-                topUsername.innerText = val;
-                localStorage.setItem('gajan_name', val);
-                editModal.classList.add('hidden');
-            }
-        });
-
-        // Photo Logic
-        function openFilePicker() { imageInput.click(); }
         function uploadPhoto(event) {
             const file = event.target.files[0];
             if(file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    displayPic.src = e.target.result;
-                    localStorage.setItem('gajan_profile_pic', e.target.result);
-                }
+                reader.onload = (e) => {
+                    document.getElementById('displayPic').src = e.target.result;
+                    localStorage.setItem('g_pic', e.target.result);
+                };
                 reader.readAsDataURL(file);
             }
         }
