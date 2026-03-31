@@ -1,99 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Master Admin</title>
+    <meta charset="UTF-8"><title>Gajan | Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-950 text-white min-h-screen p-4 flex flex-col items-center">
-
-    <div id="admin-login" class="mt-20 w-full max-w-md bg-gray-900 p-8 rounded-[40px] shadow-2xl border border-gray-800">
-        <h1 class="text-3xl font-black mb-8 text-center text-pink-600 italic tracking-tighter">GAJAN ADMIN</h1>
-        <input id="adm-user" type="text" placeholder="Username" class="w-full p-4 bg-gray-800 rounded-2xl mb-4 border border-gray-700">
-        <input id="adm-pass" type="password" placeholder="Password" class="w-full p-4 bg-gray-800 rounded-2xl mb-6 border border-gray-700">
-        <button onclick="checkAdmin()" class="w-full py-4 bg-pink-600 rounded-2xl font-black shadow-lg">LOGIN</button>
+<body class="bg-gray-100 p-6">
+    <div id="loginBox" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm mx-auto mt-20">
+        <h1 class="font-bold text-2xl mb-6 text-center italic">Admin Login</h1>
+        <input id="admUser" type="text" placeholder="Admin ID" class="w-full p-3 border rounded-xl mb-3">
+        <input id="admPass" type="password" placeholder="Password" class="w-full p-3 border rounded-xl mb-4">
+        <button onclick="checkAdmin()" class="w-full bg-black text-white py-3 rounded-xl font-bold">Access Panel</button>
     </div>
 
-    <div id="admin-panel" class="hidden w-full max-w-5xl space-y-8">
-        <header class="flex justify-between items-center py-6">
-            <h2 class="text-2xl font-black italic">CONTROL PANEL</h2>
-            <button onclick="location.reload()" class="bg-red-600 text-[10px] px-6 py-2 rounded-full font-bold">LOGOUT</button>
-        </header>
-
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-gray-900 p-8 rounded-[40px] border border-gray-800 shadow-xl">
-                <h3 class="font-black text-yellow-500 mb-6 uppercase text-sm"><i class="fa-solid fa-coins mr-2"></i>Token Generator</h3>
-                <input id="target-uid" type="text" placeholder="Paste User UID" class="w-full p-4 bg-gray-800 rounded-2xl mb-4 text-xs">
-                <input id="token-amt" type="number" placeholder="Enter Token Amount" class="w-full p-4 bg-gray-800 rounded-2xl mb-6 text-xs">
-                <button onclick="sendTokens()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-xs shadow-lg">ADD UNLIMITED TOKENS</button>
-            </div>
-
-            <div class="bg-gray-900 p-8 rounded-[40px] border border-gray-800 shadow-xl">
-                <h3 class="font-black text-blue-500 mb-6 uppercase text-sm"><i class="fa-solid fa-qrcode mr-2"></i>Update Payment QR</h3>
-                <input id="qr-input-url" type="text" placeholder="Paste QR Image Link" class="w-full p-4 bg-gray-800 rounded-2xl mb-6 text-xs">
-                <button onclick="updateGlobalQR()" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-xs shadow-lg">UPDATE QR GLOBALLY</button>
-            </div>
+    <div id="adminPanel" class="hidden max-w-lg mx-auto space-y-6">
+        <div class="bg-white p-6 rounded-3xl shadow-md">
+            <h2 class="font-bold text-lg mb-4 text-red-500 underline">Generate Unlimited Tokens</h2>
+            <input id="targetUid" type="text" placeholder="User UID" class="w-full p-3 border rounded-xl mb-3">
+            <input id="tokenAmount" type="number" placeholder="Amount" class="w-full p-3 border rounded-xl mb-4">
+            <button onclick="addTokens()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold italic">GENERATE & SEND</button>
         </div>
 
-        <div class="bg-gray-900 p-8 rounded-[40px] border border-gray-800 shadow-xl">
-            <h3 class="font-black text-green-500 mb-6 uppercase text-sm flex items-center">
-                <i class="fa-solid fa-bell-on mr-2 animate-pulse"></i> Pending Requests
-            </h3>
-            <div id="request-list" class="space-y-4">
-                <p class="text-xs text-gray-600 italic">Waiting for new requests...</p>
-            </div>
+        <div class="bg-white p-6 rounded-3xl shadow-md">
+            <h2 class="font-bold text-lg mb-4">Payment QR Control</h2>
+            <input id="qrUrl" type="text" placeholder="New QR Image URL" class="w-full p-3 border rounded-xl mb-4">
+            <button onclick="updateQR()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Update Payment Method</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, increment, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
+        import { getFirestore, doc, updateDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", projectId: "tiktok-clone-gajan" });
         const db = getFirestore(app);
 
         window.checkAdmin = () => {
-            const u = document.getElementById('adm-user').value;
-            const p = document.getElementById('adm-pass').value;
-            if(u === "MRGAJAN" && p === "Abdul6353738585@") {
-                document.getElementById('admin-login').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                loadRequests();
-            } else { alert("Access Denied!"); }
+            if(document.getElementById('admUser').value === 'MRGAJAN' && document.getElementById('admPass').value === 'Abdul6353738585@') {
+                document.getElementById('loginBox').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+            } else { alert("Wrong Admin Details!"); }
         };
 
-        function loadRequests() {
-            onSnapshot(query(collection(db, "paymentRequests"), where("status", "==", "pending")), (sn) => {
-                const list = document.getElementById('request-list');
-                list.innerHTML = "";
-                sn.forEach(dDoc => {
-                    const d = dDoc.data();
-                    list.innerHTML += `
-                        <div class="flex items-center justify-between bg-gray-800 p-5 rounded-[25px] border border-gray-700">
-                            <div><p class="font-bold text-white">${d.userName}</p><p class="text-[9px] text-gray-500 uppercase">UID: ${d.uid}</p></div>
-                            <button onclick="copyUID('${d.uid}')" class="bg-blue-600 text-[10px] px-6 py-2 rounded-full font-black">COPY UID</button>
-                        </div>`;
-                });
-            });
-        }
-
-        window.copyUID = (uid) => { navigator.clipboard.writeText(uid); alert("UID Copied!"); };
-
-        window.sendTokens = async () => {
-            const uid = document.getElementById('target-uid').value;
-            const amt = parseInt(document.getElementById('token-amt').value);
-            if(!uid || !amt) return alert("Bhariye details!");
-            await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
-            alert("Tokens Sent Successfully!");
+        window.addTokens = async () => {
+            const uid = document.getElementById('targetUid').value;
+            const amt = parseInt(document.getElementById('tokenAmount').value);
+            await updateDoc(doc(db, "users", uid), { tokens: increment(amt) });
+            alert("Tokens Generated Successfully!");
         };
 
-        window.updateGlobalQR = async () => {
-            const url = document.getElementById('qr-input-url').value;
-            if(!url) return alert("QR Link bhariye!");
-            await setDoc(doc(db, "admin", "settings"), { qrUrl: url }, { merge: true });
-            alert("QR Updated for everyone!");
+        window.updateQR = async () => {
+            const url = document.getElementById('qrUrl').value;
+            await setDoc(doc(db, "settings", "payment"), { qr: url });
+            alert("Payment QR Updated!");
         };
     </script>
 </body>
