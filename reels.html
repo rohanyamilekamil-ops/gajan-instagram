@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Official Pro</title>
+    <title>Gajan | Reels Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,28 +12,39 @@
         .feed-container::-webkit-scrollbar { display: none; }
         .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .side-ui { position: absolute; right: 15px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; text-shadow: 0 1px 4px #000; }
-        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: linear-gradient(transparent, #000); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .gift-btn { animation: bounce 2s infinite; color: #fbbf24; }
-        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        
+        /* Side UI Icons */
+        .side-ui { position: absolute; right: 12px; bottom: 140px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
+        .icon-btn { font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        .icon-btn:active { transform: scale(1.3); }
+
+        /* Bottom Info */
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 70%; }
+        .f-btn { border: 1px solid white; padding: 4px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; transition: all 0.2s; }
+        
+        /* Heart Animation */
+        .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
+        .animate-heart { animation: heartPop 0.7s ease-out; }
+        @keyframes heartPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+
+        nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 0.5px solid #222; }
     </style>
 </head>
 <body>
 
-    <div class="feed-container" id="gajan-reels-feed"></div>
+    <div class="feed-container" id="gajan-feed"></div>
 
     <nav>
-        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-400"></i></a>
-        <a href="search.html"><i class="fa-solid fa-magnifying-glass text-2xl text-gray-400"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-pink-600"></i></a>
-        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-black border-2 border-white">G</div>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-2xl text-gray-500"></i></a>
+        <div onclick="location.href='profile.html'" class="w-7 h-7 rounded-full bg-white border border-gray-600"></div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -41,80 +52,107 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let viewed = new Set();
+        let viewedSet = new Set();
 
         onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
-            const container = document.getElementById('gajan-reels-feed');
+            const container = document.getElementById('gajan-feed');
+            const oldScroll = container.scrollTop;
             container.innerHTML = "";
+            
             sn.forEach(reelDoc => {
                 const d = reelDoc.data();
                 const rid = reelDoc.id;
                 const isLiked = d.likedBy && auth.currentUser && d.likedBy.includes(auth.currentUser.uid);
 
                 container.innerHTML += `
-                    <div class="reel-unit">
-                        <video class="rv" data-id="${rid}" loop playsinline muted src="${d.videoUrl}"></video>
+                    <div class="reel-unit" ondblclick="handleDoubleTap(this, '${rid}')">
+                        <video class="rvid" data-id="${rid}" loop playsinline muted src="${d.videoUrl}"></video>
+                        <i class="fa-solid fa-heart big-heart"></i>
+                        
                         <div class="side-ui">
-                            <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}" onclick="likePost('${rid}')"></i>
-                            <p class="text-[11px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p>
-                            <i class="fa-solid fa-comment text-3xl" onclick="window.location.href='comments.html?id=${rid}'"></i>
-                            <i class="fa-solid fa-coins text-3xl gift-btn" onclick="giftTokens('${d.uid}')"></i>
-                            <p class="text-[9px] font-bold">GIFT</p>
-                            <i class="fa-solid fa-paper-plane text-2xl" onclick="window.location.href='share_menu.html?vid=${rid}'"></i>
-                        </div>
-                        <div class="bottom-ui">
-                            <div class="flex items-center mb-1">
-                                <p class="font-bold text-sm">@${d.name || 'GajanUser'}</p>
-                                <button onclick="followUser('${d.uid}')" class="ml-2 border border-white px-3 py-0.5 rounded-full text-[10px] font-bold">Follow</button>
+                            <div>
+                                <i class="fa-solid fa-heart icon-btn ${isLiked ? 'text-red-500' : 'text-white'}" onclick="likeAction('${rid}')"></i>
+                                <p class="text-[11px] font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p>
                             </div>
-                            <p class="text-xs opacity-80">${d.caption || ''}</p>
+                            <i class="fa-solid fa-comment icon-btn" onclick="window.location.href='comments.html?id=${rid}'"></i>
+                            <div onclick="giftAction('${d.uid}')">
+                                <i class="fa-solid fa-coins icon-btn text-yellow-500 animate-pulse"></i>
+                                <p class="text-[9px] font-bold">GIFT</p>
+                            </div>
+                            <i class="fa-solid fa-paper-plane icon-btn text-[24px]" onclick="window.location.href='share_menu.html?vid=${rid}'"></i>
+                            <div class="opacity-70 mt-2">
+                                <i class="fa-solid fa-eye text-xl"></i>
+                                <p class="text-[9px] font-bold">${d.views || 0}</p>
+                            </div>
+                        </div>
+
+                        <div class="bottom-ui">
+                            <div class="flex items-center mb-2">
+                                <p class="font-bold text-sm tracking-tight">@${d.name || 'GajanUser'}</p>
+                                <button onclick="followToggle('${d.uid}', this)" class="f-btn ml-3">Follow</button>
+                            </div>
+                            <p class="text-xs opacity-90 leading-tight line-clamp-2">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
-            setupObserver();
+            container.scrollTop = oldScroll;
+            startObserver();
         });
 
-        function setupObserver() {
-            const vids = document.querySelectorAll('.rv');
-            const observer = new IntersectionObserver((entries) => {
+        function startObserver() {
+            const vids = document.querySelectorAll('.rvid');
+            const obs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
+                    const v = e.target;
+                    const rid = v.dataset.id;
                     if (e.isIntersecting) {
-                        e.target.play().catch(() => {});
-                        const rid = e.target.dataset.id;
-                        if(!viewed.has(rid)) {
-                            viewed.add(rid);
+                        v.play().catch(()=>{});
+                        if(!viewedSet.has(rid)) {
+                            viewedSet.add(rid);
                             updateDoc(doc(db, "reels", rid), { views: increment(1) });
                         }
-                    } else { e.target.pause(); }
+                    } else { v.pause(); }
                 });
-            }, { threshold: 0.7 });
-            vids.forEach(v => observer.observe(v));
+            }, { threshold: 0.8 });
+            vids.forEach(v => obs.observe(v));
         }
 
-        window.likePost = async (id) => {
-            if(auth.currentUser) {
-                await updateDoc(doc(db, "reels", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+        window.handleDoubleTap = async (el, rid) => {
+            const h = el.querySelector('.big-heart');
+            h.classList.add('animate-heart');
+            setTimeout(() => h.classList.remove('animate-heart'), 700);
+            if(auth.currentUser) await updateDoc(doc(db, "reels", rid), { likedBy: arrayUnion(auth.currentUser.uid) });
+        };
+
+        window.likeAction = async (rid) => {
+            if(!auth.currentUser) return alert("Login!");
+            await updateDoc(doc(db, "reels", rid), { likedBy: arrayUnion(auth.currentUser.uid) });
+        };
+
+        window.followToggle = async (tUid, btn) => {
+            if(!auth.currentUser) return alert("Login First!");
+            const myRef = doc(db, "users", auth.currentUser.uid);
+            const tRef = doc(db, "users", tUid);
+            
+            if(btn.innerText === "Follow") {
+                await updateDoc(myRef, { following: arrayUnion(tUid) });
+                await updateDoc(tRef, { followers: arrayUnion(auth.currentUser.uid) });
+                btn.innerText = "Following";
+                btn.classList.add('opacity-50');
+            } else {
+                await updateDoc(myRef, { following: arrayRemove(tUid) });
+                await updateDoc(tRef, { followers: arrayRemove(auth.currentUser.uid) });
+                btn.innerText = "Follow";
+                btn.classList.remove('opacity-50');
             }
         };
 
-        window.followUser = async (uid) => {
-            if(auth.currentUser) {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { following: arrayUnion(uid) });
-                alert("Following!");
-            }
+        window.giftAction = (uid) => {
+            const amt = prompt("How many tokens to gift?");
+            if(amt) alert("Processing " + amt + " tokens gift...");
         };
 
-        window.giftTokens = (uid) => {
-            const amt = prompt("Amount of Gajan Tokens to send:");
-            if(amt && !isNaN(amt)) alert(amt + " Tokens shared! Confirming with Wallet...");
-        };
-
-        document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'VIDEO') {
-                e.target.muted = !e.target.muted;
-                if(e.target.paused) e.target.play();
-            }
-        });
+        document.addEventListener('click', (e) => { if(e.target.tagName === 'VIDEO') e.target.muted = !e.target.muted; });
     </script>
 </body>
 </html>
