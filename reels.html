@@ -1,21 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Reels Pro</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan | Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-        .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
-        .feed-container::-webkit-scrollbar { display: none; }
-        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        body, html { height: 100%; background: #000; overflow: hidden; }
+        .feed-container { height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .reel-unit { height: 100dvh; scroll-snap-align: start; position: relative; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .side-ui { position: absolute; right: 12px; bottom: 140px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
-        .icon-btn { font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 70%; }
-        .f-btn { border: 1px solid white; padding: 4px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; }
         nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 0.5px solid #222; }
     </style>
 </head>
@@ -26,39 +20,30 @@
     <nav>
         <a href="index.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
-        <a href="create-post.html"><i class="fa-solid fa-square-plus text-2xl text-gray-500"></i></a>
+        <a href="upload.html"><i class="fa-solid fa-square-plus text-2xl text-gray-500"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
         <a href="profile.html"><div class="w-7 h-7 rounded-full bg-gray-600 border border-white"></div></a>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
         onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
             const container = document.getElementById('gajan-feed');
             container.innerHTML = "";
-            sn.forEach(reelDoc => {
-                const d = reelDoc.data();
-                const rid = reelDoc.id;
+            sn.forEach(doc => {
+                const d = doc.data();
                 container.innerHTML += `
                     <div class="reel-unit">
                         <video class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
-                        <div class="side-ui">
-                            <i class="fa-solid fa-heart icon-btn" onclick="likeAction('${rid}')"></i>
-                            <p class="text-[11px] font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p>
-                            <i class="fa-solid fa-comment icon-btn"></i>
-                            <i class="fa-solid fa-paper-plane icon-btn"></i>
-                        </div>
-                        <div class="bottom-ui">
-                            <p class="font-bold text-sm">@${d.name || 'GajanUser'}</p>
-                            <p class="text-xs opacity-90">${d.caption || ''}</p>
+                        <div class="absolute bottom-20 left-4 text-white">
+                            <p class="font-bold">@${d.name || 'GajanUser'}</p>
+                            <p class="text-sm">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
