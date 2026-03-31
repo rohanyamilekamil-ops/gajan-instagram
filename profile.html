@@ -1,65 +1,127 @@
-// Follow/Unfollow Functionality
-const followBtn = document.querySelector('button.bg-blue-500'); // Blue follow button
-const followerCountElement = document.querySelector('.flex.space-x-8 div:nth-child(2) span'); // Follower number
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan | Official Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-white pb-20">
 
-let isFollowing = false;
-let followers = 0;
+    <header class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-50">
+        <i class="fa-solid fa-chevron-left text-xl"></i>
+        <h1 id="topUsername" class="font-bold text-lg">Gajan</h1>
+        <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+    </header>
 
-if(followBtn) {
-    followBtn.addEventListener('click', () => {
-        if (!isFollowing) {
-            // Follow logic
-            isFollowing = true;
-            followers++;
-            followBtn.innerText = 'Following';
-            followBtn.classList.remove('bg-blue-500', 'text-white');
-            followBtn.classList.add('bg-gray-200', 'text-black');
-        } else {
-            // Unfollow logic
-            isFollowing = false;
-            followers--;
-            followBtn.innerText = 'Follow';
-            followBtn.classList.remove('bg-gray-200', 'text-black');
-            followBtn.classList.add('bg-blue-500', 'text-white');
-        }
-        // Update the UI
-        followerCountElement.innerText = followers;
-    });
-}
-    <footer class="..."> ... </footer>
+    <main class="p-4">
+        <div class="flex items-center space-x-8 mb-6">
+            <div class="relative">
+                <img id="displayPic" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
+                <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                </div>
+            </div>
+            
+            <div class="flex space-x-8 text-center flex-1 justify-around">
+                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Posts</p></div>
+                <div><p id="followerCount" class="font-bold">0</p><p class="text-sm text-gray-sm">Followers</p></div>
+                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Following</p></div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 id="profileName" class="font-bold text-sm">Gajan</h2>
+            <p class="text-sm text-gray-600">Jamnagar, Gujarat | Official Gajan App 👑</p>
+        </div>
+
+        <div class="flex space-x-2 mb-6">
+            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
+            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm">Follow</button>
+            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg"><i class="fa-solid fa-wallet"></i></a>
+        </div>
+    </main>
+
+    <div class="grid grid-cols-3 gap-1">
+        <div class="aspect-square bg-gray-200"></div>
+        <div class="aspect-square bg-gray-200"></div>
+        <div class="aspect-square bg-gray-200"></div>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">Edit Profile</h3>
+            <input id="newNameInput" type="text" placeholder="Enter new name" class="w-full border p-2 rounded mb-4 outline-none">
+            <div class="flex space-x-3">
+                <button id="cancelBtn" class="flex-1 bg-gray-200 py-2 rounded-lg">Cancel</button>
+                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl z-50">
+        <a href="index.html"><i class="fa-solid fa-house text-gray-400"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+        <i class="fa-regular fa-square-plus text-gray-400"></i>
+        <i class="fa-solid fa-clapperboard text-gray-400"></i>
+        <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
+    </footer>
 
     <script>
-        // 1. Edit Profile Modal functionality
-        const editBtn = document.querySelector('button.border.rounded-lg'); // "Edit Profile" button
-        const editModal = document.getElementById('editModal'); // Modal ID
-        const saveBtn = document.querySelector('#editModal button.bg-blue-600'); // Save button
-        const nameInput = document.querySelector('#editModal input[type="text"]'); // Name Input field
-        const profileName = document.querySelector('h2.text-xl.font-bold'); // Profile Header Name
+        // Select Elements
+        const followBtn = document.getElementById('followBtn');
+        const followerCount = document.getElementById('followerCount');
+        const editBtn = document.getElementById('editBtn');
+        const editModal = document.getElementById('editModal');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const newNameInput = document.getElementById('newNameInput');
+        const profileName = document.getElementById('profileName');
+        const topUsername = document.getElementById('topUsername');
 
-        // Modal Open karne ke liye
-        editBtn.addEventListener('click', () => {
-            editModal.classList.remove('hidden');
-            nameInput.value = profileName.innerText; // Purana naam input mein dikhane ke liye
+        // 1. Follow/Unfollow Logic
+        let isFollowing = false;
+        let count = 0;
+
+        followBtn.addEventListener('click', () => {
+            if(!isFollowing) {
+                isFollowing = true;
+                count++;
+                followBtn.innerText = "Following";
+                followBtn.classList.replace('bg-blue-500', 'bg-gray-200');
+                followBtn.classList.replace('text-white', 'text-black');
+            } else {
+                isFollowing = false;
+                count--;
+                followBtn.innerText = "Follow";
+                followBtn.classList.replace('bg-gray-200', 'bg-blue-500');
+                followBtn.classList.replace('text-black', 'text-white');
+            }
+            followerCount.innerText = count;
         });
 
-        // Save button par click karne ka logic
-        if(saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                const newName = nameInput.value;
-                if(newName.trim() !== "") {
-                    profileName.innerText = newName; // Page par naam badal jayega
-                    editModal.classList.add('hidden'); // Modal band ho jayega
-                }
-            });
-        }
+        // 2. Edit Profile Modal Logic
+        editBtn.addEventListener('click', () => {
+            editModal.classList.remove('hidden');
+            newNameInput.value = profileName.innerText;
+        });
 
-        // Cancel button ke liye (Taki modal band ho sake)
-        const cancelBtn = document.querySelector('#editModal button.text-gray-600');
-        if(cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
+        cancelBtn.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if(newNameInput.value.trim() !== "") {
+                profileName.innerText = newNameInput.value;
+                topUsername.innerText = newNameInput.value;
                 editModal.classList.add('hidden');
-            });
-        }
+            }
+        });
     </script>
 </body>
 </html>
