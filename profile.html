@@ -22,11 +22,12 @@
 
     <main class="p-4">
         <div class="flex items-center space-x-8 mb-6">
-            <div class="relative cursor-pointer">
+            <div id="photoContainer" class="relative cursor-pointer" onclick="openFilePicker()">
                 <img id="displayPic" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
                 <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-2 border-white">
                     <i class="fa-solid fa-plus text-[10px]"></i>
                 </div>
+                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
             </div>
             
             <div class="flex space-x-8 text-center flex-1 justify-around">
@@ -94,8 +95,10 @@
         const newNameInput = document.getElementById('newNameInput');
         const profileName = document.getElementById('profileName');
         const topUsername = document.getElementById('topUsername');
+        const displayPic = document.getElementById('displayPic');
+        const imageInput = document.getElementById('imageInput');
 
-        // Follow Logic
+        // 1. Follow Logic
         let isFollowing = false;
         let count = 0;
 
@@ -116,7 +119,7 @@
             followerCount.innerText = count;
         });
 
-        // Modal Logic
+        // 2. Edit Profile Modal Logic
         editBtn.addEventListener('click', () => {
             editModal.classList.remove('hidden');
             newNameInput.value = profileName.innerText;
@@ -134,6 +137,27 @@
                 editModal.classList.add('hidden');
             }
         });
+
+        // 3. Profile Photo Edit Logic (Naya Functionality)
+        
+        // Gallery open karne ke liye function
+        function openFilePicker() {
+            imageInput.click(); // Hidden input par click simulate karein
+        }
+
+        // Photo load karne ke liye function
+        function uploadPhoto(event) {
+            const file = event.target.files[0];
+            if(file) {
+                // FileReader object banayein taaki file ko read kar sakein
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Page par picture update kar dein
+                    displayPic.src = e.target.result;
+                }
+                reader.readAsDataURL(file); // File ko read karna shuru karein
+            }
+        }
 
         // Close modal when clicking outside
         window.onclick = function(event) {
