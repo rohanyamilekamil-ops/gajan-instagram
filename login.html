@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white flex flex-col items-center justify-center h-screen p-6">
+
+    <h1 class="text-4xl font-bold mb-8 italic tracking-tighter">Gajan</h1>
+
+    <div class="w-full max-w-sm space-y-4">
+        <input id="email" type="email" placeholder="Email" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-400">
+        <input id="pass" type="password" placeholder="Password" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-400">
+        
+        <button onclick="handleAuth('login')" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600">Log In</button>
+        
+        <div class="flex items-center my-4">
+            <div class="flex-1 border-t"></div><p class="px-4 text-gray-400 text-sm">OR</p><div class="flex-1 border-t"></div>
+        </div>
+
+        <button onclick="handleAuth('signup')" class="w-full border border-blue-500 text-blue-500 font-bold py-3 rounded-lg">Create New Account</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.handleAuth = async (type) => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+
+            if(!email || !pass) return alert("Fill all details!");
+
+            try {
+                if(type === 'signup') {
+                    const name = prompt("Enter your Full Name:");
+                    const userCr = await createUserWithEmailAndPassword(auth, email, pass);
+                    await updateProfile(userCr.user, { displayName: name });
+                    alert("Account Created! Swagat hai Gajan par.");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    alert("Welcome Back!");
+                }
+                window.location.href = "profile.html";
+            } catch (err) {
+                alert(err.message);
+            }
+        };
+    </script>
+</body>
+</html>
