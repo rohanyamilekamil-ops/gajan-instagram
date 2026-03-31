@@ -1,132 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Real Reels</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
-        .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
-        .feed-container::-webkit-scrollbar { display: none; }
-        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Side Buttons (Like, Share, etc.) */
-        .side-ui { position: absolute; right: 12px; bottom: 120px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .icon-btn { font-size: 30px; text-shadow: 0 0 10px rgba(0,0,0,0.5); cursor: pointer; }
-        
-        /* Bottom Info (User Photo, Name, Follow) */
-        .bottom-ui { position: absolute; bottom: 90px; left: 15px; z-index: 50; color: white; width: 80%; }
-        .follow-btn { border: 1px solid white; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; margin-left: 10px; }
-        
-        nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 0.5px solid #222; }
-    </style>
-</head>
-<body>
+<script type="module">
+    // ... (purana firebase config) ...
 
-    <div class="feed-container" id="gajan-feed"></div>
-
-    <nav>
-        <a href="index.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
-        <a href="upload.html"><i class="fa-solid fa-square-plus text-2xl text-gray-500"></i></a>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="profile.html"><i class="fa-solid fa-user text-2xl text-gray-500"></i></a>
-    </nav>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let currentUser = null;
-        onAuthStateChanged(auth, (u) => { currentUser = u; });
-
-        // REAL FEED FETCHING
-        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
-            const container = document.getElementById('gajan-feed');
-            container.innerHTML = "";
-            sn.forEach(reelDoc => {
-                const d = reelDoc.data();
-                const rid = reelDoc.id;
-                const isLiked = d.likedBy?.includes(currentUser?.uid);
-
-                container.innerHTML += `
-                    <div class="reel-unit">
-                        <video class="rvid" loop playsinline muted src="${d.videoUrl}" onclick="this.muted = !this.muted"></video>
+    onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
+        const container = document.getElementById('gajan-feed');
+        container.innerHTML = "";
+        sn.forEach(rd => {
+            const d = rd.data();
+            const rid = rd.id;
+            container.innerHTML += `
+                <div class="reel-unit">
+                    <video class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
+                    
+                    <div class="side-ui">
+                        <div onclick="sendTokenGift('${d.uid}', '${d.name}')">
+                            <i class="fa-solid fa-gift icon-btn text-pink-500 animate-bounce"></i>
+                            <p class="text-[9px] font-bold">SEND GIFT</p>
+                        </div>
                         
-                        <div class="side-ui">
-                            <div onclick="toggleLike('${rid}', ${isLiked})">
-                                <i class="fa-solid fa-heart icon-btn ${isLiked ? 'text-red-500' : 'text-white'}"></i>
-                                <p class="text-xs font-bold">${d.likedBy?.length || 0}</p>
-                            </div>
-                            <i class="fa-solid fa-comment icon-btn" onclick="openComments('${rid}')"></i>
-                            <i class="fa-solid fa-paper-plane icon-btn" onclick="shareReel('${d.videoUrl}')"></i>
-                            <div>
-                                <i class="fa-solid fa-eye text-xl"></i>
-                                <p class="text-[10px] font-bold">${d.views || 0}</p>
-                            </div>
+                        <div id="admin-tools" class="hidden">
+                             <button onclick="deleteVideo('${rid}')" class="bg-red-600 p-2 rounded-full text-xs"><i class="fa-solid fa-trash"></i></button>
                         </div>
+                    </div>
 
-                        <div class="bottom-ui">
-                            <div class="flex items-center mb-3">
-                                <img src="${d.userPhoto || 'https://via.placeholder.com/50'}" class="w-9 h-9 rounded-full border border-white object-cover">
-                                <p class="font-bold text-sm ml-2">@${d.name || 'User'}</p>
-                                <button onclick="followUser('${d.uid}', this)" class="follow-btn">Follow</button>
-                            </div>
-                            <p class="text-xs opacity-90">${d.caption || ''}</p>
-                        </div>
-                    </div>`;
-            });
-            setupObserver();
+                    <div class="bottom-ui">
+                        <p class="font-bold">@${d.name}</p>
+                        <p class="text-[10px] text-green-400">Last Active: ${new Date(d.lastActive).toLocaleDateString()}</p>
+                    </div>
+                </div>`;
         });
+    });
 
-        // REAL LIKE SYSTEM
-        window.toggleLike = async (rid, alreadyLiked) => {
-            if(!currentUser) return alert("Login to Like!");
-            const ref = doc(db, "reels", rid);
-            await updateDoc(ref, {
-                likedBy: alreadyLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
-            });
-        };
-
-        // REAL FOLLOW SYSTEM (Logic)
-        window.followUser = (uid, btn) => {
-            if(btn.innerText === "Follow") {
-                btn.innerText = "Following";
-                btn.style.background = "white";
-                btn.style.color = "black";
-            } else {
-                btn.innerText = "Follow";
-                btn.style.background = "transparent";
-                btn.style.color = "white";
-            }
-        };
-
-        // SHARE SYSTEM
-        window.shareReel = (url) => {
-            navigator.share ? navigator.share({url}) : alert("Link copied: " + url);
-        };
-
-        function setupObserver() {
-            const obs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) {
-                        e.target.play();
-                        // Real Views Update
-                        const rid = e.target.getAttribute('data-id');
-                        if(rid) updateDoc(doc(db, "reels", rid), { views: increment(1) });
-                    } else { e.target.pause(); }
-                });
-            }, { threshold: 0.8 });
-            document.querySelectorAll('.rvid').forEach(v => obs.observe(v));
+    // GIFT LOGIC (User to User)
+    window.sendTokenGift = async (toUid, toName) => {
+        const amount = prompt(`Kitne tokens ${toName} ko bhejne hain?`);
+        if(!amount || isNaN(amount)) return;
+        
+        const fromRef = doc(db, "users", auth.currentUser.uid);
+        const toRef = doc(db, "users", toUid);
+        
+        const fromSnap = await getDoc(fromRef);
+        if(fromSnap.data().tokens >= amount) {
+            await updateDoc(fromRef, { tokens: increment(-amount) });
+            await updateDoc(toRef, { tokens: increment(parseInt(amount)) });
+            alert(`Gift Sent Successfully to ${toName}!`);
+        } else {
+            alert("In-sufficient balance!");
         }
-    </script>
-</body>
-</html>
+    };
+</script>
