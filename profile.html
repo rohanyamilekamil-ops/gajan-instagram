@@ -26,3 +26,40 @@ if(followBtn) {
         followerCountElement.innerText = followers;
     });
 }
+    <footer class="..."> ... </footer>
+
+    <script>
+        // 1. Edit Profile Modal functionality
+        const editBtn = document.querySelector('button.border.rounded-lg'); // "Edit Profile" button
+        const editModal = document.getElementById('editModal'); // Modal ID
+        const saveBtn = document.querySelector('#editModal button.bg-blue-600'); // Save button
+        const nameInput = document.querySelector('#editModal input[type="text"]'); // Name Input field
+        const profileName = document.querySelector('h2.text-xl.font-bold'); // Profile Header Name
+
+        // Modal Open karne ke liye
+        editBtn.addEventListener('click', () => {
+            editModal.classList.remove('hidden');
+            nameInput.value = profileName.innerText; // Purana naam input mein dikhane ke liye
+        });
+
+        // Save button par click karne ka logic
+        if(saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                const newName = nameInput.value;
+                if(newName.trim() !== "") {
+                    profileName.innerText = newName; // Page par naam badal jayega
+                    editModal.classList.add('hidden'); // Modal band ho jayega
+                }
+            });
+        }
+
+        // Cancel button ke liye (Taki modal band ho sake)
+        const cancelBtn = document.querySelector('#editModal button.text-gray-600');
+        if(cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
