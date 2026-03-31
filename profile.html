@@ -2,45 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | My Profile</title>
+    <title>Gajan | Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-white">
-    <header class="flex items-center justify-between px-5 py-4 border-b">
-        <i class="fa-solid fa-bars text-xl"></i>
-        <h1 id="p-username" class="font-bold text-lg">Gajan User</h1>
-        <i class="fa-solid fa-plus text-xl" onclick="location.href='upload.html'"></i>
+<body class="bg-white pb-20">
+    <header class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white z-50">
+        <button onclick="toggleEditMenu()"><i class="fa-solid fa-bars text-2xl"></i></button>
+        <h1 id="topName" class="font-bold text-lg">User</h1>
+        <a href="upload.html"><i class="fa-solid fa-plus text-2xl"></i></a>
     </header>
 
-    <div class="p-6 flex items-center space-x-6">
-        <img id="p-img" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
-        <div class="flex-1 flex justify-around text-center text-sm">
-            <div><p class="font-bold">0</p><p class="text-gray-400">Posts</p></div>
-            <div><p class="font-bold">1.2M</p><p class="text-gray-400">Followers</p></div>
-            <div><p class="font-bold">50</p><p class="text-gray-400">Following</p></div>
+    <div id="editMenu" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6">
+        <div class="bg-white w-full rounded-3xl p-6">
+            <h2 class="font-bold text-xl mb-4">Edit Profile</h2>
+            <input id="newName" type="text" placeholder="New Name" class="w-full p-3 border rounded-xl mb-3">
+            <input id="newPic" type="text" placeholder="Photo URL (Cloudinary)" class="w-full p-3 border rounded-xl mb-4">
+            <button onclick="updateProfile()" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold">Save Changes</button>
+            <button onclick="toggleEditMenu()" class="w-full mt-2 text-gray-500">Cancel</button>
         </div>
     </div>
 
+    <main class="p-6">
+        <div class="flex items-center space-x-8 mb-6">
+            <img id="userImg" src="https://via.placeholder.com/150" class="w-24 h-24 rounded-full border-4 border-blue-500 p-1 object-cover">
+            <div class="flex-1 flex justify-around text-center">
+                <div><p id="postCount" class="font-bold text-lg">0</p><p class="text-xs text-gray-400">Posts</p></div>
+                <div><p id="followerCount" class="font-bold text-lg">0</p><p class="text-xs text-gray-400">Followers</p></div>
+                <div><p id="tokenCount" class="font-bold text-lg text-yellow-600">0</p><p class="text-xs text-gray-400">Tokens</p></div>
+            </div>
+        </div>
+        <h2 id="fullName" class="font-bold text-xl">Loading...</h2>
+        <p class="text-gray-500 text-sm">Gajan Official User</p>
+        
+        <div class="mt-6 flex space-x-2">
+            <button onclick="location.href='wallet.html'" class="flex-1 bg-yellow-500 text-white py-2 rounded-lg font-bold">Buy Tokens</button>
+            <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold">Share Profile</button>
+        </div>
+    </main>
+
     <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl">
         <a href="index.html"><i class="fa-solid fa-house text-gray-400"></i></a>
-        <a href="upload.html"><i class="fa-regular fa-square-plus text-gray-400"></i></a>
+        <a href="upload.html"><i class="fa-solid fa-square-plus text-gray-400"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-400"></i></a>
         <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
     </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" });
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, updateProfile as fireAuthUpdate } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const auth = getAuth(app);
-        onAuthStateChanged(auth, (u) => {
-            if(!u) location.href='login.html';
-            else {
-                document.getElementById('p-username').innerText = u.displayName || "User";
-                if(u.photoURL) document.getElementById('p-img').src = u.photoURL;
-            }
+
+        onAuthStateChanged(auth, async (user) => {
+            if(!user) return location.href='login.html';
+            
+            // Fetch Real Data from Firestore
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            const userData = userSnap.data();
+
+            document.getElementById('topName').innerText = user.displayName || "User";
+            document.getElementById('fullName').innerText = user.displayName || "No Name";
+            document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/150";
+            document.getElementById('tokenCount').innerText = userData?.tokens || 0;
+            document.getElementById('followerCount').innerText = userData?.followers?.length || 0;
         });
+
+        window.toggleEditMenu = () => document.getElementById('editMenu').classList.toggle('hidden');
+
+        window.updateProfile = async () => {
+            const name = document.getElementById('newName').value;
+            const pic = document.getElementById('newPic').value;
+            if(name) {
+                await fireAuthUpdate(auth.currentUser, { displayName: name, photoURL: pic });
+                alert("Profile Updated!");
+                location.reload();
+            }
+        };
     </script>
 </body>
 </html>
