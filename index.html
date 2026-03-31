@@ -1,42 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Login</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gajan Insta | Welcome</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
-        .g-logo { font-family: 'Grand Hotel', cursive; font-size: 5rem; color: white; margin-bottom: 20px; }
+        /* Modern Apple-style Font */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body, html { height: 100%; overflow: hidden; background: #000; }
+
+        /* 📸 Background with Girl & Red Gradient */
+        .g-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(220, 39, 67, 0.95), rgba(188, 24, 136, 0.9)), 
+                        url('https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+            background-size: cover; background-position: center; z-index: 1;
+        }
+
+        /* ✨ Glassmorphism Form Container */
+        .g-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 35px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+        }
+
+        /* 🟢 Animation smooth switches */
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden-form { display: none !important; }
     </style>
 </head>
-<body>
-    <div class="w-full max-w-sm p-8 text-center">
-        <h1 class="g-logo">Gajan</h1>
-        <div class="bg-white/20 backdrop-blur-md p-8 rounded-[30px] border border-white/30 space-y-4">
-            <input id="email" type="email" placeholder="Email" class="w-full p-4 bg-white/10 rounded-2xl outline-none text-white placeholder-white/70 border border-white/20">
-            <input id="pass" type="password" placeholder="Password" class="w-full p-4 bg-white/10 rounded-2xl outline-none text-white placeholder-white/70 border border-white/20">
-            <button onclick="login()" class="w-full py-4 bg-white text-pink-600 font-bold rounded-2xl shadow-xl active:scale-95 transition">Log In</button>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <div class="g-bg"></div>
+
+    <div class="z-10 w-full max-w-sm px-8">
+        <h1 class="text-white text-5xl font-black italic tracking-tighter text-center mb-10 text-shadow-lg">Gajan Insta</h1>
+
+        <div id="login-form" class="g-glass p-8 fade-in">
+            <input type="email" id="log-email" placeholder="Email" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
+            <input type="password" id="log-pass" placeholder="Password" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-6 text-xs border border-white/10">
+            <button onclick="handleLogin()" class="w-full bg-white text-pink-700 font-bold py-4 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition">Log In</button>
+            <p class="text-center text-white/70 text-[10px] mt-5 cursor-pointer hover:text-white" onclick="showRegister()">Forgot password?</p>
+        </div>
+
+        <div id="register-form" class="g-glass p-8 fade-in hidden-form">
+            <input type="text" id="reg-name" placeholder="Full Name (Jamnagar Style)" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
+            <input type="email" id="reg-email" placeholder="Email" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
+            <input type="password" id="reg-pass" placeholder="Password" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-6 text-xs border border-white/10">
+            <button onclick="handleRegister()" class="w-full bg-white text-pink-700 font-bold py-4 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition">Create Account</button>
+        </div>
+
+        <div class="mt-8 text-center">
+            <p id="switch-text" class="text-white text-xs font-bold p-3 px-5 bg-black/30 rounded-full inline-block cursor-pointer select-none" onclick="toggleForms()">Create New Account</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        window.login = () => {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            signInWithEmailAndPassword(auth, e, p)
-                .then(() => { window.location.href = "profile.html"; })
-                .catch(err => alert("Details sahi se bhariye!"));
+        // --- Core UI Logic ---
+        window.toggleForms = () => {
+            const login = document.getElementById('login-form');
+            const register = document.getElementById('register-form');
+            const sText = document.getElementById('switch-text');
+            
+            if(login.classList.contains('hidden-form')) {
+                login.classList.remove('hidden-form');
+                register.classList.add('hidden-form');
+                sText.innerText = "Create New Account";
+            } else {
+                login.classList.add('hidden-form');
+                register.classList.remove('hidden-form');
+                sText.innerText = "Back to Login";
+            }
         };
 
-        onAuthStateChanged(auth, user => { if(user) window.location.href = "profile.html"; });
+        // --- Core Firebase Logic ---
+        window.handleLogin = () => {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            if(!email || !pass) return alert("Email/Pass bhariye!");
+            signInWithEmailAndPassword(auth, email, pass).then(()=> location.href="profile.html").catch(e=>alert(e.message));
+        };
+
+        window.handleRegister = async () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            if(!name || !email || !pass) return alert("Poori details bhariye!");
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await updateProfile(cred.user, { displayName: name });
+                // 🔐 Create initial User Doc & Wallet Doc
+                await setDoc(doc(db, "users", cred.user.uid), { name, uid: cred.user.uid, createdAt: serverTimestamp() });
+                await setDoc(doc(db, "wallets", cred.user.uid), { balance: 0 }); 
+                alert("Account Created! Swiping to profile...");
+                location.href="profile.html";
+            } catch(e) { alert(e.message); }
+        };
     </script>
 </body>
 </html>
