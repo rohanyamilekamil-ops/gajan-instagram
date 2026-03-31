@@ -6,23 +6,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
         .feed-container { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .feed-container::-webkit-scrollbar { display: none; }
-        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #111; }
-        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .reel-unit { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* UI Icons */
-        .side-ui { position: absolute; right: 12px; bottom: 140px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
-        .icon-btn { font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); transition: transform 0.1s; }
-        .icon-btn:active { transform: scale(1.3); }
-
+        /* Side Buttons */
+        .side-ui { position: absolute; right: 12px; bottom: 140px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
+        .icon-btn { font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
         /* Bottom Info */
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 70%; pointer-events: none; }
-        
-        /* Audio Badge */
-        .audio-status { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); padding: 15px; rounded-full: 50%; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 75%; }
+        .f-btn { border: 1px solid white; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; }
+
+        /* Heart Animation */
+        .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
+        .animate-heart { animation: heartPop 0.7s ease-out; }
+        @keyframes heartPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
 
         nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 0.5px solid #222; }
     </style>
@@ -30,83 +32,92 @@
 <body>
 
     <div class="feed-container" id="gajan-feed"></div>
-    
-    <div id="audio-icon" class="audio-status text-white rounded-full"><i class="fa-solid fa-volume-high text-3xl"></i></div>
 
     <nav>
         <a href="index.html"><i class="fa-solid fa-house text-2xl text-gray-500"></i></a>
         <i class="fa-solid fa-magnifying-glass text-2xl text-gray-500"></i>
         <a href="upload.html"><i class="fa-solid fa-square-plus text-2xl text-gray-500"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-2xl text-white"></i></a>
-        <a href="profile.html"><div class="w-7 h-7 rounded-full bg-gray-600 border border-white"></div></a>
+        <a href="profile.html"><div id="nav-pic" class="w-7 h-7 rounded-full bg-gray-700 border border-white overflow-hidden"></div></a>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Fetch Reels Logic
+        let user = null;
+        onAuthStateChanged(auth, (u) => { 
+            user = u; 
+            if(u?.photoURL) document.getElementById('nav-pic').innerHTML = `<img src="${u.photoURL}" class="w-full h-full object-cover">`;
+        });
+
+        // Load Reels from Firebase
         onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
             const container = document.getElementById('gajan-feed');
             container.innerHTML = "";
-            sn.forEach(reelDoc => {
-                const d = reelDoc.data();
-                const rid = reelDoc.id;
+            sn.forEach(rd => {
+                const d = rd.data();
+                const rid = rd.id;
+                const isLiked = d.likedBy?.includes(user?.uid);
+
                 container.innerHTML += `
-                    <div class="reel-unit" onclick="toggleAudio(this)">
-                        <video class="rvid" data-id="${rid}" loop playsinline muted src="${d.videoUrl}"></video>
+                    <div class="reel-unit" ondblclick="handleDoubleTap(this, '${rid}')">
+                        <video class="rvid" loop playsinline muted src="${d.videoUrl}" onclick="this.muted = !this.muted"></video>
+                        <i class="fa-solid fa-heart big-heart"></i>
+                        
                         <div class="side-ui">
-                            <div><i class="fa-solid fa-heart icon-btn"></i><p class="text-[11px] font-bold">${d.likedBy ? d.likedBy.length : 0}</p></div>
-                            <i class="fa-solid fa-comment icon-btn"></i>
-                            <i class="fa-solid fa-paper-plane icon-btn text-[24px]"></i>
+                            <div onclick="likeAction('${rid}')">
+                                <i class="fa-solid fa-heart icon-btn ${isLiked ? 'text-red-500' : 'text-white'}"></i>
+                                <p class="text-[11px] font-bold">${d.likedBy?.length || 0}</p>
+                            </div>
+                            <i class="fa-solid fa-comment icon-btn" onclick="window.location.href='comments.html?id=${rid}'"></i>
+                            
+                            <div onclick="window.location.href='wallet.html?target=${d.uid}'">
+                                <i class="fa-solid fa-coins icon-btn text-yellow-500 animate-bounce"></i>
+                                <p class="text-[9px] font-bold">GIFT</p>
+                            </div>
+
+                            <i class="fa-solid fa-paper-plane icon-btn" onclick="window.location.href='share.html?id=${rid}'"></i>
+                            
+                            <i class="fa-solid fa-shield-halved icon-btn opacity-20" onclick="window.location.href='admin.html'"></i>
                         </div>
+
                         <div class="bottom-ui">
-                            <p class="font-bold text-sm tracking-tight mb-1">@${d.name || 'GajanUser'}</p>
-                            <p class="text-xs opacity-90 leading-tight">${d.caption || ''}</p>
+                            <div class="flex items-center mb-2">
+                                <img src="${d.userPhoto || 'https://via.placeholder.com/50'}" class="w-9 h-9 rounded-full border border-white mr-2 object-cover">
+                                <p class="font-bold text-sm">@${d.name || 'GajanUser'}</p>
+                                <button onclick="followToggle('${d.uid}', this)" class="f-btn ml-3">Follow</button>
+                            </div>
+                            <p class="text-xs opacity-90 line-clamp-2">${d.caption || ''}</p>
                         </div>
                     </div>`;
             });
             startObserver();
         });
 
-        // 1. Audio Sound Toggle Logic (Tap to Unmute)
-        window.toggleAudio = (container) => {
-            const v = container.querySelector('video');
-            const audioBadge = document.getElementById('audio-icon');
-            const icon = audioBadge.querySelector('i');
-            
-            v.muted = !v.muted; // Toggle mute status
-
-            // Show icon status for feedback
-            if(v.muted) {
-                icon.className = "fa-solid fa-volume-xmark text-3xl";
-            } else {
-                icon.className = "fa-solid fa-volume-high text-3xl";
-            }
-            
-            audioBadge.style.opacity = "1";
-            setTimeout(() => audioBadge.style.opacity = "0", 800);
+        window.likeAction = async (rid) => {
+            if(!user) return window.location.href='login.html';
+            const r = doc(db, "reels", rid);
+            await updateDoc(r, { likedBy: arrayUnion(user.uid) });
         };
 
-        // 2. Auto-play Observer Logic
+        window.handleDoubleTap = (el, rid) => {
+            const h = el.querySelector('.big-heart');
+            h.classList.add('animate-heart');
+            setTimeout(() => h.classList.remove('animate-heart'), 700);
+            window.likeAction(rid);
+        };
+
         function startObserver() {
-            const obs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    const v = e.target;
-                    if (e.isIntersecting) {
-                        v.play().catch(()=>{});
-                    } else {
-                        v.pause();
-                        v.muted = true; // Agla reel mute se hi shuru ho (safety)
-                    }
-                });
-            }, { threshold: 0.7 });
+            const obs = new IntersectionObserver((es) => {
+                es.forEach(e => { if (e.isIntersecting) e.target.play(); else e.target.pause(); });
+            }, { threshold: 0.8 });
             document.querySelectorAll('.rvid').forEach(v => obs.observe(v));
         }
     </script>
