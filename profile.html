@@ -1,158 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Official Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: white; color: black; }
-        .g-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #dbdbdb; border-top: 1px solid #dbdbdb; }
-        .grid-item { aspect-ratio: 1/1; background: white; position: relative; overflow: hidden; }
-        .grid-item video { width: 100%; height: 100%; object-fit: cover; }
-        #crop-modal { display: none; position: fixed; inset: 0; background: black; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
-        nav { position: fixed; bottom: 0; width: 100%; height: 50px; background: white; border-top: 1px solid #dbdbdb; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-    </style>
-</head>
-<body>
+// Follow/Unfollow Functionality
+const followBtn = document.querySelector('button.bg-blue-500'); // Blue follow button
+const followerCountElement = document.querySelector('.flex.space-x-8 div:nth-child(2) span'); // Follower number
 
-    <div id="crop-modal">
-        <div class="w-full h-3/4 flex items-center justify-center"><img id="image-to-crop" style="max-width: 100%;"></div>
-        <div class="flex space-x-4 mt-8">
-            <button onclick="closeCrop()" class="bg-gray-600 text-white px-6 py-2 rounded-lg">Cancel</button>
-            <button onclick="saveCroppedPhoto()" class="bg-blue-500 text-white px-6 py-2 rounded-lg">Save</button>
-        </div>
-    </div>
+let isFollowing = false;
+let followers = 0;
 
-    <header class="flex justify-between items-center px-4 py-3 border-b sticky top-0 bg-white z-50">
-        <h1 class="font-bold text-xl tracking-tight italic">Gajan</h1>
-        <div class="flex items-center space-x-5">
-            <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl"></i></a>
-            <i class="fa-solid fa-bars text-2xl"></i>
-        </div>
-    </header>
-
-    <div class="px-4 py-5">
-        <div class="flex items-center space-x-8">
-            <div class="w-20 h-20 rounded-full p-[2px] g-gradient cursor-pointer" onclick="document.getElementById('photo-input').click()">
-                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-2 border-white object-cover">
-                <input type="file" id="photo-input" class="hidden" accept="image/*" onchange="startCropping(this)">
-            </div>
-            <div class="flex-1 flex justify-around text-center">
-                <div><p class="font-bold text-sm" id="post-count">0</p><p class="text-[10px] text-gray-500">Posts</p></div>
-                <div><p class="font-bold text-sm" id="follower-count">0</p><p class="text-[10px] text-gray-500">Followers</p></div>
-                <div><p class="font-bold text-sm" id="following-count">0</p><p class="text-[10px] text-gray-500">Following</p></div>
-            </div>
-        </div>
-
-        <div class="mt-4">
-            <h2 id="u-name" class="font-bold text-sm" onclick="openGajanAdmin()">@GajanUser</h2>
-            <p class="text-xs text-gray-700">Jamnagar, Gujarat | Official Gajan App 👑</p>
-        </div>
-
-        <div class="flex mt-5 space-x-2">
-            <button class="flex-1 bg-gray-100 py-1.5 rounded-md font-bold text-xs border border-gray-300">Edit Profile</button>
-            <a href="wallet.html" class="flex-1 bg-gray-100 py-1.5 rounded-md font-bold text-xs border border-gray-300 text-center flex items-center justify-center">
-                <i class="fa-solid fa-wallet mr-2 text-pink-600"></i>Wallet
-            </a>
-        </div>
-    </div>
-
-    <div class="flex border-t">
-        <div class="flex-1 text-center py-2 border-b border-black"><i class="fa-solid fa-table-cells text-lg"></i></div>
-        <div class="flex-1 text-center py-2 text-gray-400"><i class="fa-solid fa-clapperboard text-lg"></i></div>
-        <div class="flex-1 text-center py-2 text-gray-400"><i class="fa-regular fa-id-badge text-lg"></i></div>
-    </div>
-
-    <div id="video-grid" class="grid-container">
-        </div>
-
-    <nav>
-        <a href="reels.html"><i class="fa-solid fa-house text-xl text-black"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-400"></i></a>
-        <div onclick="location.href='profile.html'" class="w-6 h-6 rounded-full bg-black"></div>
-    </nav>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let cropper;
-        window.startCropping = (input) => {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.getElementById('image-to-crop');
-                    img.src = e.target.result;
-                    document.getElementById('crop-modal').style.display = 'flex';
-                    if (cropper) cropper.destroy();
-                    cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        window.closeCrop = () => document.getElementById('crop-modal').style.display = 'none';
-        window.saveCroppedPhoto = () => {
-            const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
-            const dataUrl = canvas.toDataURL("image/jpeg");
-            document.getElementById('avatar').src = dataUrl;
-            updateProfile(auth.currentUser, { photoURL: dataUrl }).then(() => {
-                closeCrop();
-                alert("Profile Photo Updated!");
-            });
-        };
-
-        // Admin Secret
-        let taps = 0;
-        window.openGajanAdmin = () => {
-            taps++;
-            if(taps === 5) {
-                const p = prompt("Admin Pass:");
-                if(p === "Abdul6353738585@") window.location.href="admin.html";
-                taps = 0;
-            }
-            setTimeout(() => taps = 0, 2000);
-        };
-
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('u-name').innerText = "@" + (user.displayName || "GajanUser");
-                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
-
-                // Load Counts & Grid
-                onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    if(docSnap.exists()){
-                        const d = docSnap.data();
-                        document.getElementById('follower-count').innerText = d.followers ? d.followers.length : 0;
-                        document.getElementById('following-count').innerText = d.following ? d.following.length : 0;
-                    }
-                });
-
-                const q = query(collection(db, "reels"), where("uid", "==", user.uid));
-                onSnapshot(q, (sn) => {
-                    const grid = document.getElementById('video-grid');
-                    grid.innerHTML = "";
-                    document.getElementById('post-count').innerText = sn.size;
-                    sn.forEach(doc => {
-                        grid.innerHTML += `<div class="grid-item"><video src="${doc.data().videoUrl}"></video></div>`;
-                    });
-                });
-            } else { window.location.href = "index.html"; }
-        });
-    </script>
-</body>
-</html>
+if(followBtn) {
+    followBtn.addEventListener('click', () => {
+        if (!isFollowing) {
+            // Follow logic
+            isFollowing = true;
+            followers++;
+            followBtn.innerText = 'Following';
+            followBtn.classList.remove('bg-blue-500', 'text-white');
+            followBtn.classList.add('bg-gray-200', 'text-black');
+        } else {
+            // Unfollow logic
+            isFollowing = false;
+            followers--;
+            followBtn.innerText = 'Follow';
+            followBtn.classList.remove('bg-gray-200', 'text-black');
+            followBtn.classList.add('bg-blue-500', 'text-white');
+        }
+        // Update the UI
+        followerCountElement.innerText = followers;
+    });
+}
