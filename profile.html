@@ -1,119 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Real Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-white pb-20">
-    <header class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white z-50">
-        <button onclick="toggleEdit()"><i class="fa-solid fa-bars text-2xl"></i></button>
-        <h1 id="topName" class="font-bold text-lg italic">GAJAN</h1>
-        <a href="upload.html"><i class="fa-solid fa-plus text-2xl"></i></a>
-    </header>
+<header class="flex items-center justify-between px-5 py-4 border-b">
+    <button onclick="toggleEdit()"><i class="fa-solid fa-bars text-2xl"></i></button>
+    <h1 onclick="adminTrigger()" class="font-black text-xl italic cursor-pointer">GAJAN</h1>
+    <a href="upload.html"><i class="fa-solid fa-plus text-2xl"></i></a>
+</header>
 
-    <div id="editBox" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6">
-        <div class="bg-white w-full rounded-3xl p-6 shadow-2xl">
-            <h2 class="font-bold text-xl mb-4">Update Profile</h2>
-            <input id="newName" type="text" placeholder="Full Name" class="w-full p-3 border rounded-xl mb-3 outline-none">
-            
-            <p class="text-xs text-gray-400 mb-1 ml-1">Choose Photo from Gallery:</p>
-            <input id="fileInput" type="file" accept="image/*" class="w-full p-2 border rounded-xl mb-4 text-sm">
-            
-            <button id="saveBtn" onclick="handleUpdate()" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold">Save & Sync</button>
-            <button onclick="toggleEdit()" class="w-full mt-3 text-gray-400 text-sm">Close</button>
-        </div>
-    </div>
-
-    <main class="p-6">
-        <div class="flex items-center space-x-6 mb-6">
-            <div class="relative">
-                <img id="userImg" src="https://via.placeholder.com/150" class="w-24 h-24 rounded-full border-4 border-blue-500 p-1 object-cover">
-            </div>
-            <div class="flex-1 flex justify-around text-center">
-                <div><p id="postCount" class="font-bold text-lg">0</p><p class="text-[10px] text-gray-400 uppercase font-bold">Posts</p></div>
-                <div><p id="followerCount" class="font-bold text-lg">0</p><p class="text-[10px] text-gray-400 uppercase font-bold">Followers</p></div>
-                <div><p id="tokenCount" class="font-bold text-lg text-yellow-600">0</p><p class="text-[10px] text-gray-400 uppercase font-bold">Tokens</p></div>
-            </div>
-        </div>
-        <h2 id="fullName" class="font-bold text-xl tracking-tight">Loading...</h2>
-        <p class="text-gray-400 text-xs mb-6">Gajan Verified Member ✅</p>
-        
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="location.href='wallet.html'" class="bg-black text-white py-2.5 rounded-xl font-bold text-sm">Add Tokens</button>
-            <button onclick="handleWithdraw()" class="bg-gray-100 text-gray-700 py-2.5 rounded-xl font-bold text-sm">Withdraw</button>
-        </div>
-    </main>
-
-    <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl z-50">
-        <a href="index.html"><i class="fa-solid fa-house text-gray-300"></i></a>
-        <a href="upload.html"><i class="fa-solid fa-square-plus text-gray-300"></i></a>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-300"></i></a>
-        <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
-    </footer>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let userUID = "";
-
-        onAuthStateChanged(auth, async (user) => {
-            if(!user) return location.href='login.html';
-            userUID = user.uid;
-            
-            // Sync Data from Firebase
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if(!snap.exists()) {
-                await setDoc(doc(db, "users", user.uid), { tokens: 0, followers: [], posts: 0 });
+<script>
+    let clickCount = 0;
+    function adminTrigger() {
+        clickCount++;
+        if(clickCount === 5) { // 5 baar click karne par login maangega
+            const pass = prompt("Enter Admin Key:");
+            if(pass === "Abdul6353738585@") {
+                location.href = 'admin.html';
             }
-            const data = snap.data();
-
-            document.getElementById('fullName').innerText = user.displayName || "User Name";
-            document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/150";
-            document.getElementById('tokenCount').innerText = data?.tokens || 0;
-            document.getElementById('followerCount').innerText = data?.followers?.length || 0;
-        });
-
-        window.toggleEdit = () => document.getElementById('editBox').classList.toggle('hidden');
-
-        window.handleUpdate = async () => {
-            const btn = document.getElementById('saveBtn');
-            const file = document.getElementById('fileInput').files[0];
-            const name = document.getElementById('newName').value;
-            btn.innerText = "Syncing...";
-
-            let photoUrl = auth.currentUser.photoURL;
-
-            if(file) {
-                const fd = new FormData();
-                fd.append("file", file);
-                fd.append("upload_preset", "gajan_live");
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", { method: "POST", body: fd });
-                const imgData = await res.json();
-                photoUrl = imgData.secure_url;
-            }
-
-            await updateProfile(auth.currentUser, { displayName: name || auth.currentUser.displayName, photoURL: photoUrl });
-            location.reload();
-        };
-
-        window.handleWithdraw = () => {
-            const currentTokens = parseInt(document.getElementById('tokenCount').innerText);
-            if(currentTokens < 500) {
-                alert("Minimum 500 Tokens required to withdraw!");
-            } else {
-                const upi = prompt("Enter UPI ID for Withdrawal:");
-                if(upi) alert("Request Sent! Admin will process ₹" + (currentTokens/10) + " to " + upi);
-            }
-        };
-    </script>
-</body>
-</html>
+            clickCount = 0;
+        }
+    }
+</script>
