@@ -3,82 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Safe Profile</title>
+    <title>Gajan | Official Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: white; color: black; }
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
-        .grid-item { aspect-ratio: 1/1; position: relative; background: #fafafa; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: white; color: black; font-family: sans-serif; }
+        .g-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #efefef; }
+        .grid-item { aspect-ratio: 1/1; background: white; position: relative; overflow: hidden; }
         .grid-item video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 🔐 Delete Overlay */
-        .delete-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7); flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: inherit; }
-        .grid-item:active .delete-overlay { display: flex; } /* Long press trigger */
+        /* 🔐 Delete UI */
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.8); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 10; border: 1px solid white; }
         
-        nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; border-t: 0.5px solid #dbdbdb; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; border-top: 1px solid #dbdbdb; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-20">
 
-    <div id="secure-video-grid" class="grid-container border-t mt-4">
+    <header class="flex justify-between items-center px-4 py-3 border-b sticky top-0 bg-white z-50">
+        <h1 class="font-bold text-xl italic tracking-tight">Gajan</h1>
+        <div class="flex items-center space-x-6">
+            <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl"></i></a>
+            <i class="fa-solid fa-bars text-2xl"></i>
         </div>
+    </header>
+
+    <div class="p-4">
+        <div class="flex items-center space-x-8 mb-4">
+            <div class="w-20 h-20 rounded-full p-[2px] g-gradient">
+                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-2 border-white object-cover">
+            </div>
+            <div class="flex-1 flex justify-around text-center">
+                <div><p class="font-bold text-sm" id="post-count">0</p><p class="text-[10px] text-gray-400">Posts</p></div>
+                <div><p class="font-bold text-sm" id="follower-count">0</p><p class="text-[10px] text-gray-400">Followers</p></div>
+                <div><p class="font-bold text-sm" id="total-views-count">0</p><p class="text-[10px] text-gray-400">Total Views</p></div>
+            </div>
+        </div>
+        <h2 id="u-name" class="font-bold text-sm mb-1" onclick="openGajanAdmin()">@GajanUser</h2>
+        <p class="text-[11px] text-gray-500">Jamnagar, Gujarat | Official Gajan App 👑</p>
+        
+        <div class="flex mt-4 space-x-2">
+            <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Edit Profile</button>
+            <a href="wallet.html" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border text-center flex items-center justify-center">
+                <i class="fa-solid fa-wallet mr-2 text-pink-600"></i>My Wallet
+            </a>
+        </div>
+    </div>
+
+    <div id="video-grid" class="grid-container border-t"></div>
+
+    <nav>
+        <a href="reels.html"><i class="fa-solid fa-house text-xl text-black"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-400"></i></a>
+        <div onclick="location.href='profile.html'" class="w-6 h-6 rounded-full bg-black border border-gray-300"></div>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, onSnapshot, deleteDoc, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 🔐 Long Press / Right Click Delete Logic
-        window.confirmDelete = async (reelId, creatorUid) => {
-            if (auth.currentUser.uid !== creatorUid) return; // Sirf creator delete kar sakta hai
-
-            if (confirm("⚠️ 🔐 Izzat ka sawal hai bhai! Kya aap sach mein ye video permanently delete karna chahte hain? Ye wapas nahi aayegi.")) {
+        // 🔐 Safe Delete System (Real Fiction)
+        window.deleteMyVideo = async (rid, uid) => {
+            if (confirm("Permanently delete this video? Your views will decrease accordingly.")) {
                 try {
-                    // 1. Database se video delete karein
-                    await deleteDoc(doc(db, "reels", reelId));
-
-                    // 2. User ki profile se Total Views count kam karein (Mehnat balance)
-                    await updateDoc(doc(db, "users", creatorUid), {
-                        totalViews: increment(-1) // Ek view kam kar diya (Demo nahi, real fiction!)
-                    });
-
-                    alert("✅ Video Deleted Permanently!");
-                    // Grid apne aap refresh ho jayegi onSnapshot ki wajah se
-                } catch (e) {
-                    alert("Error deleting video!");
-                }
+                    await deleteDoc(doc(db, "reels", rid));
+                    await updateDoc(doc(db, "users", uid), { totalViews: increment(-1) });
+                    alert("Deleted!");
+                } catch(e) { alert("Error!"); }
             }
+        };
+
+        // Admin Secret (5 Taps)
+        let taps = 0;
+        window.openGajanAdmin = () => {
+            taps++;
+            if(taps === 5) {
+                const p = prompt("Admin Pass:");
+                if(p === "Abdul6353738585@") window.location.href="admin.html";
+                taps = 0;
+            }
+            setTimeout(() => taps = 0, 2000);
         };
 
         onAuthStateChanged(auth, user => {
             if(user) {
-                // ... load profile stats ...
+                document.getElementById('u-name').innerText = "@" + (user.displayName || "GajanUser");
+                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
 
+                // Load Stats
+                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                    if(snap.exists()) {
+                        const d = snap.data();
+                        document.getElementById('total-views-count').innerText = d.totalViews || 0;
+                        document.getElementById('follower-count').innerText = d.followers ? d.followers.length : 0;
+                    }
+                });
+
+                // Load Grid
                 const q = query(collection(db, "reels"), where("uid", "==", user.uid));
                 onSnapshot(q, (sn) => {
-                    const grid = document.getElementById('secure-video-grid');
+                    const grid = document.getElementById('video-grid');
                     grid.innerHTML = "";
                     document.getElementById('post-count').innerText = sn.size;
-                    
                     sn.forEach(docSnap => {
                         const d = docSnap.data();
                         const rid = docSnap.id;
-                        
                         grid.innerHTML += `
                             <div class="grid-item">
+                                <button class="del-btn" onclick="deleteMyVideo('${rid}', '${user.uid}')">×</button>
                                 <video src="${d.videoUrl}"></video>
-                                <div class="delete-overlay">
-                                    <button onclick="confirmDelete('${rid}', '${d.uid}')" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold">
-                                        <i class="fa-solid fa-trash mr-1"></i>Delete
-                                    </button>
-                                </div>
                             </div>`;
                     });
                 });
