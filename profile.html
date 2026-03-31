@@ -1,22 +1,89 @@
-<div class="flex-1 flex justify-around text-center">
-    <div><p class="font-bold text-sm" id="post-count">0</p><p class="text-[10px] text-gray-500">Posts</p></div>
-    <div><p class="font-bold text-sm" id="follower-count">0</p><p class="text-[10px] text-gray-500">Followers</p></div>
-    <div><p class="font-bold text-sm" id="total-views-count">0</p><p class="text-[10px] text-gray-500">Total Views</p></div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gajan | Safe Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: white; color: black; }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
+        .grid-item { aspect-ratio: 1/1; position: relative; background: #fafafa; overflow: hidden; }
+        .grid-item video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 🔐 Delete Overlay */
+        .delete-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7); flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: inherit; }
+        .grid-item:active .delete-overlay { display: flex; } /* Long press trigger */
+        
+        nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; border-t: 0.5px solid #dbdbdb; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+    </style>
+</head>
+<body class="pb-24">
 
-<script type="module">
-    // Profile loading logic mein ye add karein
-    onAuthStateChanged(auth, user => {
-        if(user) {
-            // Real-time listener for user stats
-            onSnapshot(doc(db, "users", user.uid), (snap) => {
-                if(snap.exists()) {
-                    const data = snap.data();
-                    // 🔐 Safe display of total views
-                    document.getElementById('total-views-count').innerText = data.totalViews || 0;
-                    document.getElementById('follower-count').innerText = data.followers ? data.followers.length : 0;
+    <div id="secure-video-grid" class="grid-container border-t mt-4">
+        </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, onSnapshot, deleteDoc, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 🔐 Long Press / Right Click Delete Logic
+        window.confirmDelete = async (reelId, creatorUid) => {
+            if (auth.currentUser.uid !== creatorUid) return; // Sirf creator delete kar sakta hai
+
+            if (confirm("⚠️ 🔐 Izzat ka sawal hai bhai! Kya aap sach mein ye video permanently delete karna chahte hain? Ye wapas nahi aayegi.")) {
+                try {
+                    // 1. Database se video delete karein
+                    await deleteDoc(doc(db, "reels", reelId));
+
+                    // 2. User ki profile se Total Views count kam karein (Mehnat balance)
+                    await updateDoc(doc(db, "users", creatorUid), {
+                        totalViews: increment(-1) // Ek view kam kar diya (Demo nahi, real fiction!)
+                    });
+
+                    alert("✅ Video Deleted Permanently!");
+                    // Grid apne aap refresh ho jayegi onSnapshot ki wajah se
+                } catch (e) {
+                    alert("Error deleting video!");
                 }
-            });
-        }
-    });
-</script>
+            }
+        };
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                // ... load profile stats ...
+
+                const q = query(collection(db, "reels"), where("uid", "==", user.uid));
+                onSnapshot(q, (sn) => {
+                    const grid = document.getElementById('secure-video-grid');
+                    grid.innerHTML = "";
+                    document.getElementById('post-count').innerText = sn.size;
+                    
+                    sn.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const rid = docSnap.id;
+                        
+                        grid.innerHTML += `
+                            <div class="grid-item">
+                                <video src="${d.videoUrl}"></video>
+                                <div class="delete-overlay">
+                                    <button onclick="confirmDelete('${rid}', '${d.uid}')" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold">
+                                        <i class="fa-solid fa-trash mr-1"></i>Delete
+                                    </button>
+                                </div>
+                            </div>`;
+                    });
+                });
+            } else { window.location.href = "index.html"; }
+        });
+    </script>
+</body>
+</html>
