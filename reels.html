@@ -1,33 +1,124 @@
-// Reels.html ke setupObserver function mein ye update karein
-function setupObserver() {
-    const vids = document.querySelectorAll('.rvid');
-    const obs = new IntersectionObserver((entries) => {
-        entries.forEach(async (e) => {
-            const v = e.target;
-            const rid = v.dataset.id;
-            const creatorUid = v.dataset.creator; // Video banane wale ki UID
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gajan | Official Feed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
+        .feed-box { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+        .feed-box::-webkit-scrollbar { display: none; }
+        .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; background: #000; }
+        .side-ui { position: absolute; right: 12px; bottom: 130px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
+        .bottom-ui { position: absolute; bottom: 90px; left: 15px; z-index: 50; color: white; width: 75%; text-shadow: 0 1px 4px #000; }
+        .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
+        .animate-heart { animation: hPop 0.7s ease-out; }
+        @keyframes hPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+        nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+    </style>
+</head>
+<body>
 
-            if (e.isIntersecting) {
-                v.play().catch(()=>{});
-                
-                // 🔐 Safe View Logic: Ek session mein ek hi baar count hoga
-                if(!viewed.has(rid)) {
-                    viewed.add(rid);
-                    
-                    // 1. Video par view badhao
-                    await updateDoc(doc(db, "reels", rid), { 
-                        views: increment(1) 
-                    });
+    <div class="feed-box" id="main-feed"></div>
 
-                    // 2. Creator ki profile par Total Views badhao (Permanent Safe)
-                    if(creatorUid) {
-                        await updateDoc(doc(db, "users", creatorUid), { 
-                            totalViews: increment(1) 
-                        }, { merge: true });
-                    }
-                }
-            } else { v.pause(); }
+    <nav>
+        <a href="reels.html"><i class="fa-solid fa-house text-xl text-white"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
+        <div onclick="location.href='profile.html'" class="w-6 h-6 rounded-full bg-white border border-gray-500"></div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let viewed = new Set();
+
+        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
+            const container = document.getElementById('main-feed');
+            const oldPos = container.scrollTop;
+            container.innerHTML = "";
+            sn.forEach(rDoc => {
+                const d = rDoc.data();
+                const rid = rDoc.id;
+                const isLiked = d.likedBy && auth.currentUser && d.likedBy.includes(auth.currentUser.uid);
+
+                container.innerHTML += `
+                    <div class="reel" ondblclick="handleLike('${rid}', '${d.uid}', this)">
+                        <video class="rvid" data-id="${rid}" data-creator="${d.uid}" loop playsinline muted preload="auto" src="${d.videoUrl}"></video>
+                        <i class="fa-solid fa-heart big-heart"></i>
+                        <div class="side-ui">
+                            <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}" onclick="handleLike('${rid}', '${d.uid}', this.parentElement.parentElement)"></i>
+                            <p class="text-[11px] font-bold mt-[-15px]">${d.likedBy ? d.likedBy.length : 0}</p>
+                            <i class="fa-solid fa-comment text-3xl"></i>
+                            <i class="fa-solid fa-paper-plane text-2xl"></i>
+                            <div class="mt-2">
+                                <i class="fa-solid fa-eye opacity-60"></i>
+                                <p class="text-[9px] font-bold">${d.views || 0}</p>
+                            </div>
+                        </div>
+                        <div class="bottom-ui">
+                            <p class="font-bold text-sm">@${d.name || 'User'}</p>
+                            <p class="text-xs opacity-80 mt-1">${d.caption || ''}</p>
+                        </div>
+                    </div>`;
+            });
+            container.scrollTop = oldPos;
+            setupObserver();
         });
-    }, { threshold: 0.8 });
-    vids.forEach(v => obs.observe(v));
-}
+
+        function setupObserver() {
+            const vids = document.querySelectorAll('.rvid');
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(async (e) => {
+                    const v = e.target;
+                    const rid = v.dataset.id;
+                    const cUid = v.dataset.creator;
+                    if (e.isIntersecting) {
+                        v.play().catch(()=>{});
+                        if(!viewed.has(rid)) {
+                            viewed.add(rid);
+                            await updateDoc(doc(db, "reels", rid), { views: increment(1) });
+                            if(cUid) await updateDoc(doc(db, "users", cUid), { totalViews: increment(1) }, { merge: true });
+                        }
+                    } else { v.pause(); }
+                });
+            }, { threshold: 0.8 });
+            vids.forEach(v => obs.observe(v));
+        }
+
+        window.handleLike = async (rid, cUid, el) => {
+            if(!auth.currentUser) return alert("Pehle Login karein!");
+            if(auth.currentUser.uid === cUid) return alert("Apni video like nahi kar sakte!");
+
+            try {
+                await runTransaction(db, async (t) => {
+                    const myWallet = await t.get(doc(db, "wallets", auth.currentUser.uid));
+                    const reelDoc = await t.get(doc(db, "reels", rid));
+                    if (reelDoc.data().likedBy && reelDoc.data().likedBy.includes(auth.currentUser.uid)) throw "Already Liked";
+                    if (!myWallet.exists() || myWallet.data().balance < 1) throw "Tokens khatam!";
+
+                    t.update(doc(db, "wallets", auth.currentUser.uid), { balance: increment(-1) });
+                    t.set(doc(db, "wallets", cUid), { balance: increment(1) }, { merge: true });
+                    t.update(doc(db, "reels", rid), { likedBy: arrayUnion(auth.currentUser.uid) });
+                });
+                const h = el.querySelector('.big-heart');
+                h.classList.add('animate-heart');
+                setTimeout(() => h.classList.remove('animate-heart'), 700);
+            } catch(err) { if(err !== "Already Liked") alert(err); }
+        };
+
+        document.addEventListener('click', (e) => { if(e.target.tagName === 'VIDEO') e.target.muted = !e.target.muted; });
+    </script>
+</body>
+</html>
