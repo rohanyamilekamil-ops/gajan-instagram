@@ -1,57 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><title>Gajan | Admin Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-6">
-    <div id="loginBox" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm mx-auto mt-20">
-        <h1 class="font-bold text-2xl mb-6 text-center italic">Admin Login</h1>
-        <input id="admUser" type="text" placeholder="Admin ID" class="w-full p-3 border rounded-xl mb-3">
-        <input id="admPass" type="password" placeholder="Password" class="w-full p-3 border rounded-xl mb-4">
-        <button onclick="checkAdmin()" class="w-full bg-black text-white py-3 rounded-xl font-bold">Access Panel</button>
-    </div>
-
-    <div id="adminPanel" class="hidden max-w-lg mx-auto space-y-6">
-        <div class="bg-white p-6 rounded-3xl shadow-md">
-            <h2 class="font-bold text-lg mb-4 text-red-500 underline">Generate Unlimited Tokens</h2>
-            <input id="targetUid" type="text" placeholder="User UID" class="w-full p-3 border rounded-xl mb-3">
-            <input id="tokenAmount" type="number" placeholder="Amount" class="w-full p-3 border rounded-xl mb-4">
-            <button onclick="addTokens()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold italic">GENERATE & SEND</button>
+<div class="bg-white p-6 rounded-3xl shadow-md mt-6">
+    <h2 class="font-bold text-lg mb-4">User Activity Monitor</h2>
+    <div id="userList" class="space-y-3">
         </div>
+</div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-md">
-            <h2 class="font-bold text-lg mb-4">Payment QR Control</h2>
-            <input id="qrUrl" type="text" placeholder="New QR Image URL" class="w-full p-3 border rounded-xl mb-4">
-            <button onclick="updateQR()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Update Payment Method</button>
-        </div>
-    </div>
+<script type="module">
+    // ... imports ...
+    // Fetch all users to see activity
+    onSnapshot(collection(db, "users"), (sn) => {
+        const list = document.getElementById('userList');
+        list.innerHTML = "";
+        sn.forEach(u => {
+            const ud = u.data();
+            list.innerHTML += `
+                <div class="flex justify-between border-b pb-2">
+                    <span>${ud.name}</span>
+                    <span class="text-blue-500 font-mono text-xs">${ud.lastActive ? new Date(ud.lastActive).toDateString() : 'N/A'}</span>
+                </div>`;
+        });
+    });
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, updateDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", projectId: "tiktok-clone-gajan" });
-        const db = getFirestore(app);
-
-        window.checkAdmin = () => {
-            if(document.getElementById('admUser').value === 'MRGAJAN' && document.getElementById('admPass').value === 'Abdul6353738585@') {
-                document.getElementById('loginBox').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-            } else { alert("Wrong Admin Details!"); }
-        };
-
-        window.addTokens = async () => {
-            const uid = document.getElementById('targetUid').value;
-            const amt = parseInt(document.getElementById('tokenAmount').value);
-            await updateDoc(doc(db, "users", uid), { tokens: increment(amt) });
-            alert("Tokens Generated Successfully!");
-        };
-
-        window.updateQR = async () => {
-            const url = document.getElementById('qrUrl').value;
-            await setDoc(doc(db, "settings", "payment"), { qr: url });
-            alert("Payment QR Updated!");
-        };
-    </script>
-</body>
-</html>
+    // Video Delete function for Admin
+    window.deleteVideo = async (rid) => {
+        if(confirm("Bhai, pakka delete karna hai?")) {
+            await deleteDoc(doc(db, "reels", rid));
+            alert("Video Removed!");
+        }
+    }
+</script>
