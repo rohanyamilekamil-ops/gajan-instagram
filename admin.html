@@ -1,30 +1,69 @@
-<div class="bg-white p-6 rounded-3xl shadow-md mt-6">
-    <h2 class="font-bold text-lg mb-4">User Activity Monitor</h2>
-    <div id="userList" class="space-y-3">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white p-6 min-h-screen">
+    <div class="max-w-xl mx-auto">
+        <h1 class="text-3xl font-black italic mb-8 border-l-4 border-orange-500 pl-4 uppercase">Admin Console</h1>
+        
+        <div class="bg-slate-800 p-6 rounded-3xl mb-6 shadow-xl border border-slate-700">
+            <h2 class="font-bold text-orange-400 mb-4 uppercase text-sm tracking-widest"><i class="fa-solid fa-bolt mr-2"></i>Generate Tokens</h2>
+            <input id="targetUid" type="text" placeholder="User UID" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-600 mb-3 outline-none focus:border-orange-500">
+            <input id="tokenAmt" type="number" placeholder="Amount" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-600 mb-4 outline-none focus:border-orange-500">
+            <button onclick="addTokens()" class="w-full bg-orange-500 hover:bg-orange-600 py-4 rounded-2xl font-black uppercase transition-all">Add to Account</button>
         </div>
-</div>
 
-<script type="module">
-    // ... imports ...
-    // Fetch all users to see activity
-    onSnapshot(collection(db, "users"), (sn) => {
-        const list = document.getElementById('userList');
-        list.innerHTML = "";
-        sn.forEach(u => {
-            const ud = u.data();
-            list.innerHTML += `
-                <div class="flex justify-between border-b pb-2">
-                    <span>${ud.name}</span>
-                    <span class="text-blue-500 font-mono text-xs">${ud.lastActive ? new Date(ud.lastActive).toDateString() : 'N/A'}</span>
+        <div class="bg-slate-800 p-6 rounded-3xl mb-6 border border-slate-700">
+            <h2 class="font-bold text-blue-400 mb-4 uppercase text-sm tracking-widest"><i class="fa-solid fa-qrcode mr-2"></i>Update Payment QR</h2>
+            <input id="qrUrl" type="text" placeholder="Cloudinary QR Link" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-600 mb-4 outline-none focus:border-blue-500">
+            <button onclick="updateQR()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black uppercase transition-all">Sync New QR</button>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700">
+            <h2 class="font-bold text-green-400 mb-4 uppercase text-sm tracking-widest">Active Users</h2>
+            <div id="userList" class="space-y-3 max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, updateDoc, increment, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Load Users
+        onSnapshot(collection(db, "users"), (sn) => {
+            const list = document.getElementById('userList');
+            list.innerHTML = "";
+            sn.forEach(u => {
+                const ud = u.data();
+                list.innerHTML += `<div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700">
+                    <span class="text-sm font-bold">@${ud.name || 'Unknown'}</span>
+                    <span class="text-[10px] text-slate-500 font-mono">${u.id}</span>
                 </div>`;
+            });
         });
-    });
 
-    // Video Delete function for Admin
-    window.deleteVideo = async (rid) => {
-        if(confirm("Bhai, pakka delete karna hai?")) {
-            await deleteDoc(doc(db, "reels", rid));
-            alert("Video Removed!");
-        }
-    }
-</script>
+        window.addTokens = async () => {
+            const uid = document.getElementById('targetUid').value;
+            const amt = parseInt(document.getElementById('tokenAmt').value);
+            if(!uid || !amt) return alert("Fill all details!");
+            await updateDoc(doc(db, "users", uid), { tokens: increment(amt) });
+            alert("Tokens Added!");
+        };
+
+        window.updateQR = async () => {
+            const url = document.getElementById('qrUrl').value;
+            if(!url) return alert("Link missing!");
+            await setDoc(doc(db, "settings", "payment"), { qr: url });
+            alert("QR Updated!");
+        };
+    </script>
+</body>
+</html>
