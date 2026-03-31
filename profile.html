@@ -31,18 +31,9 @@
             </div>
             
             <div class="flex space-x-8 text-center flex-1 justify-around">
-                <div class="cursor-pointer">
-                    <p class="font-bold">0</p>
-                    <p class="text-sm text-gray-500">Posts</p>
-                </div>
-                <div class="cursor-pointer">
-                    <p id="followerCount" class="font-bold">0</p>
-                    <p class="text-sm text-gray-500">Followers</p>
-                </div>
-                <div class="cursor-pointer">
-                    <p class="font-bold">0</p>
-                    <p class="text-sm text-gray-500">Following</p>
-                </div>
+                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Posts</p></div>
+                <div><p id="followerCount" class="font-bold">0</p><p class="text-sm text-gray-500">Followers</p></div>
+                <div><p class="font-bold">0</p><p class="text-sm text-gray-500">Following</p></div>
             </div>
         </div>
 
@@ -52,26 +43,23 @@
         </div>
 
         <div class="flex space-x-2 mb-6">
-            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200">Edit Profile</button>
-            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm transition-all">Follow</button>
-            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-wallet"></i></a>
+            <button id="editBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
+            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm">Follow</button>
+            <a href="wallet.html" class="bg-gray-100 px-4 py-2 rounded-lg flex items-center justify-center"><i class="fa-solid fa-wallet"></i></a>
         </div>
     </main>
 
     <div class="grid grid-cols-3 gap-1 px-1">
-        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
-        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
-        <div class="aspect-square bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-image text-gray-400"></i></div>
+        <div class="aspect-square bg-gray-200 flex items-center justify-center text-gray-400 font-bold uppercase text-[10px]">No Posts</div>
     </div>
 
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6 shadow-2xl">
-            <h3 class="text-lg font-bold mb-4 border-b pb-2 text-center">Edit Profile</h3>
-            <label class="text-xs text-gray-500 mb-1 block">Full Name</label>
-            <input id="newNameInput" type="text" class="w-full border p-2 rounded mb-4 outline-none focus:border-blue-500">
+        <div class="bg-white w-full max-w-sm rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">Edit Profile</h3>
+            <input id="newNameInput" type="text" class="w-full border p-2 rounded mb-4 outline-none">
             <div class="flex space-x-3">
-                <button id="cancelBtn" class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold">Cancel</button>
-                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold">Save</button>
+                <button id="cancelBtn" class="flex-1 bg-gray-100 py-2 rounded-lg">Cancel</button>
+                <button id="saveBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg">Save</button>
             </div>
         </div>
     </div>
@@ -85,84 +73,88 @@
     </footer>
 
     <script>
-        // Select Elements
         const followBtn = document.getElementById('followBtn');
         const followerCount = document.getElementById('followerCount');
-        const editBtn = document.getElementById('editBtn');
-        const editModal = document.getElementById('editModal');
-        const saveBtn = document.getElementById('saveBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const newNameInput = document.getElementById('newNameInput');
         const profileName = document.getElementById('profileName');
         const topUsername = document.getElementById('topUsername');
         const displayPic = document.getElementById('displayPic');
         const imageInput = document.getElementById('imageInput');
+        const editModal = document.getElementById('editModal');
+        const newNameInput = document.getElementById('newNameInput');
 
-        // 1. Follow Logic
-        let isFollowing = false;
-        let count = 0;
+        // Refresh hone par data wapas lana
+        window.onload = () => {
+            if(localStorage.getItem('gajan_name')) {
+                const savedName = localStorage.getItem('gajan_name');
+                profileName.innerText = savedName;
+                topUsername.innerText = savedName;
+            }
+            if(localStorage.getItem('gajan_follow_count')) {
+                followerCount.innerText = localStorage.getItem('gajan_follow_count');
+                if(localStorage.getItem('gajan_is_following') === 'true') {
+                    setFollowingUI();
+                }
+            }
+            if(localStorage.getItem('gajan_profile_pic')) {
+                displayPic.src = localStorage.getItem('gajan_profile_pic');
+            }
+        };
+
+        // Follow Logic
+        let isFollowing = localStorage.getItem('gajan_is_following') === 'true';
+        let count = parseInt(localStorage.getItem('gajan_follow_count')) || 0;
 
         followBtn.addEventListener('click', () => {
             if(!isFollowing) {
-                isFollowing = true;
-                count++;
-                followBtn.innerText = "Following";
-                followBtn.classList.remove('bg-blue-500', 'text-white');
-                followBtn.classList.add('bg-gray-200', 'text-black');
+                isFollowing = true; count++; setFollowingUI();
             } else {
-                isFollowing = false;
-                count--;
-                followBtn.innerText = "Follow";
-                followBtn.classList.remove('bg-gray-200', 'text-black');
-                followBtn.classList.add('bg-blue-500', 'text-white');
+                isFollowing = false; count--; setFollowUI();
             }
             followerCount.innerText = count;
+            localStorage.setItem('gajan_follow_count', count);
+            localStorage.setItem('gajan_is_following', isFollowing);
         });
 
-        // 2. Edit Profile Modal Logic
-        editBtn.addEventListener('click', () => {
+        function setFollowingUI() {
+            followBtn.innerText = "Following";
+            followBtn.classList.remove('bg-blue-500', 'text-white');
+            followBtn.classList.add('bg-gray-200', 'text-black');
+        }
+        function setFollowUI() {
+            followBtn.innerText = "Follow";
+            followBtn.classList.remove('bg-gray-200', 'text-black');
+            followBtn.classList.add('bg-blue-500', 'text-white');
+        }
+
+        // Edit Profile
+        document.getElementById('editBtn').addEventListener('click', () => {
             editModal.classList.remove('hidden');
             newNameInput.value = profileName.innerText;
         });
 
-        cancelBtn.addEventListener('click', () => {
-            editModal.classList.add('hidden');
-        });
+        document.getElementById('cancelBtn').addEventListener('click', () => editModal.classList.add('hidden'));
 
-        saveBtn.addEventListener('click', () => {
+        document.getElementById('saveBtn').addEventListener('click', () => {
             const val = newNameInput.value.trim();
             if(val !== "") {
                 profileName.innerText = val;
                 topUsername.innerText = val;
+                localStorage.setItem('gajan_name', val);
                 editModal.classList.add('hidden');
             }
         });
 
-        // 3. Profile Photo Edit Logic (Naya Functionality)
-        
-        // Gallery open karne ke liye function
-        function openFilePicker() {
-            imageInput.click(); // Hidden input par click simulate karein
-        }
-
-        // Photo load karne ke liye function
+        // Photo Logic
+        function openFilePicker() { imageInput.click(); }
         function uploadPhoto(event) {
             const file = event.target.files[0];
             if(file) {
-                // FileReader object banayein taaki file ko read kar sakein
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Page par picture update kar dein
                     displayPic.src = e.target.result;
+                    localStorage.setItem('gajan_profile_pic', e.target.result);
                 }
-                reader.readAsDataURL(file); // File ko read karna shuru karein
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target == editModal) {
-                editModal.classList.add('hidden');
+                reader.readAsDataURL(file);
             }
         }
     </script>
