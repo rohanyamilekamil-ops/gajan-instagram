@@ -1,197 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Official Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #fff; }
-        
-        /* Jordar Stylish Logo */
-        .gajan-logo {
-            font-size: 28px;
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: -1.5px;
-            background: linear-gradient(to right, #FF512F 0%, #DD2476 51%, #FF512F 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .gajan-logo:active { transform: scale(0.95); opacity: 0.8; }
+<div class="flex-1 flex justify-around text-center">
+    <div><p class="font-bold text-sm" id="post-count">0</p><p class="text-[10px] text-gray-500">Posts</p></div>
+    <div><p class="font-bold text-sm" id="follower-count">0</p><p class="text-[10px] text-gray-500">Followers</p></div>
+    <div><p class="font-bold text-sm" id="total-views-count">0</p><p class="text-[10px] text-gray-500">Total Views</p></div>
+</div>
 
-        /* Status Badges */
-        .stat-val { font-weight: 800; font-size: 18px; color: #1a1a1a; }
-        .stat-label { font-size: 11px; color: #8e8e8e; text-transform: uppercase; font-weight: 700; }
-        
-        /* Modal Animation */
-        #editBox { backdrop-filter: blur(8px); transition: all 0.3s ease; }
-    </style>
-</head>
-<body class="pb-24">
-
-    <header class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white/90 z-50 backdrop-blur-md">
-        <button onclick="toggleEdit()"><i class="fa-solid fa-bars-staggered text-2xl text-gray-800"></i></button>
-        
-        <h1 onclick="adminTrigger()" class="gajan-logo">GAJAN</h1>
-        
-        <a href="upload.html"><i class="fa-solid fa-plus text-2xl text-gray-800"></i></a>
-    </header>
-
-    <div id="adminAuth" class="hidden fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center p-10">
-        <h2 class="text-white text-2xl font-bold mb-6 italic">ADMIN ACCESS</h2>
-        <input id="admKey" type="password" placeholder="Enter Key" class="w-full p-4 rounded-2xl mb-4 text-center">
-        <button onclick="verifyAdmin()" class="bg-white text-black px-10 py-3 rounded-full font-bold">LOGIN</button>
-        <button onclick="document.getElementById('adminAuth').classList.add('hidden')" class="text-gray-500 mt-4">Cancel</button>
-    </div>
-
-    <div id="editBox" class="hidden fixed inset-0 bg-black/40 z-[100] flex items-end sm:items-center justify-center">
-        <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 shadow-2xl transform transition-transform">
-            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-            <h2 class="font-black text-2xl mb-6 tracking-tight">Edit Profile</h2>
-            
-            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">PROFILE NAME</label>
-            <input id="newName" type="text" placeholder="Your Name" class="w-full p-4 bg-gray-50 border rounded-2xl mb-5 outline-none focus:border-pink-500">
-            
-            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">SELECT PHOTO FROM GALLERY</label>
-            <input id="fileInput" type="file" accept="image/*" class="w-full p-3 border-2 border-dashed rounded-2xl mb-6 text-sm">
-            
-            <button id="saveBtn" onclick="handleUpdate()" class="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all">Save & Update</button>
-            <button onclick="toggleEdit()" class="w-full mt-4 text-gray-400 font-bold">Maybe Later</button>
-        </div>
-    </div>
-
-    <main class="p-6">
-        <div class="flex items-center space-x-6 mb-8">
-            <div class="relative">
-                <img id="userImg" src="https://via.placeholder.com/150" class="w-24 h-24 rounded-full border-[3px] border-pink-500 p-1 object-cover shadow-xl">
-                <div class="absolute bottom-0 right-0 bg-blue-500 text-white text-[10px] p-1 rounded-full border-2 border-white">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-            </div>
-            <div class="flex-1 flex justify-around items-center">
-                <div class="text-center"><p id="postCount" class="stat-val">0</p><p class="stat-label">Posts</p></div>
-                <div class="text-center"><p id="followerCount" class="stat-val">0</p><p class="stat-label">Followers</p></div>
-                <div class="text-center"><p id="tokenCount" class="stat-val text-orange-500">0</p><p class="stat-label">Tokens</p></div>
-            </div>
-        </div>
-
-        <h2 id="fullName" class="font-black text-2xl tracking-tight mb-1 italic uppercase">Loading...</h2>
-        <p class="text-gray-400 text-xs font-bold mb-8 uppercase tracking-widest">Gajan Verified Member ✅</p>
-        
-        <div class="grid grid-cols-2 gap-4">
-            <button onclick="location.href='wallet.html'" class="bg-black text-white py-4 rounded-2xl font-bold text-sm shadow-md active:scale-95 transition-all">
-                <i class="fa-solid fa-coins mr-2 text-yellow-400"></i>ADD TOKENS
-            </button>
-            <button onclick="handleWithdraw()" class="bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all">
-                WITHDRAW
-            </button>
-        </div>
-    </main>
-
-    <footer class="fixed bottom-0 w-full bg-white/90 border-t flex justify-around py-4 text-2xl z-50 backdrop-blur-md">
-        <a href="index.html"><i class="fa-solid fa-house text-gray-300 hover:text-black transition-colors"></i></a>
-        <a href="upload.html"><i class="fa-solid fa-square-plus text-gray-300 hover:text-black transition-colors"></i></a>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-300 hover:text-black transition-colors"></i></a>
-        <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
-    </footer>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // DATA SYNC LOGIC
-        onAuthStateChanged(auth, async (user) => {
-            if(!user) {
-                location.href = 'login.html';
-                return;
-            }
-            
-            document.getElementById('fullName').innerText = user.displayName || "Gajan User";
-            document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/150";
-
-            try {
-                const snap = await getDoc(doc(db, "users", user.uid));
+<script type="module">
+    // Profile loading logic mein ye add karein
+    onAuthStateChanged(auth, user => {
+        if(user) {
+            // Real-time listener for user stats
+            onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if(snap.exists()) {
                     const data = snap.data();
-                    document.getElementById('tokenCount').innerText = data.tokens || 0;
-                    document.getElementById('followerCount').innerText = data.followers?.length || 0;
-                } else {
-                    // Create new record for user if not exists
-                    await setDoc(doc(db, "users", user.uid), { tokens: 0, followers: [], name: user.displayName });
+                    // 🔐 Safe display of total views
+                    document.getElementById('total-views-count').innerText = data.totalViews || 0;
+                    document.getElementById('follower-count').innerText = data.followers ? data.followers.length : 0;
                 }
-            } catch (e) { console.error("Firebase Error:", e); }
-        });
-
-        // EDIT PROFILE LOGIC
-        window.toggleEdit = () => document.getElementById('editBox').classList.toggle('hidden');
-
-        window.handleUpdate = async () => {
-            const btn = document.getElementById('saveBtn');
-            const file = document.getElementById('fileInput').files[0];
-            const name = document.getElementById('newName').value;
-            
-            btn.innerText = "UPDATING...";
-            btn.disabled = true;
-
-            let photoUrl = auth.currentUser.photoURL;
-
-            try {
-                if(file) {
-                    const fd = new FormData();
-                    fd.append("file", file);
-                    fd.append("upload_preset", "gajan_live");
-                    const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", { method: "POST", body: fd });
-                    const imgData = await res.json();
-                    photoUrl = imgData.secure_url;
-                }
-                await updateProfile(auth.currentUser, { 
-                    displayName: name || auth.currentUser.displayName, 
-                    photoURL: photoUrl 
-                });
-                location.reload();
-            } catch (err) {
-                alert("Update Failed: " + err.message);
-                btn.innerText = "SAVE & UPDATE";
-                btn.disabled = false;
-            }
-        };
-
-        // ADMIN LOGIC
-        let clicks = 0;
-        window.adminTrigger = () => {
-            clicks++;
-            if(clicks === 5) {
-                document.getElementById('adminAuth').classList.remove('hidden');
-                clicks = 0;
-            }
-        };
-
-        window.verifyAdmin = () => {
-            if(document.getElementById('admKey').value === "Abdul6353738585@") {
-                location.href = 'admin.html';
-            } else { alert("Wrong Key!"); }
-        };
-
-        window.handleWithdraw = () => {
-            const tokens = parseInt(document.getElementById('tokenCount').innerText);
-            if(tokens < 500) alert("Minimum 500 Tokens needed!");
-            else {
-                const upi = prompt("Enter UPI ID:");
-                if(upi) alert("Withdrawal Request Sent!");
-            }
-        };
-    </script>
-</body>
-</html>
+            });
+        }
+    });
+</script>
