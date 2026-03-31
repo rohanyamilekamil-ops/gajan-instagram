@@ -1,8 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | Create Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-white">
+
+    <header class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
+        <a href="reels.html"><i class="fa-solid fa-xmark text-2xl text-gray-400"></i></a>
+        <h1 class="font-bold text-lg">New Reel</h1>
+        <button id="post-btn" onclick="startGajanUpload()" class="text-blue-500 font-bold text-lg">Share</button>
+    </header>
+
+    <main class="p-6 text-center">
+        <div class="w-full aspect-[9/16] bg-gray-100 rounded-3xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center relative overflow-hidden mb-6" onclick="document.getElementById('file-input').click()">
+            <div id="ui-box">
+                <i class="fa-solid fa-clapperboard text-5xl text-pink-500 mb-2"></i>
+                <p class="text-xs font-bold text-gray-400 uppercase">Select Video</p>
+            </div>
+            <video id="preview" class="hidden absolute inset-0 w-full h-full object-cover" controls></video>
+            <input type="file" id="file-input" class="hidden" accept="video/*" onchange="showPreview(this)">
+        </div>
+
+        <textarea id="caption" placeholder="Write a viral caption..." class="w-full p-4 bg-gray-50 rounded-2xl outline-none text-sm h-20 border mb-4"></textarea>
+        
+        <div id="loader" class="hidden">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="bg-blue-500 h-full w-0 transition-all"></div>
+            </div>
+            <p id="status-txt" class="text-xs mt-2 text-gray-500 font-bold">UPLOADING...</p>
+        </div>
+    </main>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // Firebase Config
         const firebaseConfig = { 
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
             authDomain: "tiktok-clone-gajan.firebaseapp.com", 
@@ -13,89 +50,64 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        let currentUser = null;
-        onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user; } 
-            else { console.log("User not logged in"); }
-        });
-
+        // Preview Function
         window.showPreview = (input) => {
             const file = input.files[0];
             if(file) {
-                const preview = document.getElementById('preview');
-                preview.src = URL.createObjectURL(file);
-                preview.classList.remove('hidden');
+                document.getElementById('preview').src = URL.createObjectURL(file);
+                document.getElementById('preview').classList.remove('hidden');
                 document.getElementById('ui-box').classList.add('hidden');
             }
         };
 
+        // Upload Function (Connects to Cloudinary)
         window.startGajanUpload = async () => {
-            const fileInput = document.getElementById('file-input');
-            const file = fileInput.files[0];
-            const btn = document.getElementById('post-btn');
-            const captionText = document.getElementById('caption').value;
-
-            if(!currentUser) return alert("Pehle Login karein (Profile page par jaakar)!");
+            const file = document.getElementById('file-input').files[0];
             if(!file) return alert("Pehle video select karein!");
 
-            // UI Changes
-            btn.style.display = 'none'; 
             document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('post-btn').classList.add('hidden');
 
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", "gajan_live"); // IMPORTANT: Cloudinary mein ise 'Unsigned' rakhein
-            formData.append("cloud_name", "dvfgzrxs7");
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("upload_preset", "gajan_live"); // IMPORTANT: Cloudinary mein Unsigned preset hona chahiye
 
             const xhr = new XMLHttpRequest();
             xhr.open("POST", "https://api.cloudinary.com/v1_1/dvfgzrxs7/video/upload", true);
 
             xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('progress-bar').style.width = percent + "%";
-                    document.getElementById('status-txt').innerText = `UPLOADING: ${percent}%`;
-                }
+                const percent = Math.round((e.loaded / e.total) * 100);
+                document.getElementById('progress-bar').style.width = percent + "%";
+                document.getElementById('status-txt').innerText = "SENDING: " + percent + "%";
             };
 
             xhr.onload = async () => {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status === 200 || xhr.status === 201) {
-                    document.getElementById('status-txt').innerText = "SAVING TO GAJAN FEED...";
+                if (xhr.status === 200) {
+                    const res = JSON.parse(xhr.responseText);
                     
-                    try {
-                        await addDoc(collection(db, "reels"), {
-                            videoUrl: response.secure_url,
-                            caption: captionText,
-                            name: currentUser.displayName || "Gajan User",
-                            userPhoto: currentUser.photoURL || "https://via.placeholder.com/150",
-                            uid: currentUser.uid,
-                            time: serverTimestamp(),
-                            views: 0,
-                            likedBy: []
-                        });
-                        alert("🚀 Post Live Ho Gaya!");
-                        window.location.href = "reels.html"; // Seedha Reels page par bhejein
-                    } catch (e) {
-                        console.error("Firebase Error:", e);
-                        alert("Database Error! Firebase Rules check karein.");
-                        btn.style.display = 'block';
-                    }
+                    // Save to Firebase Firestore
+                    await addDoc(collection(db, "reels"), {
+                        videoUrl: res.secure_url,
+                        caption: document.getElementById('caption').value,
+                        time: serverTimestamp(),
+                        uid: auth.currentUser ? auth.currentUser.uid : "guest_user",
+                        name: auth.currentUser ? auth.currentUser.displayName : "Gajan User",
+                        likedBy: [],
+                        views: 0
+                    });
+                    
+                    alert("✅ Post Success!");
+                    window.location.href = "reels.html"; // Wapas Reels page par
                 } else {
-                    console.error("Cloudinary Error:", response);
-                    alert("Upload Failed! Cloudinary settings check karein.");
-                    btn.style.display = 'block';
+                    alert("Cloudinary Upload Failed! Check your Preset.");
+                    location.reload();
                 }
             };
-
-            xhr.onerror = () => {
-                alert("Network Error! Check your internet connection.");
-                btn.style.display = 'block';
-            };
-
-            xhr.send(formData);
+            xhr.send(fd);
         };
     </script>
+</body>
+</html>
