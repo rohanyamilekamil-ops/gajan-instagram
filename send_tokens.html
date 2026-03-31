@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Tokens | Gajan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6 flex flex-col items-center">
+    <h1 class="text-2xl font-black italic mb-10">Send Tokens</h1>
+    
+    <div class="w-full max-w-sm space-y-4">
+        <input id="friend-uid" type="text" placeholder="Friend's UID" class="w-full p-4 rounded-2xl border outline-none">
+        <input id="token-amt" type="number" placeholder="Amount (Tokens)" class="w-full p-4 rounded-2xl border outline-none">
+        <button onclick="transferNow()" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition">Send Now</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" });
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        window.transferNow = async () => {
+            const fUid = document.getElementById('friend-uid').value;
+            const amt = parseInt(document.getElementById('token-amt').value);
+
+            if(!fUid || isNaN(amt) || amt <= 0) return alert("Invalid data!");
+            
+            try {
+                await runTransaction(db, async (t) => {
+                    const myRef = doc(db, "wallets", auth.currentUser.uid);
+                    const friendRef = doc(db, "wallets", fUid);
+                    const myWallet = await t.get(myRef);
+
+                    if(!myWallet.exists() || myWallet.data().balance < amt) throw "Balance kam hai!";
+                    
+                    t.update(myRef, { balance: increment(-amt) });
+                    t.set(friendRef, { balance: increment(amt) }, { merge: true });
+                });
+                alert("✅ Tokens Sent!");
+                location.href = "profile.html";
+            } catch(e) { alert(e); }
+        };
+    </script>
+</body>
+</html>
