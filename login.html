@@ -2,37 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Welcome</title>
+    <title>Gajan | Join</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white flex flex-col items-center justify-center h-screen p-8 text-center">
-    <h1 class="text-5xl font-black italic mb-10 tracking-tighter">GAJAN</h1>
+<body class="bg-white flex flex-col items-center justify-center h-screen p-8">
+    <h1 class="text-4xl font-black mb-10 italic">GAJAN</h1>
     <div class="w-full max-w-xs space-y-4">
-        <input id="em" type="email" placeholder="Email" class="w-full p-3 bg-gray-50 border rounded-lg outline-none">
-        <input id="ps" type="password" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-lg outline-none">
-        <button onclick="authAction('login')" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg">Login</button>
-        <p class="text-gray-400 text-sm">OR</p>
-        <button onclick="authAction('signup')" class="w-full border border-blue-500 text-blue-500 font-bold py-3 rounded-lg">Create New Account</button>
+        <input id="e" type="email" placeholder="Email" class="w-full p-3 bg-gray-50 border rounded-lg">
+        <input id="p" type="password" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-lg">
+        <button onclick="auth('in')" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg">Login</button>
+        <button onclick="auth('up')" class="w-full border border-blue-500 text-blue-500 font-bold py-3 rounded-lg">Create Account</button>
     </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" });
-        const auth = getAuth(app);
-
-        window.authAction = async (type) => {
-            const e = document.getElementById('em').value;
-            const p = document.getElementById('ps').value;
+        const authObj = getAuth(app);
+        window.auth = async (t) => {
+            const em = document.getElementById('e').value;
+            const ps = document.getElementById('p').value;
             try {
-                if(type === 'signup') {
-                    const n = prompt("Apna Full Name likhein:");
-                    const res = await createUserWithEmailAndPassword(auth, e, p);
-                    await updateProfile(res.user, { displayName: n, photoURL: "https://via.placeholder.com/150" });
-                } else {
-                    await signInWithEmailAndPassword(auth, e, p);
-                }
-                window.location.href = "reels.html";
+                if(t === 'up') {
+                    const n = prompt("Full Name:");
+                    const r = await createUserWithEmailAndPassword(authObj, em, ps);
+                    await updateProfile(r.user, { displayName: n, photoURL: "https://via.placeholder.com/150" });
+                } else { await signInWithEmailAndPassword(authObj, em, ps); }
+                location.href = 'profile.html';
             } catch (err) { alert(err.message); }
         };
     </script>
