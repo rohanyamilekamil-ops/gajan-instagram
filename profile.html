@@ -1,19 +1,28 @@
-<header class="flex items-center justify-between px-5 py-4 border-b">
-    <button onclick="toggleEdit()"><i class="fa-solid fa-bars text-2xl"></i></button>
-    <h1 onclick="adminTrigger()" class="font-black text-xl italic cursor-pointer">GAJAN</h1>
-    <a href="upload.html"><i class="fa-solid fa-plus text-2xl"></i></a>
-</header>
-
-<script>
-    let clickCount = 0;
-    function adminTrigger() {
-        clickCount++;
-        if(clickCount === 5) { // 5 baar click karne par login maangega
-            const pass = prompt("Enter Admin Key:");
-            if(pass === "Abdul6353738585@") {
-                location.href = 'admin.html';
-            }
-            clickCount = 0;
+<script type="module">
+    // ... config same rahega ...
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            console.log("No user found, redirecting to login...");
+            window.location.href = 'login.html';
+            return;
         }
-    }
+        
+        try {
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            
+            // Agar database mein user ka document nahi hai toh bana do
+            if (!snap.exists()) {
+                await setDoc(userRef, { tokens: 0, followers: [], posts: 0, name: user.displayName || "User" });
+            }
+            
+            const data = snap.data() || { tokens: 0, followers: [] };
+            document.getElementById('fullName').innerText = user.displayName || "Gajan User";
+            document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/150";
+            document.getElementById('tokenCount').innerText = data.tokens || 0;
+            document.getElementById('followerCount').innerText = data.followers?.length || 0;
+        } catch (error) {
+            console.error("Data fetch error:", error);
+        }
+    });
 </script>
