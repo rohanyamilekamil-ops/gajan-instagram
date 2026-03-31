@@ -1,70 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan | Profile</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan | My Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .active-icon { color: black !important; }
-    </style>
 </head>
-<body class="bg-white pb-20">
-
-    <header class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-50">
-        <button onclick="window.history.back()"><i class="fa-solid fa-chevron-left text-xl"></i></button>
-        <h1 id="topUsername" class="font-bold text-lg text-center flex-1">Gajan</h1>
-        <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+<body class="bg-white">
+    <header class="flex items-center justify-between px-5 py-4 border-b">
+        <i class="fa-solid fa-bars text-xl"></i>
+        <h1 id="p-username" class="font-bold text-lg">Gajan User</h1>
+        <i class="fa-solid fa-plus text-xl" onclick="location.href='upload.html'"></i>
     </header>
 
-    <main class="p-4">
-        <div class="flex items-center space-x-8 mb-6">
-            <div class="relative" onclick="document.getElementById('imageInput').click()">
-                <img id="displayPic" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
-                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
-            </div>
-            <div class="flex space-x-8 text-center flex-1 justify-around text-sm">
-                <div><p class="font-bold">0</p><p class="text-gray-500">Posts</p></div>
-                <div><p id="followerCount" class="font-bold">0</p><p class="text-gray-500">Followers</p></div>
-                <div><p class="font-bold">0</p><p class="text-gray-500">Following</p></div>
-            </div>
+    <div class="p-6 flex items-center space-x-6">
+        <img id="p-img" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border p-1 object-cover">
+        <div class="flex-1 flex justify-around text-center text-sm">
+            <div><p class="font-bold">0</p><p class="text-gray-400">Posts</p></div>
+            <div><p class="font-bold">1.2M</p><p class="text-gray-400">Followers</p></div>
+            <div><p class="font-bold">50</p><p class="text-gray-400">Following</p></div>
         </div>
-        <div class="mb-6">
-            <h2 id="profileName" class="font-bold">Gajan</h2>
-            <p class="text-sm text-gray-600">Jamnagar, Gujarat | Official Gajan App 👑</p>
-        </div>
-        <div class="flex space-x-2">
-            <button class="flex-1 bg-gray-100 py-2 rounded-lg font-semibold text-sm">Edit Profile</button>
-            <button id="followBtn" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold text-sm">Follow</button>
-        </div>
-    </main>
+    </div>
 
-    <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl z-50">
+    <footer class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 text-2xl">
         <a href="index.html"><i class="fa-solid fa-house text-gray-400"></i></a>
-        <a href="search.html"><i class="fa-solid fa-magnifying-glass text-gray-400"></i></a>
         <a href="upload.html"><i class="fa-regular fa-square-plus text-gray-400"></i></a>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-gray-400"></i></a>
-        <a href="profile.html"><i class="fa-solid fa-user active-icon"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-user text-black"></i></a>
     </footer>
 
-    <script>
-        // Data Memory Logic
-        window.onload = () => {
-            if(localStorage.getItem('g_pic')) document.getElementById('displayPic').src = localStorage.getItem('g_pic');
-            if(localStorage.getItem('g_follow')) document.getElementById('followerCount').innerText = localStorage.getItem('g_follow');
-        };
-
-        function uploadPhoto(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('displayPic').src = e.target.result;
-                    localStorage.setItem('g_pic', e.target.result);
-                };
-                reader.readAsDataURL(file);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        const app = initializeApp({ apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan" });
+        const auth = getAuth(app);
+        onAuthStateChanged(auth, (u) => {
+            if(!u) location.href='login.html';
+            else {
+                document.getElementById('p-username').innerText = u.displayName || "User";
+                if(u.photoURL) document.getElementById('p-img').src = u.photoURL;
             }
-        }
+        });
     </script>
 </body>
 </html>
