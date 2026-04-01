@@ -58,9 +58,10 @@
                 if(selectedFile) {
                     const formData = new FormData();
                     formData.append('file', selectedFile);
-                    formData.append('upload_preset', 'gajan_preset'); // 🔴 MUST BE UNSIGNED IN CLOUDINARY
+                    // ✅ FIXED: Using your exact preset name from screenshot
+                    formData.append('upload_preset', 'gajan_live'); 
 
-                    // ✅ Fixed URL with your cloud name: dvfgzrxs7
+                    // ✅ FIXED: Using your exact cloud name: dvfgzrxs7
                     const res = await fetch('https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload', { 
                         method: 'POST', 
                         body: formData 
@@ -78,14 +79,13 @@
                 const newName = document.getElementById('name-input').value.trim();
                 if(!newName) throw new Error("Please enter a name");
 
-                // Update Firebase Auth & Firestore Logic
                 await updateProfile(auth.currentUser, { displayName: newName, photoURL: finalPhotoURL });
                 await updateDoc(doc(db, "users", auth.currentUser.uid), { 
                     name: newName, 
                     photoURL: finalPhotoURL 
                 });
                 
-                alert("✅ Profile Updated Successfully!");
+                alert("✅ Gajan Insta: Profile Updated!");
                 location.href = "profile.html";
 
             } catch (err) {
