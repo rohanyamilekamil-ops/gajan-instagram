@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan Insta | Reels</title>
+    <title>Gajan Insta | HD Feed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,130 +12,77 @@
         .feed::-webkit-scrollbar { display: none; }
         .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 80%; }
         .side-ui { position: absolute; right: 15px; bottom: 150px; z-index: 50; display: flex; flex-direction: column; gap: 20px; color: white; text-align: center; }
-        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 85%; }
-        .big-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 100px; z-index: 100; pointer-events: none; opacity: 0; }
-        .animate-heart { animation: hPop 0.7s ease-out; }
-        @keyframes hPop { 0% { scale: 0; opacity: 0; } 50% { scale: 1.2; opacity: 0.9; } 100% { scale: 1.5; opacity: 0; } }
-        .nav-btn { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid white; }
+        .sound-toggle { position: fixed; top: 20px; right: 20px; z-index: 200; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 50%; color: white; }
     </style>
 </head>
 <body>
+
+    <button class="sound-toggle" onclick="toggleAllSound()"><i id="vol-icon" class="fa-solid fa-volume-xmark"></i></button>
 
     <div class="feed" id="main-feed"></div>
 
     <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-gray-800 flex justify-around items-center z-[100]">
         <a href="reels.html"><i class="fa-solid fa-house text-xl text-white"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
-        <img id="nav-pfp" onclick="location.href='profile.html'" src="https://via.placeholder.com/30" class="nav-btn">
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-400"></i></a>
+        <div onclick="location.href='profile.html'" class="w-7 h-7 rounded-full bg-white border"></div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion, runTransaction, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        onAuthStateChanged(auth, user => {
-            if(user && user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
-        });
+        let isMuted = true;
+        window.toggleAllSound = () => {
+            isMuted = !isMuted;
+            document.querySelectorAll('video').forEach(v => v.muted = isMuted);
+            document.getElementById('vol-icon').className = isMuted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+        };
 
-        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), (sn) => {
+        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), async (sn) => {
             const container = document.getElementById('main-feed');
             container.innerHTML = "";
-            sn.forEach(rDoc => {
+            for (const rDoc of sn.docs) {
                 const d = rDoc.data();
-                const rid = rDoc.id;
-                const isLiked = d.likedBy && auth.currentUser && d.likedBy.includes(auth.currentUser.uid);
-                // 📸 Photo URL Logic Fix
-                const creatorPhoto = d.photoURL || d.pfp || 'https://via.placeholder.com/150';
+                const userSnap = await getDoc(doc(db, "users", d.uid));
+                const userPhoto = userSnap.exists() ? userSnap.data().photoURL : "https://via.placeholder.com/150";
 
                 container.innerHTML += `
-                    <div class="reel" ondblclick="handleLike('${rid}', '${d.uid}', this)">
-                        <video class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
-                        <i class="fa-solid fa-heart big-heart"></i>
+                    <div class="reel">
+                        <video class="rvid" loop playsinline muted preload="auto" src="${d.videoUrl}"></video>
                         <div class="side-ui">
-                            <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}" onclick="handleLike('${rid}', '${d.uid}', this.parentElement.parentElement)"></i>
-                            <p class="text-[11px] font-bold mt-[-15px]">${d.likedBy ? d.likedBy.length : 0}</p>
-                            <i class="fa-solid fa-comment text-3xl" onclick="location.href='comments.html?id=${rid}'"></i>
-                            <i class="fa-solid fa-eye opacity-60"></i>
-                            <p class="text-[9px] font-bold mt-[-15px]">${d.views || 0}</p>
+                            <i class="fa-solid fa-heart text-3xl"></i>
+                            <p class="text-xs font-bold">${d.likedBy?.length || 0}</p>
+                            <i class="fa-solid fa-comment text-3xl"></i>
                         </div>
                         <div class="bottom-ui">
                             <div class="flex items-center gap-3 mb-3">
-                                <img src="${creatorPhoto}" class="w-10 h-10 rounded-full border-2 border-white object-cover">
-                                <div>
-                                    <p class="font-bold text-sm">@${d.name || 'User'}</p>
-                                    <p class="text-[8px] opacity-70 uppercase tracking-tighter">UID: ${d.uid.substring(0,10)}...</p>
-                                </div>
-                                <button onclick="followUser('${d.uid}', this)" class="bg-white text-black px-4 py-1 rounded-lg font-bold text-[11px] ml-2">Follow</button>
+                                <img src="${userPhoto}" class="w-10 h-10 rounded-full border-2 border-white object-cover">
+                                <p class="font-bold text-sm">@${d.name || 'User'}</p>
+                                <button onclick="location.href='list.html'" class="bg-white text-black px-4 py-1 rounded-lg text-[10px] font-bold">Follow</button>
                             </div>
                             <p class="text-xs opacity-90">${d.caption || ''}</p>
                         </div>
                     </div>`;
-            });
+            }
             setupObserver();
         });
-
-        window.handleLike = async (rid, creatorUid, element) => {
-            if(!auth.currentUser) return alert("Login first!");
-            const myUid = auth.currentUser.uid;
-            if(myUid === creatorUid) return;
-
-            try {
-                await runTransaction(db, async (t) => {
-                    const myWallet = doc(db, "wallets", myUid);
-                    const hisWallet = doc(db, "wallets", creatorUid);
-                    const reelRef = doc(db, "reels", rid);
-                    const snap = await t.get(myWallet);
-                    const rSnap = await t.get(reelRef);
-
-                    if (rSnap.data().likedBy && rSnap.data().likedBy.includes(myUid)) throw "Already Liked";
-                    if (!snap.exists() || snap.data().balance < 1) throw "No Tokens!";
-
-                    t.update(myWallet, { balance: increment(-1) });
-                    t.set(hisWallet, { balance: increment(1) }, { merge: true });
-                    t.update(reelRef, { likedBy: arrayUnion(myUid) });
-                });
-
-                // Animation Fix 🔐
-                const heart = element.querySelector('.big-heart');
-                if(heart) {
-                    heart.classList.add('animate-heart');
-                    setTimeout(() => heart.classList.remove('animate-heart'), 700);
-                }
-            } catch(e) { if(e !== "Already Liked") alert(e); }
-        };
-
-        window.followUser = async (tUid, btn) => {
-            if(!auth.currentUser) return alert("Login!");
-            const myRef = doc(db, "users", auth.currentUser.uid);
-            const tRef = doc(db, "users", tUid);
-            if(btn.innerText === "Follow") {
-                await updateDoc(myRef, { following: arrayUnion(tUid) });
-                await updateDoc(tRef, { followers: arrayUnion(auth.currentUser.uid) });
-                btn.innerText = "Following"; btn.style.opacity = "0.5";
-            } else {
-                await updateDoc(myRef, { following: arrayRemove(tUid) });
-                await updateDoc(tRef, { followers: arrayRemove(auth.currentUser.uid) });
-                btn.innerText = "Follow"; btn.style.opacity = "1";
-            }
-        };
 
         function setupObserver() {
             const vids = document.querySelectorAll('.rvid');
             const obs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
-                    if (e.isIntersecting) { 
-                        e.target.play().catch(()=>{});
-                        // Views logic here...
-                    } else { e.target.pause(); }
+                    if (e.isIntersecting) { e.target.play().catch(()=>{}); e.target.muted = isMuted; }
+                    else { e.target.pause(); }
                 });
             }, { threshold: 0.8 });
             vids.forEach(v => obs.observe(v));
