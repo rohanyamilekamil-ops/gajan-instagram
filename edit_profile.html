@@ -13,18 +13,18 @@
     </div>
 
     <div class="flex flex-col items-center">
-        <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500 mb-4">
+        <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500 mb-4 bg-gray-100">
             <img id="pfp-preview" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
         </div>
         <input type="file" id="file-input" class="hidden" accept="image/*">
         <button onclick="document.getElementById('file-input').click()" class="text-blue-500 text-sm font-bold">Change Profile Photo</button>
         
-        <input id="name-input" type="text" placeholder="New Name" class="w-full mt-10 border-b p-2 outline-none">
+        <input id="name-input" type="text" placeholder="Enter New Name" class="w-full mt-10 border-b p-2 outline-none text-center">
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -33,6 +33,14 @@
         const db = getFirestore(app);
 
         let selectedFile;
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                document.getElementById('name-input').value = user.displayName || "";
+                if(user.photoURL) document.getElementById('pfp-preview').src = user.photoURL;
+            }
+        });
+
         document.getElementById('file-input').onchange = (e) => {
             selectedFile = e.target.files[0];
             if(selectedFile) document.getElementById('pfp-preview').src = URL.createObjectURL(selectedFile);
@@ -40,24 +48,50 @@
 
         document.getElementById('save-btn').onclick = async () => {
             const btn = document.getElementById('save-btn');
-            btn.innerText = "Wait...";
-            let photoURL = auth.currentUser.photoURL;
+            const originalText = btn.innerText;
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
 
-            if(selectedFile) {
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                formData.append('upload_preset', 'gajan_preset');
-                const res = await fetch('https://api.cloudinary.com/v1_1/tiktok-clone-gajan/image/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                photoURL = data.secure_url;
+            let finalPhotoURL = auth.currentUser.photoURL;
+
+            try {
+                if(selectedFile) {
+                    const formData = new FormData();
+                    formData.append('file', selectedFile);
+                    formData.append('upload_preset', 'gajan_preset'); // 🔴 CHECK THIS IN CLOUDINARY
+
+                    const res = await fetch('https://api.cloudinary.com/v1_1/tiktok-clone-gajan/image/upload', { 
+                        method: 'POST', 
+                        body: formData 
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error("Cloudinary Error: " + errorData.error.message);
+                    }
+
+                    const data = await res.json();
+                    finalPhotoURL = data.secure_url;
+                }
+
+                const newName = document.getElementById('name-input').value.trim();
+                if(!newName) throw new Error("Please enter a name");
+
+                // Update Firebase Auth & Firestore
+                await updateProfile(auth.currentUser, { displayName: newName, photoURL: finalPhotoURL });
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { 
+                    name: newName, 
+                    photoURL: finalPhotoURL 
+                });
+                
+                alert("✅ Profile Updated Successfully!");
+                location.href = "profile.html";
+
+            } catch (err) {
+                alert("❌ Error: " + err.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
-
-            const newName = document.getElementById('name-input').value || auth.currentUser.displayName;
-            await updateProfile(auth.currentUser, { displayName: newName, photoURL: photoURL });
-            await updateDoc(doc(db, "users", auth.currentUser.uid), { name: newName, photoURL: photoURL });
-            
-            alert("✅ Profile Updated!");
-            location.href = "profile.html";
         };
     </script>
 </body>
