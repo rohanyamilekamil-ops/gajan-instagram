@@ -4,37 +4,27 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile | Gajan</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-white">
-    <header class="p-4 border-b flex justify-between items-center">
-        <i class="fa-solid fa-xmark text-xl" onclick="history.back()"></i>
+<body class="bg-white p-6">
+    <div class="flex justify-between items-center mb-10">
+        <button onclick="history.back()" class="text-sm font-bold">Cancel</button>
         <h1 class="font-bold">Edit Profile</h1>
         <button id="save-btn" class="text-blue-500 font-bold">Done</button>
-    </header>
+    </div>
 
-    <div class="flex flex-col items-center mt-10 p-6">
-        <div class="relative w-24 h-24 mb-4">
-            <img id="pfp-preview" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover border">
-            <input type="file" id="file-input" class="hidden" accept="image/*">
-            <p onclick="document.getElementById('file-input').click()" class="text-blue-500 text-sm font-bold mt-2 text-center">Change profile photo</p>
+    <div class="flex flex-col items-center">
+        <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500 mb-4">
+            <img id="pfp-preview" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
         </div>
-
-        <div class="w-full space-y-6 mt-6">
-            <div class="border-b pb-2">
-                <p class="text-xs text-gray-400">Name</p>
-                <input id="name-input" type="text" class="w-full outline-none font-medium mt-1">
-            </div>
-            <div class="border-b pb-2">
-                <p class="text-xs text-gray-400">Username (UID)</p>
-                <p id="uid-display" class="text-sm text-gray-500 mt-1"></p>
-            </div>
-        </div>
+        <input type="file" id="file-input" class="hidden" accept="image/*">
+        <button onclick="document.getElementById('file-input').click()" class="text-blue-500 text-sm font-bold">Change Profile Photo</button>
+        
+        <input id="name-input" type="text" placeholder="New Name" class="w-full mt-10 border-b p-2 outline-none">
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -42,24 +32,32 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('name-input').value = user.displayName || "";
-                document.getElementById('uid-display').innerText = user.uid;
-                if(user.photoURL) document.getElementById('pfp-preview').src = user.photoURL;
-            }
-        });
+        let selectedFile;
+        document.getElementById('file-input').onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if(selectedFile) document.getElementById('pfp-preview').src = URL.createObjectURL(selectedFile);
+        };
 
         document.getElementById('save-btn').onclick = async () => {
-            const newName = document.getElementById('name-input').value;
             const btn = document.getElementById('save-btn');
-            btn.innerText = "Saving...";
+            btn.innerText = "Wait...";
+            let photoURL = auth.currentUser.photoURL;
+
+            if(selectedFile) {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('upload_preset', 'gajan_preset');
+                const res = await fetch('https://api.cloudinary.com/v1_1/tiktok-clone-gajan/image/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                photoURL = data.secure_url;
+            }
+
+            const newName = document.getElementById('name-input').value || auth.currentUser.displayName;
+            await updateProfile(auth.currentUser, { displayName: newName, photoURL: photoURL });
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { name: newName, photoURL: photoURL });
             
-            await updateProfile(auth.currentUser, { displayName: newName });
-            await updateDoc(doc(db, "users", auth.currentUser.uid), { name: newName });
-            
-            alert("Profile Updated!");
-            history.back();
+            alert("✅ Profile Updated!");
+            location.href = "profile.html";
         };
     </script>
 </body>
