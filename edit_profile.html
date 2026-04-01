@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile | Gajan</title>
+    <title>Edit Profile | Gajan Insta</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white p-6">
@@ -13,13 +13,13 @@
     </div>
 
     <div class="flex flex-col items-center">
-        <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500 mb-4 bg-gray-100">
+        <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500 mb-4 bg-gray-100 shadow-inner">
             <img id="pfp-preview" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
         </div>
         <input type="file" id="file-input" class="hidden" accept="image/*">
         <button onclick="document.getElementById('file-input').click()" class="text-blue-500 text-sm font-bold">Change Profile Photo</button>
         
-        <input id="name-input" type="text" placeholder="Enter New Name" class="w-full mt-10 border-b p-2 outline-none text-center">
+        <input id="name-input" type="text" placeholder="Enter New Name" class="w-full mt-10 border-b p-2 outline-none text-center font-medium">
     </div>
 
     <script type="module">
@@ -58,16 +58,17 @@
                 if(selectedFile) {
                     const formData = new FormData();
                     formData.append('file', selectedFile);
-                    formData.append('upload_preset', 'gajan_preset'); // 🔴 CHECK THIS IN CLOUDINARY
+                    formData.append('upload_preset', 'gajan_preset'); // 🔴 MUST BE UNSIGNED IN CLOUDINARY
 
-                    const res = await fetch('https://api.cloudinary.com/v1_1/tiktok-clone-gajan/image/upload', { 
+                    // ✅ Fixed URL with your cloud name: dvfgzrxs7
+                    const res = await fetch('https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload', { 
                         method: 'POST', 
                         body: formData 
                     });
 
                     if (!res.ok) {
                         const errorData = await res.json();
-                        throw new Error("Cloudinary Error: " + errorData.error.message);
+                        throw new Error(errorData.error.message);
                     }
 
                     const data = await res.json();
@@ -77,7 +78,7 @@
                 const newName = document.getElementById('name-input').value.trim();
                 if(!newName) throw new Error("Please enter a name");
 
-                // Update Firebase Auth & Firestore
+                // Update Firebase Auth & Firestore Logic
                 await updateProfile(auth.currentUser, { displayName: newName, photoURL: finalPhotoURL });
                 await updateDoc(doc(db, "users", auth.currentUser.uid), { 
                     name: newName, 
@@ -88,7 +89,7 @@
                 location.href = "profile.html";
 
             } catch (err) {
-                alert("❌ Error: " + err.message);
+                alert("❌ Cloudinary Error: " + err.message);
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
