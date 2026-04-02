@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | Gajan Insta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6">
+    <button onclick="history.back()" class="mb-6 text-sm">← Back</button>
+    <div id="profile-content" class="flex flex-col items-center mt-10">
+        <img id="u-pfp" src="https://via.placeholder.com/150" class="w-24 h-24 rounded-full border-2 border-pink-500 object-cover mb-4">
+        <h1 id="u-name" class="font-bold text-xl">Loading...</h1>
+        <p id="u-uid" class="text-gray-500 text-xs mt-2 uppercase"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const uid = urlParams.get('uid');
+
+        if(uid) {
+            const userSnap = await getDoc(doc(db, "users", uid));
+            if(userSnap.exists()) {
+                const data = userSnap.data();
+                document.getElementById('u-name').innerText = data.name || "User";
+                document.getElementById('u-pfp').src = data.photoURL || "https://via.placeholder.com/150";
+                document.getElementById('u-uid').innerText = "UID: " + uid;
+            }
+        }
+    </script>
+</body>
+</html>
