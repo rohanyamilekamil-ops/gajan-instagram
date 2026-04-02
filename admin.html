@@ -11,27 +11,37 @@
         .g-logo { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-6 pb-20">
 
     <header class="flex items-center gap-3 mb-10">
         <div class="g-logo shadow-[0_0_15px_rgba(220,39,67,0.5)]">
             <span class="text-white font-black italic text-2xl">G</span>
         </div>
-        <h1 class="text-2xl font-black italic tracking-tighter">Gajan Admin <span class="text-xs text-red-500 uppercase">Core</span></h1>
+        <h1 class="text-2xl font-black italic tracking-tighter uppercase">Admin <span class="text-pink-600">Core</span></h1>
     </header>
 
+    <div class="g-card mb-6 border-pink-600/30">
+        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-qrcode mr-2"></i> Payment QR Update</h2>
+        <div class="flex flex-col items-center gap-4">
+            <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-inner">
+                <img id="qr-preview" src="https://via.placeholder.com/150?text=Upload+QR" class="w-full h-full object-contain">
+            </div>
+            <input type="file" id="qr-input" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('qr-input').click()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-lg font-bold uppercase">Select Photo</button>
+            <button id="upload-qr-btn" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition">Update QR for All Users</button>
+        </div>
+    </div>
+
     <div class="g-card mb-6">
-        <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-paper-plane mr-2"></i> Direct Transfer</h2>
-        <input id="target-uid" type="text" placeholder="User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none focus:border-pink-600">
-        <input id="token-amt" type="number" placeholder="Amount" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-4 outline-none">
-        <button onclick="sendTokensNow()" class="w-full bg-gradient-to-r from-orange-500 to-pink-600 py-4 rounded-xl font-bold active:scale-95 transition">Release Tokens</button>
+        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-paper-plane mr-2"></i> Direct Release</h2>
+        <input id="target-uid" type="text" placeholder="User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none text-sm">
+        <input id="token-amt" type="number" placeholder="Token Amount" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-4 outline-none text-sm">
+        <button id="send-btn" class="w-full bg-gradient-to-r from-orange-500 to-pink-600 py-4 rounded-xl font-bold active:scale-95 transition">Send Tokens</button>
     </div>
 
     <div class="g-card">
-        <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-bell mr-2"></i> User Requests</h2>
-        <div id="request-list" class="space-y-4 text-sm">
-            <p class="text-gray-600 italic">Checking for requests...</p>
-        </div>
+        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-bell mr-2"></i> Pending Requests</h2>
+        <div id="request-list" class="space-y-3"></div>
     </div>
 
     <script type="module">
@@ -42,38 +52,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 🟢 Fetching Requests
+        // --- 📸 QR Update Logic ---
+        let qrFile;
+        document.getElementById('qr-input').onchange = (e) => {
+            qrFile = e.target.files[0];
+            if(qrFile) document.getElementById('qr-preview').src = URL.createObjectURL(qrFile);
+        };
+
+        document.getElementById('upload-qr-btn').onclick = async () => {
+            if(!qrFile) return alert("Photo select karein!");
+            const btn = document.getElementById('upload-qr-btn');
+            btn.innerText = "Processing...";
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', qrFile);
+                formData.append('upload_preset', 'gajan_live');
+                const res = await fetch('https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                await setDoc(doc(db, "app_settings", "payment_config"), { qr_url: data.secure_url }, { merge: true });
+                alert("✅ QR Updated for all users!");
+                btn.innerText = "Update QR for All Users";
+            } catch (e) { alert(e.message); btn.innerText = "Update Failed"; }
+        };
+
+        // --- 💸 Token Logic ---
+        document.getElementById('send-btn').onclick = async () => {
+            const uid = document.getElementById('target-uid').value;
+            const amt = parseInt(document.getElementById('token-amt').value);
+            if(!uid || !amt) return alert("Detail bhariye!");
+            await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
+            alert("✅ Tokens Released!");
+        };
+
         onSnapshot(collection(db, "token_requests"), (sn) => {
-            const list = document.getElementById('request-list');
-            list.innerHTML = "";
-            if(sn.empty) list.innerHTML = "<p class='text-gray-500'>No pending requests.</p>";
+            const list = document.getElementById('request-list'); list.innerHTML = "";
             sn.forEach(d => {
                 const req = d.data();
-                list.innerHTML += `
-                    <div class="flex justify-between items-center bg-black/50 p-4 rounded-xl border border-gray-900">
-                        <div>
-                            <p class="font-bold">@${req.name}</p>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-tighter">UID: ${req.uid}</p>
-                        </div>
-                        <button onclick="approveRequest('${d.id}', '${req.uid}', 100)" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Approve 100</button>
-                    </div>`;
+                list.innerHTML += `<div class="bg-black/50 p-4 rounded-xl border border-gray-900 flex justify-between items-center">
+                    <div><p class="font-bold text-sm">@${req.name}</p><p class="text-[9px] text-gray-500 uppercase font-bold">UID: ${req.uid.substring(0,10)}</p></div>
+                    <button onclick="approve('${d.id}', '${req.uid}', 100)" class="bg-green-600 px-3 py-1 rounded text-[10px] font-bold uppercase">Approve 100</button>
+                </div>`;
             });
         });
 
-        // 🟢 Approve Logic
-        window.approveRequest = async (docId, uid, amt) => {
-            await updateDoc(doc(db, "wallets", uid), { balance: increment(amt) });
-            await deleteDoc(doc(db, "token_requests", docId));
-            alert("Tokens Approved!");
-        };
-
-        // 🟢 Direct Send Logic
-        window.sendTokensNow = async () => {
-            const uid = document.getElementById('target-uid').value;
-            const amt = parseInt(document.getElementById('token-amt').value);
-            if(!uid || !amt) return alert("Details bhariye!");
+        window.approve = async (docId, uid, amt) => {
             await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
-            alert("Sent Successfully!");
+            await deleteDoc(doc(db, "token_requests", docId));
+            alert("Approved!");
         };
     </script>
 </body>
