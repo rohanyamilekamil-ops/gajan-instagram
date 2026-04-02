@@ -2,129 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Master Admin</title>
+    <title>Gajan Admin | Core Command</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; }
+        .g-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; }
+        .g-logo { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen p-4 flex flex-col items-center">
+<body class="p-6">
 
-    <div id="admin-login" class="mt-20 w-full max-w-md bg-gray-900 p-8 rounded-[40px] shadow-2xl border border-gray-800">
-        <h1 class="text-3xl font-black mb-8 text-center text-pink-600 italic tracking-tighter">GAJAN ADMIN</h1>
-        <input id="adm-user" type="text" placeholder="Username" class="w-full p-4 bg-gray-800 rounded-2xl mb-4 border border-gray-700">
-        <input id="adm-pass" type="password" placeholder="Password" class="w-full p-4 bg-gray-800 rounded-2xl mb-6 border border-gray-700">
-        <button onclick="checkAdmin()" class="w-full py-4 bg-pink-600 rounded-2xl font-black shadow-lg">LOGIN</button>
+    <header class="flex items-center gap-3 mb-10">
+        <div class="g-logo shadow-[0_0_15px_rgba(220,39,67,0.5)]">
+            <span class="text-white font-black italic text-2xl">G</span>
+        </div>
+        <h1 class="text-2xl font-black italic tracking-tighter">Gajan Admin <span class="text-xs text-red-500 uppercase">Core</span></h1>
+    </header>
+
+    <div class="g-card mb-6">
+        <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-paper-plane mr-2"></i> Direct Transfer</h2>
+        <input id="target-uid" type="text" placeholder="User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none focus:border-pink-600">
+        <input id="token-amt" type="number" placeholder="Amount" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-4 outline-none">
+        <button onclick="sendTokensNow()" class="w-full bg-gradient-to-r from-orange-500 to-pink-600 py-4 rounded-xl font-bold active:scale-95 transition">Release Tokens</button>
     </div>
 
-    <div id="admin-panel" class="hidden w-full max-w-6xl space-y-8 pb-20">
-        <header class="flex justify-between items-center py-6 border-b border-gray-800">
-            <h2 class="text-2xl font-black italic">CONTROL PANEL</h2>
-            <button onclick="location.reload()" class="bg-red-600 text-[10px] px-6 py-2 rounded-full font-bold uppercase">Logout</button>
-        </header>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-gray-900 p-6 rounded-[30px] border border-gray-800 shadow-xl">
-                <h3 class="font-black text-blue-500 mb-4 uppercase text-xs">Payment QR Control</h3>
-                <div class="space-y-4">
-                    <div class="border border-gray-700 p-3 rounded-xl">
-                        <p class="text-[9px] mb-2 font-bold opacity-50 uppercase">QR Code 1 (PhonePe)</p>
-                        <input type="file" id="qr1-file" class="text-[10px] mb-2">
-                        <button onclick="uploadQR(1)" class="w-full bg-blue-600 py-2 rounded-lg text-[10px] font-bold">UPLOAD / UPDATE</button>
-                    </div>
-                    <div class="border border-gray-700 p-3 rounded-xl">
-                        <p class="text-[9px] mb-2 font-bold opacity-50 uppercase">QR Code 2 (GPay/Other)</p>
-                        <input type="file" id="qr2-file" class="text-[10px] mb-2">
-                        <button onclick="uploadQR(2)" class="w-full bg-blue-600 py-2 rounded-lg text-[10px] font-bold">UPLOAD / UPDATE</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gray-900 p-6 rounded-[30px] border border-gray-800 shadow-xl">
-                <h3 class="font-black text-yellow-500 mb-4 uppercase text-xs">Token Generator</h3>
-                <input id="target-uid" type="text" placeholder="Paste User UID" class="w-full p-3 bg-gray-800 rounded-xl mb-3 text-xs border border-gray-700">
-                <input id="token-amt" type="number" placeholder="Amount" class="w-full p-3 bg-gray-800 rounded-xl mb-4 text-xs border border-gray-700">
-                <button onclick="sendTokens()" class="w-full bg-yellow-600 py-3 rounded-xl font-black text-xs">ADD TOKENS</button>
-            </div>
-
-            <div class="bg-gray-900 p-6 rounded-[30px] border border-gray-800 shadow-xl">
-                <h3 class="font-black text-red-500 mb-4 uppercase text-xs">Delete Reels</h3>
-                <input id="del-vid-id" type="text" placeholder="Paste Video ID" class="w-full p-3 bg-gray-800 rounded-xl mb-4 text-xs border border-gray-700">
-                <button onclick="deleteReel()" class="w-full bg-red-600 py-3 rounded-xl font-black text-xs uppercase">Delete Now</button>
-            </div>
-        </div>
-
-        <div class="bg-gray-900 p-8 rounded-[40px] border border-gray-800 shadow-xl">
-            <h3 class="font-black text-green-500 mb-6 uppercase text-sm italic">Pending Requests</h3>
-            <div id="request-list" class="space-y-4">
-                <p class="text-xs text-gray-600">Waiting...</p>
-            </div>
+    <div class="g-card">
+        <h2 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-bell mr-2"></i> User Requests</h2>
+        <div id="request-list" class="space-y-4 text-sm">
+            <p class="text-gray-600 italic">Checking for requests...</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, deleteDoc, increment, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.checkAdmin = () => {
-            if(document.getElementById('adm-user').value === "MRGAJAN" && document.getElementById('adm-pass').value === "Abdul6353738585@") {
-                document.getElementById('admin-login').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                loadRequests();
-            } else { alert("Galat Password!"); }
+        // 🟢 Fetching Requests
+        onSnapshot(collection(db, "token_requests"), (sn) => {
+            const list = document.getElementById('request-list');
+            list.innerHTML = "";
+            if(sn.empty) list.innerHTML = "<p class='text-gray-500'>No pending requests.</p>";
+            sn.forEach(d => {
+                const req = d.data();
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-black/50 p-4 rounded-xl border border-gray-900">
+                        <div>
+                            <p class="font-bold">@${req.name}</p>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-tighter">UID: ${req.uid}</p>
+                        </div>
+                        <button onclick="approveRequest('${d.id}', '${req.uid}', 100)" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Approve 100</button>
+                    </div>`;
+            });
+        });
+
+        // 🟢 Approve Logic
+        window.approveRequest = async (docId, uid, amt) => {
+            await updateDoc(doc(db, "wallets", uid), { balance: increment(amt) });
+            await deleteDoc(doc(db, "token_requests", docId));
+            alert("Tokens Approved!");
         };
 
-        // QR Photo Upload (Cloudinary connect)
-        window.uploadQR = async (num) => {
-            const file = document.getElementById(`qr${num}-file`).files[0];
-            if(!file) return alert("Photo select karein!");
-
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", "gajan_live"); 
-
-            try {
-                const res = await fetch("https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload", { method: "POST", body: fd });
-                const data = await res.json();
-                
-                await setDoc(doc(db, "admin", "settings"), { [`qr${num}Url`]: data.secure_url }, { merge: true });
-                alert(`QR Code ${num} Uploaded Successfully!`);
-            } catch(e) { alert("Upload Failed!"); }
-        };
-
-        // Video Delete System
-        window.deleteReel = async () => {
-            const vid = document.getElementById('del-vid-id').value;
-            if(!vid) return alert("Video ID bhariye!");
-            if(confirm("Kya aap sach mein ye video delete karna chahte hain?")) {
-                await deleteDoc(doc(db, "reels", vid));
-                alert("Video Deleted Permanently!");
-            }
-        };
-
-        window.sendTokens = async () => {
+        // 🟢 Direct Send Logic
+        window.sendTokensNow = async () => {
             const uid = document.getElementById('target-uid').value;
             const amt = parseInt(document.getElementById('token-amt').value);
+            if(!uid || !amt) return alert("Details bhariye!");
             await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
-            alert("Tokens Added!");
+            alert("Sent Successfully!");
         };
-
-        function loadRequests() {
-            onSnapshot(query(collection(db, "paymentRequests"), where("status", "==", "pending")), (sn) => {
-                const list = document.getElementById('request-list');
-                list.innerHTML = "";
-                sn.forEach(dDoc => {
-                    const d = dDoc.data();
-                    list.innerHTML += `
-                        <div class="flex items-center justify-between bg-gray-800 p-5 rounded-[25px] border border-gray-700">
-                            <div><p class="font-bold text-white text-sm">${d.userName}</p><p class="text-[9px] text-gray-500 uppercase">UID: ${d.uid}</p></div>
-                            <button onclick="navigator.clipboard.writeText('${d.uid}');alert('Copied');" class="bg-blue-600 text-[10px] px-6 py-2 rounded-full font-black">COPY UID</button>
-                        </div>`;
-                });
-            });
-        }
     </script>
 </body>
 </html>
