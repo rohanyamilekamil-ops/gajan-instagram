@@ -1,33 +1,47 @@
-import { getFirestore, doc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, arrayUnion, arrayRemove, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 👤 Profile par tap karne se user ki details khulegi
+// 👤 Profile Tap Fix
 window.openUserProfile = (uid) => {
-    if(uid) {
-        window.location.href = `user_profile.html?uid=${uid}`;
-    }
+    if(uid) window.location.href = `user_profile.html?uid=${uid}`;
 };
 
-// 🤝 Follow/Unfollow Button Logic
-window.handleFollow = async (db, auth, targetUid, btnElement) => {
-    if(!auth.currentUser) return alert("Pehle login karein!");
-    if(auth.currentUser.uid === targetUid) return alert("Aap khud ko follow nahi kar sakte!");
-
-    const myRef = doc(db, "users", auth.currentUser.uid);
-    const targetRef = doc(db, "users", targetUid);
-
+// ❤️ Like & Token Fix
+window.handleLike = async (db, auth, rid, creatorUid, element) => {
+    if(!auth.currentUser) return alert("Login please!");
+    const heart = element.querySelector('.fa-heart');
+    
     try {
-        if (btnElement.innerText === "Follow") {
+        const reelRef = doc(db, "reels", rid);
+        await updateDoc(reelRef, { likedBy: arrayUnion(auth.currentUser.uid) });
+        heart.classList.add('text-red-500');
+        heart.classList.remove('text-white');
+    } catch (e) { console.error(e); }
+};
+
+// 🤝 Follow Fix
+window.handleFollow = async (db, auth, targetUid, btn) => {
+    if(!auth.currentUser || auth.currentUser.uid === targetUid) return;
+    const myRef = doc(db, "users", auth.currentUser.uid);
+    
+    try {
+        if(btn.innerText === "Follow") {
             await updateDoc(myRef, { following: arrayUnion(targetUid) });
-            await updateDoc(targetRef, { followers: arrayUnion(auth.currentUser.uid) });
-            btnElement.innerText = "Following";
-            btnElement.style.opacity = "0.6";
+            btn.innerText = "Following";
+            btn.classList.add('opacity-50');
         } else {
             await updateDoc(myRef, { following: arrayRemove(targetUid) });
-            await updateDoc(targetRef, { followers: arrayRemove(auth.currentUser.uid) });
-            btnElement.innerText = "Follow";
-            btnElement.style.opacity = "1";
+            btn.innerText = "Follow";
+            btn.classList.remove('opacity-50');
         }
-    } catch (e) {
-        console.error("Follow Error:", e);
+    } catch (e) { alert("Follow Error"); }
+};
+
+// 🚀 Share Fix
+window.shareVideo = (rid) => {
+    const shareUrl = window.location.href.split('?')[0] + "?id=" + rid;
+    if (navigator.share) {
+        navigator.share({ title: 'Gajan Insta', url: shareUrl });
+    } else {
+        window.open(`https://api.whatsapp.com/send?text=Check this: ${shareUrl}`);
     }
 };
