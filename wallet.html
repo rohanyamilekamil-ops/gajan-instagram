@@ -3,56 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan Wallet | Core</title>
+    <title>Gajan Wallet | Secure Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #000; color: white; font-family: -apple-system, sans-serif; }
         .g-glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; }
-        .g-logo-box { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 14px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
-        .token-glow { filter: drop-shadow(0 0 10px rgba(220, 39, 67, 0.6)); }
+        .g-logo-box { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 14px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .qr-frame { background: white; padding: 12px; border-radius: 18px; box-shadow: 0 0 25px rgba(220, 39, 67, 0.3); }
     </style>
 </head>
-<body class="flex flex-col min-h-screen pb-24">
+<body class="pb-24">
 
     <header class="p-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <div class="g-logo-box shadow-lg">
-                <span class="text-white font-black italic text-2xl">G</span>
+            <div class="g-logo-box">
+                <span class="text-white font-black italic text-xl">G</span>
             </div>
             <h1 class="text-xl font-black italic tracking-tighter">Gajan Wallet</h1>
         </div>
-        <i class="fa-solid fa-clock-rotate-left text-xl text-gray-400"></i>
+        <div class="bg-white/10 px-3 py-1 rounded-full border border-white/5">
+            <p id="user-status" class="text-[8px] uppercase font-bold text-green-500 tracking-widest">● Secure</p>
+        </div>
     </header>
 
-    <main class="p-6 flex-1">
-        <div class="g-glass p-8 text-center mb-8">
-            <p class="text-gray-400 text-xs uppercase tracking-widest mb-2 font-bold">Total Balance</p>
+    <main class="p-6 space-y-6">
+        <div class="g-glass p-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-shield-halved text-4xl"></i></div>
+            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2">Cloud Synced Balance</p>
             <div class="flex items-center justify-center gap-3">
-                <i class="fa-solid fa-coins text-yellow-400 text-3xl token-glow"></i>
-                <h2 id="token-balance" class="text-5xl font-black italic tracking-tighter">0</h2>
+                <i class="fa-solid fa-coins text-yellow-400 text-2xl"></i>
+                <h2 id="token-balance" class="text-5xl font-black italic tracking-tighter">...</h2>
             </div>
-            <p class="text-[10px] text-pink-500 mt-4 font-bold uppercase tracking-tighter">Gajan Insta Core Tokens</p>
+            <p class="text-[9px] text-gray-500 mt-4">Linked to UID: <span id="display-uid" class="text-white">Loading...</span></p>
         </div>
 
-        <div class="g-glass p-6 text-center border-dashed border-pink-500/30">
-            <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-paper-plane text-pink-500"></i>
+        <div class="g-glass p-6 text-center">
+            <h3 class="text-xs font-bold text-pink-500 mb-5 uppercase tracking-widest">Recharge Tokens</h3>
+            <div class="qr-frame inline-block mb-6">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GajanInstaAdmin" class="w-44 h-44 object-contain">
             </div>
-            <h3 class="font-bold text-sm mb-1">Kam pad gaye?</h3>
-            <p class="text-gray-500 text-[10px] mb-6">Admin se request karein, 100 tokens turant milenge.</p>
-            <button onclick="requestFromAdmin()" id="req-btn" class="w-full bg-white text-black py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl">
-                Request 100 Tokens
+            <p class="text-[11px] text-gray-400 mb-6 leading-relaxed">Pay via QR and click below.<br>Tokens will be added to your account permanently.</p>
+            <button onclick="requestWithPayment()" id="req-btn" class="w-full bg-gradient-to-r from-[#f09433] to-[#bc1888] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl">
+                Paid? Request Now
             </button>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 w-full h-[70px] bg-black/80 backdrop-blur-lg border-t border-white/5 flex justify-around items-center z-50">
+    <nav class="fixed bottom-0 w-full h-[65px] bg-black/90 border-t border-white/5 flex justify-around items-center z-50">
         <a href="reels.html"><i class="fa-solid fa-house text-xl text-gray-500"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-white"></i></a>
-        <div onclick="location.href='profile.html'" class="w-7 h-7 rounded-full bg-white/20 border border-white/10"></div>
+        <img id="nav-pfp" onclick="location.href='profile.html'" src="https://via.placeholder.com/30" class="w-7 h-7 rounded-full border border-white/10">
     </nav>
 
     <script type="module">
@@ -65,36 +68,42 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // 🔐 Secure Connection Logic
         onAuthStateChanged(auth, (user) => {
             if(user) {
-                // Real-time Balance Update 💸
+                document.getElementById('display-uid').innerText = user.uid.substring(0, 12) + "...";
+                if(user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
+
+                // Permanent sync with Firebase
                 onSnapshot(doc(db, "wallets", user.uid), (snap) => {
                     if(snap.exists()) {
                         document.getElementById('token-balance').innerText = snap.data().balance || 0;
+                    } else {
+                        // Create wallet if not exists
+                        setDoc(doc(db, "wallets", user.uid), { balance: 0 }, { merge: true });
+                        document.getElementById('token-balance').innerText = 0;
                     }
                 });
             } else { location.href = "index.html"; }
         });
 
-        window.requestFromAdmin = async () => {
+        window.requestWithPayment = async () => {
             const btn = document.getElementById('req-btn');
-            btn.innerText = "Sending Request...";
+            btn.innerText = "Syncing with Admin...";
             btn.disabled = true;
 
             try {
-                const user = auth.currentUser;
-                // 🟢 Admin ke liye request bhejna
-                await setDoc(doc(db, "token_requests", user.uid), {
-                    uid: user.uid,
-                    name: user.displayName || "Gajan User",
+                await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
+                    uid: auth.currentUser.uid,
+                    name: auth.currentUser.displayName || "Gajan User",
                     time: serverTimestamp(),
-                    status: "pending"
+                    status: "Paid_Pending"
                 });
-                alert("👑 Request Sent! Admin jald hi approve karenge.");
-                btn.innerText = "Request Sent ✅";
+                alert("Request Sent! 👑 Admin verify karke tokens add kar dega.");
+                btn.innerText = "Request Pending...";
             } catch (e) {
                 alert("Error: " + e.message);
-                btn.innerText = "Try Again";
+                btn.innerText = "Retry Request";
                 btn.disabled = false;
             }
         };
