@@ -22,16 +22,16 @@
     <div class="feed" id="main-feed"></div>
 
     <div id="token-buy-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-        <div class="bg-[#111] border border-white/10 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-white font-black italic tracking-tighter">GAJAN STORE</h3>
-                <i onclick="document.getElementById('token-buy-modal').classList.add('hidden')" class="fa-solid fa-xmark text-gray-500 p-2 cursor-pointer"></i>
+        <div class="bg-[#111] border border-white/10 w-full max-w-xs rounded-[30px] p-6 text-center">
+            <div class="flex justify-between items-center mb-4 text-white">
+                <h3 class="font-black italic tracking-tighter text-lg text-orange-500">GAJAN STORE</h3>
+                <i onclick="document.getElementById('token-buy-modal').classList.add('hidden')" class="fa-solid fa-xmark cursor-pointer p-2 text-xl"></i>
             </div>
-            <div class="bg-white p-3 rounded-2xl inline-block mb-4 shadow-lg">
+            <div class="bg-white p-3 rounded-2xl inline-block mb-4">
                 <img id="modal-qr" src="https://via.placeholder.com/150?text=Scan+QR" class="w-32 h-32 object-contain">
             </div>
-            <p class="text-white text-sm font-bold mb-6">1 Token = ₹1</p>
-            <button id="req-tokens-btn" class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest active:scale-95 transition shadow-lg">
+            <p class="text-white text-sm font-bold mb-6 italic tracking-tight">1 Token = ₹1</p>
+            <button id="req-tokens-btn" class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase shadow-lg active:scale-95 transition tracking-widest">
                 I have Paid (Request)
             </button>
         </div>
@@ -57,87 +57,81 @@
 
         let isMuted = true;
 
-        // --- 🔊 Tap to Mute Logic ---
+        // --- 🔊 Tap to Mute ---
         window.handleVideoTap = (v) => {
             isMuted = !isMuted;
             document.querySelectorAll('video').forEach(vid => vid.muted = isMuted);
         };
 
-        // --- ❤️ Like & Token Transfer Logic ---
-        window.handleLike = async (rid, creatorUid, el) => {
+        // --- ❤️ Like & Token Transfer Fix (Fast UI) ---
+        window.triggerLike = async (rid, creatorUid, el) => {
             if(!auth.currentUser) return alert("Pehle Login Karein!");
             if(auth.currentUser.uid === creatorUid) return;
+
             const heart = el.querySelector('.fa-heart');
+            const countEl = el.querySelector('.like-count');
+
+            if (heart.classList.contains('text-red-500')) return;
+
+            // Optimistic UI: Turant Red Karo
+            heart.classList.replace('text-white', 'text-red-500');
+            if(countEl) countEl.innerText = parseInt(countEl.innerText) + 1;
+
             try {
                 await runTransaction(db, async (t) => {
                     const myWallet = doc(db, "wallets", auth.currentUser.uid);
                     const hisWallet = doc(db, "wallets", creatorUid);
                     const reelRef = doc(db, "reels", rid);
+                    
                     const mySnap = await t.get(myWallet);
                     if (!mySnap.exists() || mySnap.data().balance < 1) throw "No Tokens!";
+                    
                     t.update(myWallet, { balance: increment(-1) });
                     t.set(hisWallet, { balance: increment(1) }, { merge: true });
                     t.update(reelRef, { likedBy: arrayUnion(auth.currentUser.uid) });
                 });
-                heart.classList.replace('text-white', 'text-red-500');
-            } catch (e) { if(e === "No Tokens!") document.getElementById('token-buy-modal').classList.remove('hidden'); }
-        };
-
-        // --- 🤝 Follow Logic ---
-        window.handleFollow = async (targetUid, btn) => {
-            if(!auth.currentUser || auth.currentUser.uid === targetUid) return;
-            const myRef = doc(db, "users", auth.currentUser.uid);
-            const targetRef = doc(db, "users", targetUid);
-            if(btn.innerText === "Follow") {
-                await updateDoc(myRef, { following: arrayUnion(targetUid) });
-                await updateDoc(targetRef, { followers: arrayUnion(auth.currentUser.uid) });
-                btn.innerText = "Following"; btn.style.opacity = "0.5";
-            } else {
-                await updateDoc(myRef, { following: arrayRemove(targetUid) });
-                await updateDoc(targetRef, { followers: arrayRemove(auth.currentUser.uid) });
-                btn.innerText = "Follow"; btn.style.opacity = "1";
+            } catch (e) { 
+                // Error hone par UI wapas purana karo
+                heart.classList.replace('text-red-500', 'text-white');
+                if(countEl) countEl.innerText = parseInt(countEl.innerText) - 1;
+                
+                if(e === "No Tokens!") document.getElementById('token-buy-modal').classList.remove('hidden');
+                else console.error(e);
             }
         };
 
-        // --- 🚀 SHARE ALL APPS FIX (WhatsApp, Insta, etc.) ---
-        window.shareVideo = async (rid, name) => {
-            const shareData = {
-                title: 'Gajan Insta',
-                text: `@${name} ki video dekho Gajan Insta par!`,
-                url: window.location.origin + "/reels.html?id=" + rid
-            };
-
+        // --- 🤝 Follow Fix ---
+        window.triggerFollow = async (targetUid, btn) => {
+            if(!auth.currentUser || auth.currentUser.uid === targetUid) return;
+            const myRef = doc(db, "users", auth.currentUser.uid);
+            const targetRef = doc(db, "users", targetUid);
+            
             try {
-                if (navigator.share) {
-                    await navigator.share(shareData);
+                if(btn.innerText === "Follow") {
+                    await updateDoc(myRef, { following: arrayUnion(targetUid) });
+                    await updateDoc(targetRef, { followers: arrayUnion(auth.currentUser.uid) });
+                    btn.innerText = "Following"; btn.style.opacity = "0.5";
                 } else {
-                    // Fallback for older browsers
-                    window.open(`https://api.whatsapp.com/send?text=${shareData.text} ${shareData.url}`);
+                    await updateDoc(myRef, { following: arrayRemove(targetUid) });
+                    await updateDoc(targetRef, { followers: arrayRemove(auth.currentUser.uid) });
+                    btn.innerText = "Follow"; btn.style.opacity = "1";
                 }
-            } catch (err) { console.log('Share failed', err); }
+            } catch (e) { console.error("Follow Error:", e); }
         };
 
-        // --- 👤 Profile Navigation ---
-        window.openUserProfile = (uid) => {
-            window.location.href = `user_profile.html?uid=${uid}`;
+        // --- 🚀 Universal Share ---
+        window.triggerShare = async (rid, name) => {
+            const data = { title: 'Gajan Insta', url: window.location.origin + "/reels.html?id=" + rid };
+            try {
+                if (navigator.share) await navigator.share(data);
+                else window.open(`https://api.whatsapp.com/send?text=Check @${name}: ${data.url}`);
+            } catch (err) { console.log(err); }
         };
 
-        // --- 💰 Token Request ---
-        document.getElementById('req-tokens-btn').onclick = async () => {
-            await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
-                uid: auth.currentUser.uid,
-                name: auth.currentUser.displayName || "User",
-                time: serverTimestamp(),
-                status: "Pending"
-            });
-            alert("Payment Request Sent! Admin verify karke tokens de dega.");
-            document.getElementById('token-buy-modal').classList.add('hidden');
-        };
-
-        // Sync Data
+        // Sync Profile PFP
         onAuthStateChanged(auth, user => { if(user && user.photoURL) document.getElementById('nav-pfp').src = user.photoURL; });
-        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { if(s.exists()) document.getElementById('modal-qr').src = s.data().qr_url; });
 
+        // Load Feed
         onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), async (sn) => {
             const container = document.getElementById('main-feed');
             container.innerHTML = "";
@@ -151,27 +145,27 @@
                     <div class="reel">
                         <video onclick="handleVideoTap(this)" class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
                         <div class="side-ui">
-                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')" class="mb-2">
-                                <i class="fa-solid fa-coins text-yellow-400 text-2xl"></i>
+                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')">
+                                <i class="fa-solid fa-coins text-yellow-400 text-2xl drop-shadow-md"></i>
                                 <p class="text-[8px] font-bold mt-1 uppercase">Buy</p>
                             </div>
-                            <div onclick="handleLike('${rid}', '${d.uid}', this)">
+                            <div onclick="triggerLike('${rid}', '${d.uid}', this)">
                                 <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i>
-                                <p class="text-xs font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p>
+                                <p class="text-xs font-bold mt-1 like-count">${d.likedBy ? d.likedBy.length : 0}</p>
                             </div>
                             <i class="fa-solid fa-comment text-3xl" onclick="location.href='comments.html?id=${rid}'"></i>
-                            <i class="fa-solid fa-share text-2xl" onclick="shareVideo('${rid}', '${d.name || 'User'}')"></i>
+                            <i class="fa-solid fa-share text-2xl" onclick="triggerShare('${rid}', '${d.name}')"></i>
                         </div>
                         <div class="bottom-ui">
                             <div class="flex items-center gap-3 mb-4">
-                                <img onclick="openUserProfile('${d.uid}')" src="${userPhoto}" class="w-11 h-11 rounded-full border-2 border-white object-cover cursor-pointer">
-                                <div onclick="openUserProfile('${d.uid}')" class="cursor-pointer">
+                                <img onclick="location.href='user_profile.html?uid=${d.uid}'" src="${userPhoto}" class="w-11 h-11 rounded-full border-2 border-white object-cover cursor-pointer">
+                                <div>
                                     <p class="font-bold text-sm">@${d.name || 'User'}</p>
                                     <p class="text-[9px] opacity-60 uppercase">UID: ${d.uid.substring(0,8)}</p>
                                 </div>
-                                <button onclick="handleFollow('${d.uid}', this)" class="bg-white text-black px-4 py-1.5 rounded-lg text-[11px] font-bold ml-2 shadow-lg">Follow</button>
+                                <button onclick="triggerFollow('${d.uid}', this)" class="bg-white text-black px-4 py-1.5 rounded-lg text-[11px] font-bold ml-2 shadow-lg">Follow</button>
                             </div>
-                            <p class="text-xs opacity-95">${d.caption || ''}</p>
+                            <p class="text-xs opacity-90">${d.caption || ''}</p>
                         </div>
                     </div>`;
             }
@@ -188,6 +182,24 @@
             }, { threshold: 0.8 });
             vids.forEach(v => obs.observe(v));
         }
+        
+        // QR Update logic
+        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { 
+            if(s.exists() && s.data().qr_url) document.getElementById('modal-qr').src = s.data().qr_url; 
+        });
+
+        // Request Tokens
+        document.getElementById('req-tokens-btn').onclick = async () => {
+            if(!auth.currentUser) return;
+            await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
+                uid: auth.currentUser.uid,
+                name: auth.currentUser.displayName || "User",
+                time: serverTimestamp(),
+                status: "Pending"
+            });
+            alert("Request Bhej Di Gayi Hai!");
+            document.getElementById('token-buy-modal').classList.add('hidden');
+        };
     </script>
 </body>
 </html>
