@@ -1,102 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan | Wallet & Tokens</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-50 pb-20">
+<div class="mt-10 p-6 g-card text-center">
+    <div class="g-logo mx-auto mb-4">
+        <span class="text-white font-black italic text-xl">G</span>
+    </div>
+    <p class="text-gray-400 text-xs mb-4">Kam pad gaye? Admin se request karein.</p>
+    <button onclick="requestFromAdmin()" class="bg-white text-black px-8 py-3 rounded-full font-bold text-sm active:scale-90 transition">Request 100 Tokens</button>
+</div>
 
-    <header class="p-5 bg-white border-b flex items-center justify-between sticky top-0 z-50">
-        <button onclick="window.history.back()"><i class="fa-solid fa-chevron-left text-xl"></i></button>
-        <h1 class="font-bold text-lg">My Wallet</h1>
-        <i class="fa-solid fa-circle-info text-gray-400"></i>
-    </header>
-
-    <main class="p-6 space-y-6">
-        <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 rounded-[2rem] shadow-lg text-white relative overflow-hidden">
-            <div class="relative z-10">
-                <p class="text-sm opacity-80 mb-1">Current Balance</p>
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-coins text-3xl"></i>
-                    <h2 id="balance" class="text-4xl font-black italic">0</h2>
-                </div>
-                <p class="mt-4 text-xs font-bold">10 Tokens = ₹1 Real Cash</p>
-            </div>
-            <i class="fa-solid fa-crown absolute -right-4 -bottom-4 text-8xl opacity-10 rotate-12"></i>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-sm border">
-            <h3 class="font-bold text-gray-800 mb-4 text-center">Buy Tokens (Add Cash)</h3>
-            <div class="flex flex-col items-center">
-                <p class="text-[10px] text-gray-400 mb-2 uppercase tracking-widest">Scan & Pay via UPI</p>
-                <div class="p-2 border-2 border-dashed border-gray-200 rounded-2xl mb-4">
-                    <img id="adminQR" src="https://via.placeholder.com/250?text=Wait+for+Admin+QR" class="w-48 h-48 object-cover rounded-xl">
-                </div>
-                <p id="userUID" class="text-[9px] text-blue-500 font-mono mb-4 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter"></p>
-                <button onclick="copyUID()" class="w-full bg-blue-500 text-white py-3 rounded-2xl font-bold shadow-md active:scale-95 transition-all">Submit Payment Proof</button>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-sm border">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold">Withdraw Cash</h3>
-                <span class="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded font-bold italic">Min. 500 Tokens</span>
-            </div>
-            <input id="withdrawAmt" type="number" placeholder="Enter Tokens (Min 500)" class="w-full p-4 bg-gray-50 border rounded-2xl mb-3 outline-none">
-            <input id="upiID" type="text" placeholder="Enter UPI ID (e.g. gajan@apl)" class="w-full p-4 bg-gray-50 border rounded-2xl mb-4 outline-none">
-            <button onclick="handleWithdraw()" class="w-full bg-black text-white py-3 rounded-2xl font-bold active:scale-95 transition-all">Withdraw Now</button>
-        </div>
-    </main>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        onAuthStateChanged(auth, (user) => {
-            if(!user) location.href = 'login.html';
-            document.getElementById('userUID').innerText = "Your UID: " + user.uid;
-
-            // Real-time Balance Sync
-            onSnapshot(doc(db, "users", user.uid), (snap) => {
-                if(snap.exists()) document.getElementById('balance').innerText = snap.data().tokens || 0;
-            });
+<script type="module">
+    // Script ke andar ye function add karein
+    window.requestFromAdmin = async () => {
+        const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const db = getFirestore();
+        const auth = getAuth();
+        
+        await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
+            uid: auth.currentUser.uid,
+            name: auth.currentUser.displayName || "User",
+            time: new Date()
         });
-
-        // Real-time Admin QR Sync
-        onSnapshot(doc(db, "settings", "payment"), (snap) => {
-            if(snap.exists()) document.getElementById('adminQR').src = snap.data().qr;
-        });
-
-        window.copyUID = () => {
-            const uidText = document.getElementById('userUID').innerText.replace("Your UID: ", "");
-            navigator.clipboard.writeText(uidText);
-            alert("UID Copied! Now send screenshot of payment to admin on WhatsApp with this UID.");
-        };
-
-        window.handleWithdraw = async () => {
-            const amt = parseInt(document.getElementById('withdrawAmt').value);
-            const upi = document.getElementById('upiID').value;
-            const currentTokens = parseInt(document.getElementById('balance').innerText);
-
-            if(amt < 500) return alert("Minimum withdrawal is 500 Tokens!");
-            if(amt > currentTokens) return alert("Not enough tokens!");
-            if(!upi.includes("@")) return alert("Enter valid UPI ID!");
-
-            // Deduct tokens and send request
-            const userRef = doc(db, "users", auth.currentUser.uid);
-            await updateDoc(userRef, { tokens: increment(-amt) });
-            alert("Request Sent! Admin will transfer ₹" + (amt/10) + " to " + upi + " within 24 hours.");
-            location.reload();
-        };
-    </script>
-</body>
-</html>
+        alert("Request Sent to Admin! 👑");
+    };
+</script>
