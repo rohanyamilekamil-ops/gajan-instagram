@@ -2,116 +2,192 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan Insta | Welcome</title>
+    <title>Gajan Insta | Official Feed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Modern Apple-style Font */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        
-        body, html { height: 100%; overflow: hidden; background: #000; }
-
-        /* 📸 Background with Girl & Red Gradient */
-        .g-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(220, 39, 67, 0.95), rgba(188, 24, 136, 0.9)), 
-                        url('https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
-            background-size: cover; background-position: center; z-index: 1;
-        }
-
-        /* ✨ Glassmorphism Form Container */
-        .g-glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 35px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
-        }
-
-        /* 🟢 Animation smooth switches */
-        .fade-in { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .hidden-form { display: none !important; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; width: 100%; background: #000; overflow: hidden; position: fixed; }
+        .feed { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+        .feed::-webkit-scrollbar { display: none; }
+        .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .side-ui { position: absolute; right: 15px; bottom: 150px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
+        .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 85%; text-shadow: 0 1px 4px #000; }
+        .g-gradient { background: linear-gradient(to right, #f09433, #dc2743, #bc1888); }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen">
+<body>
 
-    <div class="g-bg"></div>
+    <div class="feed" id="main-feed"></div>
 
-    <div class="z-10 w-full max-w-sm px-8">
-        <h1 class="text-white text-5xl font-black italic tracking-tighter text-center mb-10 text-shadow-lg">Gajan Insta</h1>
-
-        <div id="login-form" class="g-glass p-8 fade-in">
-            <input type="email" id="log-email" placeholder="Email" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
-            <input type="password" id="log-pass" placeholder="Password" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-6 text-xs border border-white/10">
-            <button onclick="handleLogin()" class="w-full bg-white text-pink-700 font-bold py-4 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition">Log In</button>
-            <p class="text-center text-white/70 text-[10px] mt-5 cursor-pointer hover:text-white" onclick="showRegister()">Forgot password?</p>
-        </div>
-
-        <div id="register-form" class="g-glass p-8 fade-in hidden-form">
-            <input type="text" id="reg-name" placeholder="Full Name (Jamnagar Style)" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
-            <input type="email" id="reg-email" placeholder="Email" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-4 text-xs border border-white/10">
-            <input type="password" id="reg-pass" placeholder="Password" class="w-full bg-white/10 text-white placeholder-white/60 p-4 rounded-xl mb-6 text-xs border border-white/10">
-            <button onclick="handleRegister()" class="w-full bg-white text-pink-700 font-bold py-4 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition">Create Account</button>
-        </div>
-
-        <div class="mt-8 text-center">
-            <p id="switch-text" class="text-white text-xs font-bold p-3 px-5 bg-black/30 rounded-full inline-block cursor-pointer select-none" onclick="toggleForms()">Create New Account</p>
+    <div id="token-buy-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+        <div class="bg-[#111] border border-white/10 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-white font-black italic tracking-tighter">GAJAN STORE</h3>
+                <i onclick="document.getElementById('token-buy-modal').classList.add('hidden')" class="fa-solid fa-xmark text-gray-500 p-2 cursor-pointer"></i>
+            </div>
+            <div class="bg-white p-3 rounded-2xl inline-block mb-4 shadow-lg">
+                <img id="modal-qr" src="https://via.placeholder.com/150?text=Scan+QR" class="w-32 h-32 object-contain">
+            </div>
+            <p class="text-white text-sm font-bold mb-6">1 Token = ₹1</p>
+            <button id="req-tokens-btn" class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest active:scale-95 transition shadow-lg">
+                I have Paid (Request)
+            </button>
         </div>
     </div>
 
+    <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-gray-900 flex justify-around items-center z-[100]">
+        <a href="reels.html"><i class="fa-solid fa-house text-xl text-white"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
+        <img id="nav-pfp" onclick="location.href='profile.html'" src="https://via.placeholder.com/30" class="w-7 h-7 rounded-full border border-white object-cover">
+    </nav>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, runTransaction, increment, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // --- Core UI Logic ---
-        window.toggleForms = () => {
-            const login = document.getElementById('login-form');
-            const register = document.getElementById('register-form');
-            const sText = document.getElementById('switch-text');
-            
-            if(login.classList.contains('hidden-form')) {
-                login.classList.remove('hidden-form');
-                register.classList.add('hidden-form');
-                sText.innerText = "Create New Account";
+        let isMuted = true;
+
+        // --- 🔊 Tap to Mute Logic ---
+        window.handleVideoTap = (v) => {
+            isMuted = !isMuted;
+            document.querySelectorAll('video').forEach(vid => vid.muted = isMuted);
+        };
+
+        // --- ❤️ Like & Token Transfer Logic ---
+        window.handleLike = async (rid, creatorUid, el) => {
+            if(!auth.currentUser) return alert("Pehle Login Karein!");
+            if(auth.currentUser.uid === creatorUid) return;
+            const heart = el.querySelector('.fa-heart');
+            try {
+                await runTransaction(db, async (t) => {
+                    const myWallet = doc(db, "wallets", auth.currentUser.uid);
+                    const hisWallet = doc(db, "wallets", creatorUid);
+                    const reelRef = doc(db, "reels", rid);
+                    const mySnap = await t.get(myWallet);
+                    if (!mySnap.exists() || mySnap.data().balance < 1) throw "No Tokens!";
+                    t.update(myWallet, { balance: increment(-1) });
+                    t.set(hisWallet, { balance: increment(1) }, { merge: true });
+                    t.update(reelRef, { likedBy: arrayUnion(auth.currentUser.uid) });
+                });
+                heart.classList.replace('text-white', 'text-red-500');
+            } catch (e) { if(e === "No Tokens!") document.getElementById('token-buy-modal').classList.remove('hidden'); }
+        };
+
+        // --- 🤝 Follow Logic ---
+        window.handleFollow = async (targetUid, btn) => {
+            if(!auth.currentUser || auth.currentUser.uid === targetUid) return;
+            const myRef = doc(db, "users", auth.currentUser.uid);
+            const targetRef = doc(db, "users", targetUid);
+            if(btn.innerText === "Follow") {
+                await updateDoc(myRef, { following: arrayUnion(targetUid) });
+                await updateDoc(targetRef, { followers: arrayUnion(auth.currentUser.uid) });
+                btn.innerText = "Following"; btn.style.opacity = "0.5";
             } else {
-                login.classList.add('hidden-form');
-                register.classList.remove('hidden-form');
-                sText.innerText = "Back to Login";
+                await updateDoc(myRef, { following: arrayRemove(targetUid) });
+                await updateDoc(targetRef, { followers: arrayRemove(auth.currentUser.uid) });
+                btn.innerText = "Follow"; btn.style.opacity = "1";
             }
         };
 
-        // --- Core Firebase Logic ---
-        window.handleLogin = () => {
-            const email = document.getElementById('log-email').value;
-            const pass = document.getElementById('log-pass').value;
-            if(!email || !pass) return alert("Email/Pass bhariye!");
-            signInWithEmailAndPassword(auth, email, pass).then(()=> location.href="profile.html").catch(e=>alert(e.message));
-        };
-
-        window.handleRegister = async () => {
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            if(!name || !email || !pass) return alert("Poori details bhariye!");
+        // --- 🚀 SHARE ALL APPS FIX (WhatsApp, Insta, etc.) ---
+        window.shareVideo = async (rid, name) => {
+            const shareData = {
+                title: 'Gajan Insta',
+                text: `@${name} ki video dekho Gajan Insta par!`,
+                url: window.location.origin + "/reels.html?id=" + rid
+            };
 
             try {
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                await updateProfile(cred.user, { displayName: name });
-                // 🔐 Create initial User Doc & Wallet Doc
-                await setDoc(doc(db, "users", cred.user.uid), { name, uid: cred.user.uid, createdAt: serverTimestamp() });
-                await setDoc(doc(db, "wallets", cred.user.uid), { balance: 0 }); 
-                alert("Account Created! Swiping to profile...");
-                location.href="profile.html";
-            } catch(e) { alert(e.message); }
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    // Fallback for older browsers
+                    window.open(`https://api.whatsapp.com/send?text=${shareData.text} ${shareData.url}`);
+                }
+            } catch (err) { console.log('Share failed', err); }
         };
+
+        // --- 👤 Profile Navigation ---
+        window.openUserProfile = (uid) => {
+            window.location.href = `user_profile.html?uid=${uid}`;
+        };
+
+        // --- 💰 Token Request ---
+        document.getElementById('req-tokens-btn').onclick = async () => {
+            await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
+                uid: auth.currentUser.uid,
+                name: auth.currentUser.displayName || "User",
+                time: serverTimestamp(),
+                status: "Pending"
+            });
+            alert("Payment Request Sent! Admin verify karke tokens de dega.");
+            document.getElementById('token-buy-modal').classList.add('hidden');
+        };
+
+        // Sync Data
+        onAuthStateChanged(auth, user => { if(user && user.photoURL) document.getElementById('nav-pfp').src = user.photoURL; });
+        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { if(s.exists()) document.getElementById('modal-qr').src = s.data().qr_url; });
+
+        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), async (sn) => {
+            const container = document.getElementById('main-feed');
+            container.innerHTML = "";
+            for (const rDoc of sn.docs) {
+                const d = rDoc.data(); const rid = rDoc.id;
+                const userSnap = await getDoc(doc(db, "users", d.uid));
+                const userPhoto = userSnap.exists() ? userSnap.data().photoURL : "https://via.placeholder.com/150";
+                const isLiked = d.likedBy?.includes(auth.currentUser?.uid);
+
+                container.innerHTML += `
+                    <div class="reel">
+                        <video onclick="handleVideoTap(this)" class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
+                        <div class="side-ui">
+                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')" class="mb-2">
+                                <i class="fa-solid fa-coins text-yellow-400 text-2xl"></i>
+                                <p class="text-[8px] font-bold mt-1 uppercase">Buy</p>
+                            </div>
+                            <div onclick="handleLike('${rid}', '${d.uid}', this)">
+                                <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i>
+                                <p class="text-xs font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p>
+                            </div>
+                            <i class="fa-solid fa-comment text-3xl" onclick="location.href='comments.html?id=${rid}'"></i>
+                            <i class="fa-solid fa-share text-2xl" onclick="shareVideo('${rid}', '${d.name || 'User'}')"></i>
+                        </div>
+                        <div class="bottom-ui">
+                            <div class="flex items-center gap-3 mb-4">
+                                <img onclick="openUserProfile('${d.uid}')" src="${userPhoto}" class="w-11 h-11 rounded-full border-2 border-white object-cover cursor-pointer">
+                                <div onclick="openUserProfile('${d.uid}')" class="cursor-pointer">
+                                    <p class="font-bold text-sm">@${d.name || 'User'}</p>
+                                    <p class="text-[9px] opacity-60 uppercase">UID: ${d.uid.substring(0,8)}</p>
+                                </div>
+                                <button onclick="handleFollow('${d.uid}', this)" class="bg-white text-black px-4 py-1.5 rounded-lg text-[11px] font-bold ml-2 shadow-lg">Follow</button>
+                            </div>
+                            <p class="text-xs opacity-95">${d.caption || ''}</p>
+                        </div>
+                    </div>`;
+            }
+            setupObserver();
+        });
+
+        function setupObserver() {
+            const vids = document.querySelectorAll('.rvid');
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { e.target.play().catch(()=>{}); e.target.muted = isMuted; }
+                    else { e.target.pause(); }
+                });
+            }, { threshold: 0.8 });
+            vids.forEach(v => obs.observe(v));
+        }
     </script>
 </body>
 </html>
