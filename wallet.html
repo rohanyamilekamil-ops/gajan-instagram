@@ -1,51 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gajan Wallet | Secure Core</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan Wallet | Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #000; color: white; font-family: -apple-system, sans-serif; }
+        body { background-color: #000; color: white; font-family: sans-serif; }
         .g-glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; }
-        .g-logo-box { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 14px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .qr-frame { background: white; padding: 12px; border-radius: 18px; box-shadow: 0 0 25px rgba(220, 39, 67, 0.3); }
+        .g-logo-box { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .qr-frame { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 0 20px rgba(220, 39, 67, 0.3); }
     </style>
 </head>
 <body class="pb-24">
 
     <header class="p-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <div class="g-logo-box">
-                <span class="text-white font-black italic text-xl">G</span>
-            </div>
+            <div class="g-logo-box"><span class="text-white font-black italic text-xl">G</span></div>
             <h1 class="text-xl font-black italic tracking-tighter">Gajan Wallet</h1>
-        </div>
-        <div class="bg-white/10 px-3 py-1 rounded-full border border-white/5">
-            <p id="user-status" class="text-[8px] uppercase font-bold text-green-500 tracking-widest">● Secure</p>
         </div>
     </header>
 
     <main class="p-6 space-y-6">
-        <div class="g-glass p-8 text-center relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-shield-halved text-4xl"></i></div>
-            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2">Cloud Synced Balance</p>
+        <div class="g-glass p-8 text-center">
+            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-2">Synced Balance</p>
             <div class="flex items-center justify-center gap-3">
                 <i class="fa-solid fa-coins text-yellow-400 text-2xl"></i>
-                <h2 id="token-balance" class="text-5xl font-black italic tracking-tighter">...</h2>
+                <h2 id="token-balance" class="text-5xl font-black italic tracking-tighter">0</h2>
             </div>
-            <p class="text-[9px] text-gray-500 mt-4">Linked to UID: <span id="display-uid" class="text-white">Loading...</span></p>
         </div>
 
         <div class="g-glass p-6 text-center">
             <h3 class="text-xs font-bold text-pink-500 mb-5 uppercase tracking-widest">Recharge Tokens</h3>
-            <div class="qr-frame inline-block mb-6">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=GajanInstaAdmin" class="w-44 h-44 object-contain">
+            <div class="qr-frame inline-block mb-4">
+                <img id="qr-display" src="https://via.placeholder.com/200?text=Waiting+for+Admin+QR" class="w-44 h-44 object-contain">
             </div>
-            <p class="text-[11px] text-gray-400 mb-6 leading-relaxed">Pay via QR and click below.<br>Tokens will be added to your account permanently.</p>
-            <button onclick="requestWithPayment()" id="req-btn" class="w-full bg-gradient-to-r from-[#f09433] to-[#bc1888] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-xl">
-                Paid? Request Now
+            <p class="text-[10px] text-gray-400 mb-6 font-medium">Scan QR & Pay. Admin verify karke tokens bhej denge.</p>
+            <button id="req-btn" class="w-full bg-gradient-to-r from-[#f09433] to-[#bc1888] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
+                I have Paid (Request Tokens)
             </button>
         </div>
     </main>
@@ -68,44 +60,30 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // 🔐 Secure Connection Logic
         onAuthStateChanged(auth, (user) => {
             if(user) {
-                document.getElementById('display-uid').innerText = user.uid.substring(0, 12) + "...";
                 if(user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
-
-                // Permanent sync with Firebase
-                onSnapshot(doc(db, "wallets", user.uid), (snap) => {
-                    if(snap.exists()) {
-                        document.getElementById('token-balance').innerText = snap.data().balance || 0;
-                    } else {
-                        // Create wallet if not exists
-                        setDoc(doc(db, "wallets", user.uid), { balance: 0 }, { merge: true });
-                        document.getElementById('token-balance').innerText = 0;
-                    }
+                // 🔐 Sync Balance
+                onSnapshot(doc(db, "wallets", user.uid), (s) => {
+                    if(s.exists()) document.getElementById('token-balance').innerText = s.data().balance || 0;
+                });
+                // 📸 Sync QR Photo from Admin
+                onSnapshot(doc(db, "app_settings", "payment_config"), (s) => {
+                    if(s.exists() && s.data().qr_url) document.getElementById('qr-display').src = s.data().qr_url;
                 });
             } else { location.href = "index.html"; }
         });
 
-        window.requestWithPayment = async () => {
+        document.getElementById('req-btn').onclick = async () => {
             const btn = document.getElementById('req-btn');
-            btn.innerText = "Syncing with Admin...";
-            btn.disabled = true;
-
-            try {
-                await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
-                    uid: auth.currentUser.uid,
-                    name: auth.currentUser.displayName || "Gajan User",
-                    time: serverTimestamp(),
-                    status: "Paid_Pending"
-                });
-                alert("Request Sent! 👑 Admin verify karke tokens add kar dega.");
-                btn.innerText = "Request Pending...";
-            } catch (e) {
-                alert("Error: " + e.message);
-                btn.innerText = "Retry Request";
-                btn.disabled = false;
-            }
+            btn.innerText = "Syncing..."; btn.disabled = true;
+            await setDoc(doc(db, "token_requests", auth.currentUser.uid), {
+                uid: auth.currentUser.uid,
+                name: auth.currentUser.displayName || "User",
+                time: serverTimestamp()
+            });
+            alert("Request Sent! Admin verify karenge.");
+            btn.innerText = "Request Sent ✅";
         };
     </script>
 </body>
