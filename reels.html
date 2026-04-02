@@ -11,16 +11,35 @@
         .feed { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .feed::-webkit-scrollbar { display: none; }
         .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
         .side-ui { position: absolute; right: 15px; bottom: 150px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
         .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 85%; text-shadow: 0 1px 4px #000; }
-        .sound-toggle { position: fixed; top: 20px; right: 20px; z-index: 200; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 50%; color: white; }
+        
+        /* 💸 Token Modal Style */
+        #token-buy-modal { transition: opacity 0.3s ease; }
+        .g-gradient { background: linear-gradient(to right, #f09433, #dc2743, #bc1888); }
     </style>
 </head>
 <body>
 
-    <button class="sound-toggle" onclick="toggleAllSound()"><i id="vol-icon" class="fa-solid fa-volume-xmark"></i></button>
     <div class="feed" id="main-feed"></div>
+
+    <div id="token-buy-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+        <div class="bg-[#111] border border-white/10 w-full max-w-xs rounded-[30px] p-6 text-center shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-white font-black italic tracking-tighter">GAJAN STORE</h3>
+                <i onclick="hideTokenPopup()" class="fa-solid fa-xmark text-gray-500 p-2 cursor-pointer"></i>
+            </div>
+            <div class="bg-white p-3 rounded-2xl inline-block mb-4 shadow-lg">
+                <img id="modal-qr" src="https://via.placeholder.com/150?text=Scan+QR" class="w-32 h-32 object-contain">
+            </div>
+            <p class="text-white text-sm font-bold mb-1">1 Token = ₹1</p>
+            <p class="text-gray-500 text-[10px] mb-6 leading-tight">Payment karke neeche request button dabayein.</p>
+            <button onclick="requestTokensFromFeed(db, auth)" class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest active:scale-95 transition shadow-lg">
+                I have Paid (Request)
+            </button>
+        </div>
+    </div>
 
     <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-gray-900 flex justify-around items-center z-[100]">
         <a href="reels.html"><i class="fa-solid fa-house text-xl text-white"></i></a>
@@ -41,15 +60,28 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Global DB & Auth for feed_actions.js
+        window.db = db;
+        window.auth = auth;
+
         let isMuted = true;
-        window.toggleAllSound = () => {
+
+        // 🔊 Video Tap to Mute/Unmute Logic
+        window.handleVideoTap = (v) => {
             isMuted = !isMuted;
-            document.querySelectorAll('video').forEach(v => v.muted = isMuted);
-            document.getElementById('vol-icon').className = isMuted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+            const allVideos = document.querySelectorAll('video');
+            allVideos.forEach(vid => vid.muted = isMuted);
+            // Quick visual feedback
+            console.log(isMuted ? "Muted" : "Unmuted");
         };
 
         onAuthStateChanged(auth, user => {
             if(user && user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
+        });
+
+        // Sync QR in Modal from Admin
+        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => {
+            if(s.exists() && s.data().qr_url) document.getElementById('modal-qr').src = s.data().qr_url;
         });
 
         onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), async (sn) => {
@@ -64,11 +96,15 @@
 
                 container.innerHTML += `
                     <div class="reel">
-                        <video class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
+                        <video onclick="handleVideoTap(this)" class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
                         <div class="side-ui">
+                            <div onclick="showTokenPopup()" class="mb-2">
+                                <i class="fa-solid fa-coins text-yellow-400 text-2xl drop-shadow-md"></i>
+                                <p class="text-[8px] font-bold mt-1">BUY</p>
+                            </div>
                             <div onclick="handleLike(db, auth, '${rid}', '${d.uid}', this)">
                                 <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i>
-                                <p class="text-xs font-bold mt-1">${d.likedBy?.length || 0}</p>
+                                <p class="text-xs font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p>
                             </div>
                             <i class="fa-solid fa-comment text-3xl" onclick="location.href='comments.html?id=${rid}'"></i>
                             <i class="fa-solid fa-share text-2xl" onclick="shareVideo('${rid}')"></i>
