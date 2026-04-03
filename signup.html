@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Join Gajan Insta | Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: white; font-family: sans-serif; }
+        .g-gradient { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen px-6">
+
+    <div id="signup-box" class="w-full max-w-sm">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black italic tracking-tighter">CREATE ACCOUNT</h1>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1 text-pink-500">Step 1: Register Yourself</p>
+        </div>
+
+        <div class="space-y-4">
+            <input id="name" type="text" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-pink-500">
+            <input id="email" type="email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-pink-500">
+            <input id="pass" type="password" placeholder="Create Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-pink-500">
+            
+            <button id="signup-btn" class="w-full g-gradient py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition mt-4 shadow-lg">
+                Sign Up & Get UID
+            </button>
+            
+            <p class="text-center text-xs text-gray-500 mt-4">Already have account? <a href="index.html" class="text-white font-bold underline">Login</a></p>
+        </div>
+    </div>
+
+    <div id="success-box" class="hidden w-full max-w-sm glass-card p-8 text-center border-green-500/30 border-2">
+        <i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i>
+        <h2 class="text-xl font-black mb-2">Registration Success!</h2>
+        <p class="text-xs text-gray-400 mb-6">Ab is UID ko copy karo aur ₹100 payment ke screenshot ke saath Admin ko bhejo.</p>
+        
+        <div class="bg-black/50 p-4 rounded-xl border border-white/10 mb-6">
+            <p class="text-[10px] text-gray-500 uppercase mb-1">Your Personal UID:</p>
+            <p id="display-uid" class="text-sm font-mono text-yellow-400 font-bold break-all select-all"></p>
+        </div>
+
+        <button onclick="location.href='index.html'" class="w-full bg-white text-black py-3 rounded-xl font-black text-xs uppercase">Go to Login Page</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('signup-btn').onclick = async () => {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const btn = document.getElementById('signup-btn');
+
+            if(!name || !email || !pass) return alert("Bhai, saari details bharo!");
+
+            btn.innerText = "Creating Account...";
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                const user = userCred.user;
+
+                // Update Profile Name
+                await updateProfile(user, { displayName: name });
+
+                // Create User Document in Firestore (Status: pending)
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    subscription: "pending", // 🔐 Shuru mein pending rahega
+                    time: serverTimestamp()
+                });
+
+                // Show Success & UID
+                document.getElementById('signup-box').classList.add('hidden');
+                document.getElementById('success-box').classList.remove('hidden');
+                document.getElementById('display-uid').innerText = user.uid;
+
+            } catch (e) {
+                alert("Error: " + e.message);
+                btn.innerText = "Sign Up & Get UID";
+            }
+        };
+    </script>
+</body>
+</html>
