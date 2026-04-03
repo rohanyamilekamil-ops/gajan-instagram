@@ -2,30 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Profile | Force Stay</title>
+    <title>Gajan Profile | Force Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-black text-white p-6">
+<body class="bg-black text-white font-sans">
 
-    <div class="max-w-sm mx-auto text-center pt-10">
-        <img id="u-pfp" src="https://via.placeholder.com/100" class="w-24 h-24 rounded-full mx-auto border-2 border-pink-500 mb-4">
-        <h1 id="u-name" class="text-xl font-bold italic uppercase">Loading...</h1>
-        <p id="u-email" class="text-xs text-gray-500 mb-10 italic">Checking Account...</p>
+    <div class="max-w-sm mx-auto p-10 text-center">
+        <div class="w-24 h-24 rounded-full border-4 border-pink-600 mx-auto mb-4 overflow-hidden shadow-[0_0_20px_rgba(219,39,119,0.5)]">
+            <img id="pfp" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+        </div>
+        
+        <h1 id="name" class="text-2xl font-black italic mb-1 uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-600">Loading...</h1>
+        <p id="email" class="text-[10px] text-gray-500 mb-10 italic uppercase tracking-[0.2em]">Authenticating...</p>
 
-        <div class="bg-zinc-900 p-6 rounded-3xl flex justify-around mb-10">
-            <div><p id="tok-bal" class="text-xl font-black text-yellow-500">0</p><p class="text-[8px] uppercase">Tokens</p></div>
+        <div class="bg-zinc-900/50 rounded-3xl p-8 mb-10 border border-white/5 backdrop-blur-sm">
+            <p id="tokens" class="text-5xl font-black text-yellow-500 italic drop-shadow-lg">0</p>
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 mt-2 font-bold">G-Tokens Balance</p>
         </div>
 
-        <button id="logout-btn" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg active:scale-95">
-            Log Out Now
+        <button id="logout-btn" class="w-full bg-gradient-to-r from-red-600 to-red-800 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-all">
+            Logout Now
         </button>
     </div>
 
-    <nav class="fixed bottom-0 left-0 w-full h-[65px] bg-zinc-950 flex justify-around items-center border-t border-zinc-900">
-        <a href="reels.html" class="p-4"><i class="fa-solid fa-house text-zinc-500"></i></a>
-        <a href="wallet.html" class="p-4"><i class="fa-solid fa-wallet text-zinc-500"></i></a>
-        <a href="profile.html" class="p-4"><i class="fa-solid fa-user text-white"></i></a>
+    <nav class="fixed bottom-0 w-full h-[75px] bg-black/90 border-t border-white/10 flex justify-around items-center backdrop-blur-md">
+        <a href="reels.html" class="p-4"><i class="fa-solid fa-house text-zinc-600"></i></a>
+        <a href="wallet.html" class="p-4"><i class="fa-solid fa-wallet text-zinc-600"></i></a>
+        <a href="profile.html" class="p-4"><i class="fa-solid fa-user text-white text-xl"></i></a>
     </nav>
 
     <script type="module">
@@ -33,32 +37,53 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        // Firebase Config (Verified)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
+            authDomain: "tiktok-clone-gajan.firebaseapp.com", 
+            projectId: "tiktok-clone-gajan", 
+            storageBucket: "tiktok-clone-gajan.firebasestorage.app", 
+            messagingSenderId: "838023307513", 
+            appId: "1:838023307513:web:e40efbaf7c3dbf16158228" 
+        };
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Sirf user detect karna hai, redirect nahi karna
+        // Auth Listener
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('u-name').innerText = user.displayName || "Gajan User";
-                document.getElementById('u-email').innerText = user.email;
-                if(user.photoURL) document.getElementById('u-pfp').src = user.photoURL;
+                console.log("Logged in as:", user.email);
+                document.getElementById('name').innerText = user.displayName || "Gajan User";
+                document.getElementById('email').innerText = user.email;
+                if(user.photoURL) document.getElementById('pfp').src = user.photoURL;
 
-                // Token Sync
+                // Sync Tokens
                 onSnapshot(doc(db, "wallets", user.uid), (s) => {
-                    if(s.exists()) document.getElementById('tok-bal').innerText = s.data().balance || 0;
+                    if(s.exists()) {
+                        document.getElementById('tokens').innerText = s.data().balance || 0;
+                    }
+                }, (error) => {
+                    console.log("Firestore Error:", error);
                 });
             } else {
-                console.log("No user found. Staying on page for debug.");
+                console.log("No user found, redirecting...");
+                window.location.replace("index.html");
             }
         });
 
+        // 🚨 Logout Logic
         document.getElementById('logout-btn').onclick = async () => {
-            await signOut(auth);
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.replace("index.html");
+            try {
+                await signOut(auth);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace("index.html");
+            } catch (error) {
+                console.error("Logout Error:", error);
+                alert("Logout failed! Try clearing browser cache.");
+            }
         };
     </script>
 </body>
