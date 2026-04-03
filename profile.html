@@ -1,59 +1,75 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan Profile | Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: white; font-family: sans-serif; display: none; } /* Pehle page chhupa diya */
+        .g-gradient { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
+    </style>
+</head>
+<body id="main-body" class="pb-24">
 
-    const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    <div class="p-8 flex flex-col items-center">
+        <div class="w-24 h-24 rounded-full p-1 g-gradient mb-4">
+            <img id="user-pfp" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-black object-cover">
+        </div>
+        <h2 id="user-name" class="text-xl font-bold">Loading...</h2>
+        <p id="user-email" class="text-xs text-gray-500 mb-8 italic">Please wait...</p>
 
-    // ✨ FIX: User check ko thoda stable banaya hai
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            console.log("User detected:", user.email);
-            
-            // UI update start
-            document.getElementById('user-name').innerText = user.displayName || "Gajan User";
-            document.getElementById('user-email').innerText = user.email;
-            if(user.photoURL) document.getElementById('user-pfp').src = user.photoURL;
+        <div class="w-full max-w-xs bg-white/5 p-6 rounded-3xl flex justify-around mb-8 border border-white/10">
+            <div class="text-center"><p id="count-followers" class="font-bold">0</p><p class="text-[9px] text-gray-500">Followers</p></div>
+            <div class="text-center"><p id="count-tokens" class="font-bold text-yellow-500">0</p><p class="text-[9px] text-gray-500">Tokens</p></div>
+        </div>
 
-            // Stats Sync
-            const userRef = doc(db, "users", user.uid);
-            onSnapshot(userRef, (s) => {
-                if(s.exists()){
-                    const d = s.data();
-                    document.getElementById('count-followers').innerText = d.followers ? d.followers.length : 0;
-                    document.getElementById('count-following').innerText = d.following ? d.following.length : 0;
-                    // Agar name firestore mein hai toh wahan se lo
-                    if(d.name) document.getElementById('user-name').innerText = d.name;
-                }
-            });
+        <button id="logout-btn" class="w-full max-w-xs bg-red-600/20 text-red-500 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest">
+            Logout & Reset
+        </button>
+    </div>
 
-            // Wallet Sync
-            onSnapshot(doc(db, "wallets", user.uid), (s) => {
-                if(s.exists()) {
-                    document.getElementById('count-tokens').innerText = s.data().balance || 0;
-                }
-            });
+    <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-white/5 flex justify-around items-center">
+        <a href="reels.html"><i class="fa-solid fa-house text-gray-500"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-gray-500"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-user text-white"></i></a>
+    </nav>
 
-        } else {
-            // Check karein ki kya user sach mein logout hua hai
-            setTimeout(() => {
-                if(!auth.currentUser) {
-                    window.location.href = "index.html";
-                }
-            }, 2000); // 2 second ka gap diya hai taaki Firebase load ho sake
-        }
-    });
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Logout Function
-    document.getElementById('logout-btn').onclick = async () => {
-        if(confirm("Logout karna hai?")){
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 🛡️ ANTI-LOOP SECURITY 🛡️
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User mil gaya, ab page dikhao
+                document.body.style.display = "block";
+                
+                document.getElementById('user-name').innerText = user.displayName || "User";
+                document.getElementById('user-email').innerText = user.email;
+                if(user.photoURL) document.getElementById('user-pfp').src = user.photoURL;
+
+                onSnapshot(doc(db, "wallets", user.uid), (s) => {
+                    if(s.exists()) document.getElementById('count-tokens').innerText = s.data().balance || 0;
+                });
+            } else {
+                // Agar user nahi hai, toh seedha index par bhejo aur kuch mat karo
+                window.location.replace("index.html");
+            }
+        });
+
+        document.getElementById('logout-btn').onclick = async () => {
             await signOut(auth);
             localStorage.clear();
             sessionStorage.clear();
             window.location.replace("index.html");
-        }
-    };
-</script>
+        };
+    </script>
+</body>
+</html>
