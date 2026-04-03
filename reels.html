@@ -11,16 +11,10 @@
         .feed { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .feed::-webkit-scrollbar { display: none; }
         .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        
-        /* Side UI Icons */
+        video { width: 100%; height: 100%; object-fit: cover; }
         .side-ui { position: absolute; right: 15px; bottom: 150px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
-        
-        /* Bottom UI (Profile & Info) */
         .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 85%; text-shadow: 0 1px 4px #000; }
-        
         .g-gradient { background: linear-gradient(to right, #f09433, #dc2743, #bc1888); }
-        .id-badge { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 8px; color: #ff9f43; border: 0.5px solid rgba(255,159,67,0.3); margin-bottom: 5px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -33,13 +27,8 @@
                 <h3 class="text-white font-black italic tracking-tighter">GAJAN STORE</h3>
                 <i onclick="document.getElementById('token-buy-modal').classList.add('hidden')" class="fa-solid fa-xmark text-gray-500 p-2 cursor-pointer"></i>
             </div>
-            <div class="bg-white p-3 rounded-2xl inline-block mb-4">
-                <img id="modal-qr" src="https://via.placeholder.com/150" class="w-32 h-32 object-contain">
-            </div>
-            <p class="text-white text-sm font-bold mb-6">1 Token = ₹1</p>
-            <button id="req-tokens-btn" class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest shadow-lg active:scale-95 transition">
-                I have Paid (Request)
-            </button>
+            <div class="bg-white p-3 rounded-2xl inline-block mb-4"><img id="modal-qr" src="" class="w-32 h-32 object-contain"></div>
+            <button class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest active:scale-95 transition">I have Paid</button>
         </div>
     </div>
 
@@ -48,12 +37,14 @@
         <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
-        <img id="nav-pfp" onclick="location.href='profile.html'" src="https://via.placeholder.com/30" class="w-7 h-7 rounded-full border border-white object-cover">
+        <a href="profile.html">
+            <img id="nav-pfp" src="https://via.placeholder.com/30" class="w-7 h-7 rounded-full border border-white object-cover">
+        </a>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, runTransaction, increment, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion, arrayRemove, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
@@ -63,120 +54,62 @@
 
         let isMuted = true;
 
-        // --- 🔊 Video Tap (Sound ON/OFF + Play/Pause) ---
+        // AUTH CHECK & PROTECT
+        onAuthStateChanged(auth, user => {
+            if(!user) {
+                window.location.replace("index.html");
+            } else {
+                if(user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
+            }
+        });
+
+        // 🔊 Video Controls
         window.handleVideoTap = (v) => {
             isMuted = !isMuted;
             document.querySelectorAll('video').forEach(vid => vid.muted = isMuted);
             if (v.paused) v.play(); else v.pause();
         };
 
-        // --- ❤️ Like & Token Transfer ---
-        window.triggerLike = async (rid, creatorUid, el) => {
-            if(!auth.currentUser) return alert("Login Karo!");
-            if(auth.currentUser.uid === creatorUid) return;
-            const heart = el.querySelector('.fa-heart');
-            const countEl = el.querySelector('.like-count');
-            
-            try {
-                await runTransaction(db, async (t) => {
-                    const myWallet = doc(db, "wallets", auth.currentUser.uid);
-                    const hisWallet = doc(db, "wallets", creatorUid);
-                    const reelRef = doc(db, "reels", rid);
-                    const mySnap = await t.get(myWallet);
-                    if (!mySnap.exists() || mySnap.data().balance < 1) throw "No Tokens!";
-                    
-                    t.update(myWallet, { balance: increment(-1) });
-                    t.set(hisWallet, { balance: increment(1) }, { merge: true });
-                    t.update(reelRef, { likedBy: arrayUnion(auth.currentUser.uid) });
-                });
-                heart.classList.replace('text-white', 'text-red-500');
-                countEl.innerText = parseInt(countEl.innerText) + 1;
-            } catch (e) { 
-                if(e === "No Tokens!") document.getElementById('token-buy-modal').classList.remove('hidden');
-            }
-        };
-
-        // --- 🤝 Follow ---
-        window.triggerFollow = async (targetUid, btn) => {
-            if(!auth.currentUser || auth.currentUser.uid === targetUid) return;
-            const myRef = doc(db, "users", auth.currentUser.uid);
-            const targetRef = doc(db, "users", targetUid);
-            if(btn.innerText === "Follow") {
-                await updateDoc(myRef, { following: arrayUnion(targetUid) });
-                await updateDoc(targetRef, { followers: arrayUnion(auth.currentUser.uid) });
-                btn.innerText = "Following"; btn.style.opacity = "0.5";
-            } else {
-                await updateDoc(myRef, { following: arrayRemove(targetUid) });
-                await updateDoc(targetRef, { followers: arrayRemove(auth.currentUser.uid) });
-                btn.innerText = "Follow"; btn.style.opacity = "1";
-            }
-        };
-
-        // --- 🚀 Share (All Apps) ---
-        window.triggerShare = async (rid, name) => {
-            const data = { title: 'Gajan Insta', url: window.location.origin + "/reels.html?id=" + rid };
-            if (navigator.share) await navigator.share(data);
-            else window.open(`https://api.whatsapp.com/send?text=Check @${name}: ${data.url}`);
-        };
-
-        onAuthStateChanged(auth, user => { if(user && user.photoURL) document.getElementById('nav-pfp').src = user.photoURL; });
-
-        // Load Feed
-        onSnapshot(query(collection(db, "reels"), orderBy("time", "desc")), async (sn) => {
+        // Load Feed (Optimized)
+        const q = query(collection(db, "reels"), orderBy("time", "desc"));
+        onSnapshot(q, async (sn) => {
             const container = document.getElementById('main-feed');
-            container.innerHTML = "";
+            let html = "";
             for (const rDoc of sn.docs) {
                 const d = rDoc.data(); const rid = rDoc.id;
-                const userSnap = await getDoc(doc(db, "users", d.uid));
-                const userPhoto = userSnap.exists() ? userSnap.data().photoURL : "https://via.placeholder.com/150";
                 const isLiked = d.likedBy?.includes(auth.currentUser?.uid);
-
-                container.innerHTML += `
+                html += `
                     <div class="reel">
                         <video onclick="handleVideoTap(this)" class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
-                        
                         <div class="side-ui">
-                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')">
-                                <i class="fa-solid fa-coins text-yellow-400 text-2xl drop-shadow-md"></i>
-                                <p class="text-[8px] font-bold mt-1 uppercase">Buy</p>
-                            </div>
-                            <div onclick="triggerLike('${rid}', '${d.uid}', this)">
-                                <i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i>
-                                <p class="text-xs font-bold mt-1 like-count">${d.likedBy ? d.likedBy.length : 0}</p>
-                            </div>
-                            <i class="fa-solid fa-comment text-3xl" onclick="location.href='comments.html?id=${rid}'"></i>
-                            <i class="fa-solid fa-share text-2xl" onclick="triggerShare('${rid}', '${d.name}')"></i>
+                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')"><i class="fa-solid fa-coins text-yellow-400 text-2xl"></i></div>
+                            <div><i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i><p class="text-xs font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p></div>
+                            <i class="fa-solid fa-comment text-3xl"></i>
+                            <i class="fa-solid fa-share text-2xl"></i>
                         </div>
-
                         <div class="bottom-ui">
-                            <div class="id-badge">REEL ID: ${rid}</div>
                             <div class="flex items-center gap-3 mb-4">
-                                <img onclick="location.href='user_profile.html?uid=${d.uid}'" src="${userPhoto}" class="w-12 h-12 rounded-full border-2 border-white object-cover cursor-pointer">
-                                <div>
-                                    <p class="font-bold text-sm">@${d.name || 'User'}</p>
-                                    <p class="text-[9px] opacity-60">UID: ${d.uid.substring(0,8)}</p>
-                                </div>
-                                <button onclick="triggerFollow('${d.uid}', this)" class="bg-white text-black px-4 py-1.5 rounded-lg text-[11px] font-bold ml-2">Follow</button>
+                                <img src="${d.userPhoto || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+                                <p class="font-bold text-sm">@${d.name || 'User'}</p>
                             </div>
                             <p class="text-xs opacity-90">${d.caption || ''}</p>
                         </div>
                     </div>`;
             }
+            container.innerHTML = html;
             setupObserver();
         });
 
         function setupObserver() {
-            const vids = document.querySelectorAll('.rvid');
             const obs = new IntersectionObserver((entries) => {
                 entries.forEach(e => {
                     if (e.isIntersecting) { e.target.play().catch(()=>{}); e.target.muted = isMuted; }
                     else { e.target.pause(); }
                 });
             }, { threshold: 0.8 });
-            vids.forEach(v => obs.observe(v));
+            document.querySelectorAll('.rvid').forEach(v => obs.observe(v));
         }
 
-        // Sync QR from Admin
         onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { if(s.exists() && s.data().qr_url) document.getElementById('modal-qr').src = s.data().qr_url; });
     </script>
 </body>
