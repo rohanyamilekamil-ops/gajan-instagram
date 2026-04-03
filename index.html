@@ -1,75 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gajan Insta | Login & Earn</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
         .g-gradient { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
-        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; }
-        .video-container { width: 100%; border-radius: 20px; overflow: hidden; border: 2px solid #bc1888; box-shadow: 0 0 20px rgba(188, 24, 136, 0.3); }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-6">
+<body class="flex flex-col items-center py-10 px-6 min-h-screen">
 
-    <div class="mb-8 text-center">
-        <div class="w-20 h-20 g-gradient rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl">
-            <span class="text-white font-black italic text-4xl">G</span>
-        </div>
-        <h1 class="text-3xl font-black italic tracking-tighter">GAJAN INSTA</h1>
-        <p class="text-gray-500 text-[10px] uppercase tracking-[0.2em] mt-1">Core Earning Platform</p>
+    <div class="w-16 h-16 g-gradient rounded-2xl flex items-center justify-center mb-4 shadow-2xl">
+        <span class="text-white font-black italic text-3xl">G</span>
+    </div>
+    <h1 class="text-2xl font-black italic tracking-tighter mb-8">GAJAN INSTA</h1>
+
+    <div class="glass-card p-4 w-full max-w-sm mb-6">
+        <h2 class="text-[10px] font-black text-pink-500 mb-3 uppercase tracking-widest text-center">How to Earn? (Watch Guide)</h2>
+        <video id="intro-vid" controls class="w-full aspect-video rounded-xl border border-white/10" poster="https://via.placeholder.com/400x225?text=Watch+Earning+Guide">
+            <source src="" type="video/mp4">
+        </video>
     </div>
 
-    <div class="glass-card p-4 w-full max-w-sm mb-8">
-        <h2 class="text-xs font-bold text-pink-500 mb-3 uppercase tracking-widest text-center">
-            <i class="fa-solid fa-circle-play mr-1"></i> How to Earn & Buy Tokens
-        </h2>
-        <div class="video-container bg-black aspect-video flex items-center justify-center">
-            <video id="intro-video" controls class="w-full h-full" poster="https://via.placeholder.com/400x225?text=Watch+Earning+Guide">
-                <source src="APNI_VIDEO_LINK_YAHAN_DAALEIN.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+    <div class="glass-card p-6 w-full max-w-sm mb-8 text-center border-orange-500/30 border-2">
+        <h2 class="text-sm font-black text-white italic mb-1 uppercase tracking-tighter">Lifetime Subscription</h2>
+        <p class="text-[10px] text-orange-500 font-bold mb-4 italic">ONLY ₹100 - JOIN GAJAN CORE</p>
+        
+        <div class="bg-white p-2 rounded-xl inline-block mb-4 shadow-2xl">
+            <img id="login-qr" src="https://via.placeholder.com/150?text=Wait+for+QR" class="w-32 h-32 object-contain">
         </div>
-        <p class="text-[9px] text-gray-400 mt-3 text-center italic">1. Buy Tokens 2. Like Reels 3. Creators Earn Money!</p>
+        
+        <p class="text-[9px] text-gray-500 leading-tight">1. Scan QR and Pay ₹100.<br>2. Take Screenshot.<br>3. Sign Up & Login to start earning.</p>
     </div>
 
-    <div class="w-full max-w-sm space-y-4">
-        <input id="email" type="email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 transition text-sm">
-        <input id="password" type="password" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 transition text-sm">
-        
-        <button id="login-btn" class="w-full g-gradient py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition mt-4">
-            Start Earning Now
-        </button>
-        
-        <div class="text-center mt-6">
-            <p class="text-gray-500 text-xs">Don't have an account? <a href="signup.html" class="text-white font-bold">Sign Up</a></p>
-        </div>
+    <div class="w-full max-w-sm space-y-3">
+        <input id="email" type="email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-pink-500">
+        <input id="pass" type="password" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-pink-500">
+        <button id="login-btn" class="w-full g-gradient py-4 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition mt-4 shadow-lg">Login & Start Earning</button>
+        <p class="text-center text-xs text-gray-500 pt-4">New user? <a href="signup.html" class="text-white font-bold underline">Sign Up here</a></p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const auth = getAuth(app);
 
-        document.getElementById('login-btn').onclick = async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            const btn = document.getElementById('login-btn');
-            
-            btn.innerText = "Authenticating...";
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                location.href = "reels.html";
-            } catch (e) {
-                alert("Login Error: " + e.message);
-                btn.innerText = "Start Earning Now";
+        // Sync QR & Video from Admin Panel
+        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { if(s.exists() && s.data().qr_url) document.getElementById('login-qr').src = s.data().qr_url; });
+        onSnapshot(doc(db, "app_settings", "video_config"), (s) => { 
+            if(s.exists() && s.data().intro_url) {
+                const v = document.getElementById('intro-vid');
+                v.src = s.data().intro_url; v.load();
             }
+        });
+
+        document.getElementById('login-btn').onclick = async () => {
+            const btn = document.getElementById('login-btn');
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            
+            btn.innerText = "Checking Subscription...";
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCred.user;
+
+                // 🔐 Check Subscription Status
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().subscription === "active") {
+                    location.href = "reels.html";
+                } else {
+                    await signOut(auth);
+                    alert("🚫 Account Not Active! ₹100 Pay karein aur Admin ko UID bhej kar active karwayein.");
+                    btn.innerText = "Login & Start Earning";
+                }
+            } catch (e) { alert(e.message); btn.innerText = "Login & Start Earning"; }
         };
     </script>
 </body>
