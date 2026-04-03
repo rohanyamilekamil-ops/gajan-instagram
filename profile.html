@@ -1,117 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gajan | Master Profile</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan Insta | My Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; }
-        .g-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        #side-menu { position: fixed; top: 0; right: -100%; width: 75%; height: 100%; background: white; z-index: 200; transition: 0.3s; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
-        #side-menu.open { right: 0; }
-        .menu-item { padding: 18px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 0.5px solid #f3f3f3; font-weight: 600; font-size: 14px; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; }
+        body { background: #000; color: white; font-family: sans-serif; }
+        .g-gradient { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
+        .stat-box { text-align: center; flex: 1; }
+        .profile-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 30px; }
     </style>
 </head>
-<body class="bg-white pb-20">
+<body class="pb-24">
 
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-    <div id="side-menu">
-        <div class="p-6 border-b"><h3 class="font-bold text-lg">Settings</h3></div>
-        <div class="menu-item text-red-600" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+    <div class="p-8 flex flex-col items-center">
+        <div class="relative mb-6">
+            <div class="w-28 h-28 rounded-full p-1 g-gradient">
+                <img id="user-pfp" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-4 border-black object-cover">
+            </div>
+            <label for="pfp-upload" class="absolute bottom-1 right-1 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg cursor-pointer">
+                <i class="fa-solid fa-camera text-xs"></i>
+            </label>
+            <input type="file" id="pfp-upload" class="hidden" accept="image/*">
+        </div>
+
+        <h2 id="user-name" class="text-2xl font-black italic tracking-tighter mb-1">Loading...</h2>
+        <p id="user-email" class="text-[10px] text-gray-500 uppercase tracking-widest mb-8">verifying account...</p>
+
+        <div class="profile-card w-full max-w-sm flex justify-around py-6 mb-8">
+            <div class="stat-box">
+                <p id="count-followers" class="font-black text-xl">0</p>
+                <p class="text-[8px] text-gray-500 uppercase font-bold tracking-tighter">Followers</p>
+            </div>
+            <div class="stat-box border-x border-white/5">
+                <p id="count-following" class="font-black text-xl">0</p>
+                <p class="text-[8px] text-gray-500 uppercase font-bold tracking-tighter">Following</p>
+            </div>
+            <div class="stat-box">
+                <p id="count-tokens" class="font-black text-xl text-yellow-500">0</p>
+                <p class="text-[8px] text-gray-500 uppercase font-bold tracking-tighter">G-Tokens</p>
+            </div>
+        </div>
+
+        <button id="logout-btn" class="w-full max-w-xs bg-red-600/10 border border-red-600/20 text-red-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all">
+            Logout & Clear Session
+        </button>
     </div>
 
-    <header class="flex justify-between items-center px-4 py-3 border-b sticky top-0 bg-white z-50">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="adminTrigger()">
-            <div class="bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] rounded-xl w-9 h-9 flex items-center justify-center relative shadow-lg">
-                <span class="text-white font-black text-xl italic">G</span>
-                <i class="fa-solid fa-crown absolute -top-1.5 -right-1.5 text-yellow-400 text-[9px] rotate-12"></i>
-            </div>
-            <h1 class="text-xl font-black italic tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-600">Gajan Insta</h1>
-        </div>
-        <div class="flex items-center space-x-5">
-            <a href="upload.html"><i class="fa-regular fa-square-plus text-2xl text-black"></i></a>
-            <i class="fa-solid fa-bars text-2xl cursor-pointer" onclick="toggleMenu()"></i>
-        </div>
-    </header>
-
-    <div class="p-4">
-        <div class="flex items-center space-x-8 mb-6">
-            <div class="w-20 h-20 rounded-full p-[2px] g-gradient">
-                <img id="avatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full border-2 border-white object-cover">
-            </div>
-            <div class="flex-1 flex justify-around text-center">
-                <div><p class="font-bold text-base" id="post-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Posts</p></div>
-                <div onclick="location.href='list.html'" class="cursor-pointer">
-                    <p class="font-bold text-base" id="f-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Followers</p>
-                </div>
-                <div><p class="font-bold text-base" id="v-count">0</p><p class="text-[10px] text-gray-400 font-bold uppercase">Views</p></div>
-            </div>
-        </div>
-        <h2 id="u-name" class="font-bold text-sm">@User</h2>
-        <p class="text-[11px] text-gray-400">, earning platform | Official Gajan insta 👑</p>
-        <div class="flex mt-6 space-x-2">
-            <button onclick="location.href='edit_profile.html'" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Edit Profile</button>
-            <button onclick="location.href='send_tokens.html'" class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-[11px] border">Send Tokens</button>
-        </div>
-    </div>
-
-    <div id="video-grid" class="grid grid-cols-3 gap-0.5 border-t mt-4"></div>
-
-    <nav class="fixed bottom-0 w-full h-[60px] bg-white border-t flex justify-around items-center z-50">
-        <a href="reels.html"><i class="fa-solid fa-house text-xl text-black"></i></a>
-        <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
-        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-400"></i></a>
-        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-400"></i></a>
-        <div class="w-6 h-6 rounded-full bg-black"></div>
+    <nav class="fixed bottom-0 w-full h-[70px] bg-black/90 backdrop-blur-lg border-t border-white/5 flex justify-around items-center z-[100]">
+        <a href="reels.html"><i class="fa-solid fa-house text-xl text-gray-500"></i></a>
+        <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
+        <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
+        <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
+        <a href="profile.html"><i class="fa-solid fa-user text-xl text-white"></i></a>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        window.toggleMenu = () => {
-            document.getElementById('side-menu').classList.toggle('open');
-            const ov = document.getElementById('overlay'); ov.style.display = (ov.style.display==='block'?'none':'block');
-        };
-        window.logout = () => { if(confirm("Logout?")) signOut(auth).then(()=>location.href="index.html"); };
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // UI Data Update
+                document.getElementById('user-name').innerText = user.displayName || "Gajan User";
+                document.getElementById('user-email').innerText = user.email;
+                if(user.photoURL) document.getElementById('user-pfp').src = user.photoURL;
 
-        let taps = 0;
-        window.adminTrigger = () => {
-            taps++;
-            if(taps === 5) {
-                const p = prompt("Admin Key:");
-                if(p === "Abdul6353738585@") location.href="admin.html";
-                taps = 0;
-            }
-            setTimeout(()=>taps=0, 3000);
-        };
-
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('u-name').innerText = "@" + (user.displayName || "GajanUser");
-                if(user.photoURL) document.getElementById('avatar').src = user.photoURL;
+                // Real-time Follower Sync
                 onSnapshot(doc(db, "users", user.uid), (s) => {
                     if(s.exists()){
-                        document.getElementById('f-count').innerText = s.data().followers?.length || 0;
-                        document.getElementById('v-count').innerText = s.data().totalViews || 0;
+                        const d = s.data();
+                        document.getElementById('count-followers').innerText = d.followers ? d.followers.length : 0;
+                        document.getElementById('count-following').innerText = d.following ? d.following.length : 0;
                     }
                 });
-                const q = query(collection(db, "reels"), where("uid", "==", user.uid));
-                onSnapshot(q, (sn) => {
-                    const grid = document.getElementById('video-grid'); grid.innerHTML = "";
-                    document.getElementById('post-count').innerText = sn.size;
-                    sn.forEach(d => { grid.innerHTML += `<div class="aspect-square"><video src="${d.data().videoUrl}" class="w-full h-full object-cover"></video></div>`; });
+
+                // Real-time Token Sync
+                onSnapshot(doc(db, "wallets", user.uid), (s) => {
+                    if(s.exists()) document.getElementById('count-tokens').innerText = s.data().balance || 0;
                 });
-            } else { location.href="index.html"; }
+
+            } else {
+                // Agar user logged out hai toh direct login page
+                window.location.href = "index.html";
+            }
         });
+
+        // ✨ Super Logout Function ✨
+        document.getElementById('logout-btn').onclick = async () => {
+            if(confirm("Bhai, Logout karna hai?")){
+                try {
+                    await signOut(auth); // Firebase SignOut
+                    // Browser memory clear karna taaki bypass session na rahe
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    window.location.replace("index.html"); // History clear karke redirect
+                } catch (e) {
+                    alert("Error logging out: " + e.message);
+                }
+            }
+        };
     </script>
 </body>
 </html>
