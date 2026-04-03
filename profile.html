@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Profile | Force Fix</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gajan Profile | Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // ✨ MAGIC TRICK: Pichle saare redirects ko rokne ke liye
+        window.stop(); 
+    </script>
 </head>
-<body class="bg-black text-white font-sans">
+<body class="bg-black text-white font-sans overflow-x-hidden">
 
-    <div class="max-w-sm mx-auto p-10 text-center">
-        <div class="w-24 h-24 rounded-full border-4 border-pink-600 mx-auto mb-4 overflow-hidden shadow-[0_0_20px_rgba(219,39,119,0.5)]">
+    <div id="profile-content" class="max-w-sm mx-auto p-10 text-center" style="display:none;">
+        <div class="w-24 h-24 rounded-full border-4 border-pink-600 mx-auto mb-4 overflow-hidden shadow-lg">
             <img id="pfp" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
         </div>
         
-        <h1 id="name" class="text-2xl font-black italic mb-1 uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-600">Loading...</h1>
-        <p id="email" class="text-[10px] text-gray-500 mb-10 italic uppercase tracking-[0.2em]">Authenticating...</p>
+        <h1 id="name" class="text-2xl font-black italic mb-1 uppercase tracking-tighter text-pink-500">Loading...</h1>
+        <p id="email" class="text-[10px] text-gray-500 mb-10 italic uppercase">Checking Session...</p>
 
-        <div class="bg-zinc-900/50 rounded-3xl p-8 mb-10 border border-white/5 backdrop-blur-sm">
-            <p id="tokens" class="text-5xl font-black text-yellow-500 italic drop-shadow-lg">0</p>
-            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 mt-2 font-bold">G-Tokens Balance</p>
+        <div class="bg-zinc-900 rounded-3xl p-8 mb-10 border border-white/10">
+            <p id="tokens" class="text-5xl font-black text-yellow-500 italic">0</p>
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 mt-2">G-Tokens</p>
         </div>
 
-        <button id="logout-btn" class="w-full bg-gradient-to-r from-red-600 to-red-800 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-all">
+        <button id="logout-btn" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
             Logout Now
         </button>
     </div>
 
-    <nav class="fixed bottom-0 w-full h-[75px] bg-black/90 border-t border-white/10 flex justify-around items-center backdrop-blur-md">
+    <nav class="fixed bottom-0 w-full h-[70px] bg-black border-t border-white/5 flex justify-around items-center z-[999]">
         <a href="reels.html" class="p-4"><i class="fa-solid fa-house text-zinc-600"></i></a>
         <a href="wallet.html" class="p-4"><i class="fa-solid fa-wallet text-zinc-600"></i></a>
-        <a href="profile.html" class="p-4"><i class="fa-solid fa-user text-white text-xl"></i></a>
+        <a href="profile.html" class="p-4"><i class="fa-solid fa-user text-white"></i></a>
     </nav>
 
     <script type="module">
@@ -37,7 +41,6 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Config (Verified)
         const firebaseConfig = { 
             apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", 
             authDomain: "tiktok-clone-gajan.firebaseapp.com", 
@@ -51,39 +54,31 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Auth Listener
+        // 🛡️ Anti-Redirect Logic
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                console.log("Logged in as:", user.email);
+                // User hai, toh content dikhao
+                document.getElementById('profile-content').style.display = "block";
                 document.getElementById('name').innerText = user.displayName || "Gajan User";
                 document.getElementById('email').innerText = user.email;
                 if(user.photoURL) document.getElementById('pfp').src = user.photoURL;
 
-                // Sync Tokens
                 onSnapshot(doc(db, "wallets", user.uid), (s) => {
-                    if(s.exists()) {
-                        document.getElementById('tokens').innerText = s.data().balance || 0;
-                    }
-                }, (error) => {
-                    console.log("Firestore Error:", error);
+                    if(s.exists()) document.getElementById('tokens').innerText = s.data().balance || 0;
                 });
             } else {
-                console.log("No user found, redirecting...");
-                window.location.replace("index.html");
+                // Agar user nahi hai, toh 3 second wait karke bhejo (taaki loop na bane)
+                setTimeout(() => {
+                    if(!auth.currentUser) window.location.replace("index.html");
+                }, 3000);
             }
         });
 
-        // 🚨 Logout Logic
         document.getElementById('logout-btn').onclick = async () => {
-            try {
-                await signOut(auth);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace("index.html");
-            } catch (error) {
-                console.error("Logout Error:", error);
-                alert("Logout failed! Try clearing browser cache.");
-            }
+            await signOut(auth);
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace("index.html");
         };
     </script>
 </body>
