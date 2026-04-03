@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw - Gajan Insta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: white; font-family: sans-serif; }
+        .g-card { background: #111; border: 1px solid #222; border-radius: 25px; padding: 25px; }
+        .g-gradient { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="flex items-center gap-4 mb-8">
+        <i class="fa-solid fa-arrow-left text-xl" onclick="history.back()"></i>
+        <h1 class="text-xl font-black italic uppercase italic">Withdraw <span class="text-pink-600">Cash</span></h1>
+    </div>
+
+    <div class="g-card border-blue-600/20 border text-center">
+        <p class="text-[10px] text-gray-500 uppercase mb-4">Minimum Payout: 1000 Tokens</p>
+        <div class="flex items-center justify-center gap-2 mb-6">
+            <i class="fa-solid fa-wallet text-blue-500 text-2xl"></i>
+            <span id="draw-bal" class="text-3xl font-black">0</span>
+        </div>
+
+        <input id="upi-id" type="text" placeholder="UPI ID (e.g. gajan@ybl)" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-4 outline-none text-sm text-center">
+        
+        <button id="req-btn" class="w-full g-gradient py-4 rounded-xl font-black text-xs uppercase opacity-50 cursor-not-allowed" disabled>
+            Request Withdrawal
+        </button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp, increment, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                onSnapshot(doc(db, "wallets", user.uid), (s) => {
+                    const bal = s.exists() ? s.data().balance : 0;
+                    document.getElementById('draw-bal').innerText = bal;
+                    const btn = document.getElementById('req-btn');
+                    if(bal >= 1000) { btn.disabled = false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+                });
+            }
+        });
+
+        document.getElementById('req-btn').onclick = async () => {
+            const upi = document.getElementById('upi-id').value;
+            const bal = parseInt(document.getElementById('draw-bal').innerText);
+            if(!upi.includes('@')) return alert("Sahi UPI ID bhariye!");
+
+            const reqId = "WD-" + Date.now();
+            await setDoc(doc(db, "withdrawals", reqId), {
+                uid: auth.currentUser.uid,
+                name: auth.currentUser.displayName,
+                amount: bal,
+                upi: upi,
+                status: "pending",
+                time: serverTimestamp()
+            });
+            await updateDoc(doc(db, "wallets", auth.currentUser.uid), { balance: increment(-bal) });
+            alert("✅ Request Sent! Admin will pay soon.");
+            location.href = "wallet.html";
+        };
+    </script>
+</body>
+</html>
