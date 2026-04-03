@@ -2,105 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Admin | Core Command</title>
+    <title>Gajan Admin | Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #050505; color: white; font-family: sans-serif; }
-        .g-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; }
-        .g-logo { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .g-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .btn-blue { background: #2563eb; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; margin-top: 10px; text-transform: uppercase; }
+        .btn-green { background: #16a34a; width: 100%; padding: 15px; border-radius: 12px; font-weight: 900; font-size: 14px; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body class="p-6 pb-20">
 
-    <header class="flex items-center gap-3 mb-10">
-        <div class="g-logo shadow-[0_0_15px_rgba(220,39,67,0.5)]">
-            <span class="text-white font-black italic text-2xl">G</span>
-        </div>
-        <h1 class="text-2xl font-black italic tracking-tighter uppercase">Admin <span class="text-pink-600">Core</span></h1>
-    </header>
+    <h1 class="text-2xl font-black italic mb-8 uppercase tracking-tighter">Admin <span class="text-pink-600">Core</span></h1>
 
-    <div class="g-card mb-6 border-pink-600/30">
-        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-qrcode mr-2"></i> Payment QR Update</h2>
-        <div class="flex flex-col items-center gap-4">
-            <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-inner">
-                <img id="qr-preview" src="https://via.placeholder.com/150?text=Upload+QR" class="w-full h-full object-contain">
-            </div>
-            <input type="file" id="qr-input" class="hidden" accept="image/*">
-            <button onclick="document.getElementById('qr-input').click()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-lg font-bold uppercase">Select Photo</button>
-            <button id="upload-qr-btn" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition">Update QR for All Users</button>
+    <div class="g-card border-green-600/50 border-2">
+        <h2 class="text-xs font-bold text-green-500 mb-4 uppercase tracking-widest italic">Verify & Activate User</h2>
+        <input id="act-uid" type="text" placeholder="Enter User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none text-sm text-green-400">
+        <button id="activate-btn" class="btn-green shadow-lg shadow-green-900/20">Activate Lifetime Access ✅</button>
+    </div>
+
+    <div class="g-card border-pink-600/30">
+        <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest italic">Update Login QR</h2>
+        <div class="flex flex-col items-center">
+            <div class="w-32 h-32 bg-white p-2 rounded-xl mb-4"><img id="qr-prev" src="https://via.placeholder.com/150" class="w-full h-full object-contain"></div>
+            <input type="file" id="qr-in" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('qr-in').click()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-lg font-bold">Select QR Photo</button>
+            <button id="up-qr-btn" class="btn-blue">Update QR</button>
         </div>
     </div>
 
-    <div class="g-card mb-6">
-        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-paper-plane mr-2"></i> Direct Release</h2>
-        <input id="target-uid" type="text" placeholder="User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none text-sm">
-        <input id="token-amt" type="number" placeholder="Token Amount" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-4 outline-none text-sm">
-        <button id="send-btn" class="w-full bg-gradient-to-r from-orange-500 to-pink-600 py-4 rounded-xl font-bold active:scale-95 transition">Send Tokens</button>
-    </div>
-
-    <div class="g-card">
-        <h2 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest"><i class="fa-solid fa-bell mr-2"></i> Pending Requests</h2>
-        <div id="request-list" class="space-y-3"></div>
+    <div class="g-card border-blue-600/30">
+        <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest italic">Update Earning Video</h2>
+        <video id="v-prev" controls class="w-full aspect-video bg-black rounded-xl mb-4 border border-gray-800"></video>
+        <input type="file" id="v-in" class="hidden" accept="video/*">
+        <button onclick="document.getElementById('v-in').click()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-lg font-bold">Select Video</button>
+        <button id="up-v-btn" class="btn-blue">Update Video</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- 📸 QR Update Logic ---
-        let qrFile;
-        document.getElementById('qr-input').onchange = (e) => {
-            qrFile = e.target.files[0];
-            if(qrFile) document.getElementById('qr-preview').src = URL.createObjectURL(qrFile);
-        };
+        const cloudUrl = "https://api.cloudinary.com/v1_1/dvfgzrxs7";
+        const preset = "gajan_live";
 
-        document.getElementById('upload-qr-btn').onclick = async () => {
-            if(!qrFile) return alert("Photo select karein!");
-            const btn = document.getElementById('upload-qr-btn');
-            btn.innerText = "Processing...";
-            
+        // --- 🟢 User Activation Logic ---
+        document.getElementById('activate-btn').onclick = async () => {
+            const uid = document.getElementById('act-uid').value.trim();
+            if(!uid) return alert("Pehle UID daalein!");
             try {
-                const formData = new FormData();
-                formData.append('file', qrFile);
-                formData.append('upload_preset', 'gajan_live');
-                const res = await fetch('https://api.cloudinary.com/v1_1/dvfgzrxs7/image/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                
-                await setDoc(doc(db, "app_settings", "payment_config"), { qr_url: data.secure_url }, { merge: true });
-                alert("✅ QR Updated for all users!");
-                btn.innerText = "Update QR for All Users";
-            } catch (e) { alert(e.message); btn.innerText = "Update Failed"; }
+                await updateDoc(doc(db, "users", uid), { subscription: "active" });
+                alert("✅ Account Activated! User ab login kar sakta hai.");
+            } catch (e) { alert("UID Galat Hai!"); }
         };
 
-        // --- 💸 Token Logic ---
-        document.getElementById('send-btn').onclick = async () => {
-            const uid = document.getElementById('target-uid').value;
-            const amt = parseInt(document.getElementById('token-amt').value);
-            if(!uid || !amt) return alert("Detail bhariye!");
-            await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
-            alert("✅ Tokens Released!");
+        // --- QR & Video Upload Logic ---
+        let qrF, vF;
+        document.getElementById('qr-in').onchange = (e) => { qrF = e.target.files[0]; if(qrF) document.getElementById('qr-prev').src = URL.createObjectURL(qrF); };
+        document.getElementById('v-in').onchange = (e) => { vF = e.target.files[0]; if(vF) document.getElementById('v-prev').src = URL.createObjectURL(vF); };
+
+        document.getElementById('up-qr-btn').onclick = async () => {
+            if(!qrF) return alert("Select QR!");
+            const fd = new FormData(); fd.append('file', qrF); fd.append('upload_preset', preset);
+            const res = await fetch(`${cloudUrl}/image/upload`, { method: 'POST', body: fd });
+            const data = await res.json();
+            await setDoc(doc(db, "app_settings", "payment_config"), { qr_url: data.secure_url }, { merge: true });
+            alert("QR Updated!");
         };
 
-        onSnapshot(collection(db, "token_requests"), (sn) => {
-            const list = document.getElementById('request-list'); list.innerHTML = "";
-            sn.forEach(d => {
-                const req = d.data();
-                list.innerHTML += `<div class="bg-black/50 p-4 rounded-xl border border-gray-900 flex justify-between items-center">
-                    <div><p class="font-bold text-sm">@${req.name}</p><p class="text-[9px] text-gray-500 uppercase font-bold">UID: ${req.uid.substring(0,10)}</p></div>
-                    <button onclick="approve('${d.id}', '${req.uid}', 100)" class="bg-green-600 px-3 py-1 rounded text-[10px] font-bold uppercase">Approve 100</button>
-                </div>`;
-            });
-        });
-
-        window.approve = async (docId, uid, amt) => {
-            await setDoc(doc(db, "wallets", uid), { balance: increment(amt) }, { merge: true });
-            await deleteDoc(doc(db, "token_requests", docId));
-            alert("Approved!");
+        document.getElementById('up-v-btn').onclick = async () => {
+            if(!vF) return alert("Select Video!");
+            const fd = new FormData(); fd.append('file', vF); fd.append('upload_preset', preset);
+            const res = await fetch(`${cloudUrl}/video/upload`, { method: 'POST', body: fd });
+            const data = await res.json();
+            await setDoc(doc(db, "app_settings", "video_config"), { intro_url: data.secure_url }, { merge: true });
+            alert("Video Updated!");
         };
     </script>
 </body>
