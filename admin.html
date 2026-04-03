@@ -2,24 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Admin | Command Center</title>
+    <title>Gajan Admin | Master Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background: #050505; color: white; font-family: sans-serif; }
         .g-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         .btn-blue { background: #2563eb; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; margin-top: 10px; text-transform: uppercase; }
-        .btn-green { background: #16a34a; width: 100%; padding: 15px; border-radius: 12px; font-weight: 900; font-size: 14px; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-red { background: #dc2626; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; margin-top: 10px; text-transform: uppercase; }
+        .btn-green { background: #16a34a; width: 100%; padding: 15px; border-radius: 12px; font-weight: 900; font-size: 14px; margin-top: 10px; text-transform: uppercase; }
     </style>
 </head>
-<body class="p-6 pb-20">
+<body class="p-6 pb-24">
 
-    <h1 class="text-2xl font-black italic mb-8 uppercase tracking-tighter">Admin <span class="text-pink-600">Core</span></h1>
+    <h1 class="text-2xl font-black italic mb-8 uppercase tracking-tighter">Gajan <span class="text-pink-600">Master Admin</span></h1>
 
-    <div class="g-card border-green-600/50 border-2">
-        <h2 class="text-xs font-bold text-green-500 mb-4 uppercase tracking-widest italic">Verify & Activate User</h2>
-        <input id="act-uid" type="text" placeholder="Enter User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none text-sm text-green-400">
-        <button id="activate-btn" class="btn-green shadow-lg shadow-green-900/20">Activate Lifetime Access ✅</button>
+    <div class="g-card border-red-600/50 border-2">
+        <h2 class="text-xs font-bold text-red-500 mb-4 uppercase tracking-widest italic"><i class="fa-solid fa-trash-can mr-2"></i> Delete User Video</h2>
+        <p class="text-[9px] text-gray-500 mb-3 uppercase">Enter the Reel ID to remove video permanently</p>
+        <input id="del-reel-id" type="text" placeholder="Enter Reel ID (Check in DB)" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-2 outline-none text-sm text-red-400">
+        <button id="delete-video-btn" class="btn-red shadow-lg shadow-red-900/20">Delete Video Permanently 🗑️</button>
+    </div>
+
+    <div class="g-card border-green-600/30 border-2">
+        <h2 class="text-xs font-bold text-green-500 mb-4 uppercase tracking-widest italic">Activate User Access</h2>
+        <input id="act-uid" type="text" placeholder="Enter User UID" class="w-full bg-black border border-gray-800 p-4 rounded-xl mb-3 outline-none text-sm">
+        <button id="activate-btn" class="btn-green">Activate Lifetime ✅</button>
     </div>
 
     <div class="g-card border-pink-600/30">
@@ -33,16 +41,16 @@
     </div>
 
     <div class="g-card border-blue-600/30">
-        <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest italic">Update Earning Video</h2>
+        <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest italic">Update Earning Guide Video</h2>
         <video id="v-prev" controls class="w-full aspect-video bg-black rounded-xl mb-4 border border-gray-800"></video>
         <input type="file" id="v-in" class="hidden" accept="video/*">
         <button onclick="document.getElementById('v-in').click()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-lg font-bold">Select Video</button>
-        <button id="up-v-btn" class="btn-blue">Update Video</button>
+        <button id="up-v-btn" class="btn-blue">Update Intro Video</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyDMqxLOVO6iB5OTL4_KyiU1ddmf8T3P22Q", authDomain: "tiktok-clone-gajan.firebaseapp.com", projectId: "tiktok-clone-gajan", storageBucket: "tiktok-clone-gajan.firebasestorage.app", messagingSenderId: "838023307513", appId: "1:838023307513:web:e40efbaf7c3dbf16158228" };
         const app = initializeApp(firebaseConfig);
@@ -51,17 +59,32 @@
         const cloudUrl = "https://api.cloudinary.com/v1_1/dvfgzrxs7";
         const preset = "gajan_live";
 
-        // --- 🟢 User Activation Logic ---
-        document.getElementById('activate-btn').onclick = async () => {
-            const uid = document.getElementById('act-uid').value.trim();
-            if(!uid) return alert("Pehle UID daalein!");
+        // --- 🗑️ NEW: Delete Video Logic ---
+        document.getElementById('delete-video-btn').onclick = async () => {
+            const rid = document.getElementById('del-reel-id').value.trim();
+            if(!rid) return alert("Pehle Reel ID daalein!");
+            
+            const confirmDel = confirm("Bhai, kya aap sach mein ye video delete karna chahte hain?");
+            if(!confirmDel) return;
+
             try {
-                await updateDoc(doc(db, "users", uid), { subscription: "active" });
-                alert("✅ Account Activated! User ab login kar sakta hai.");
-            } catch (e) { alert("UID Galat Hai!"); }
+                await deleteDoc(doc(db, "reels", rid));
+                alert("🚀 Video Deleted! Feed se gayab ho gayi.");
+                document.getElementById('del-reel-id').value = "";
+            } catch (e) {
+                alert("Error: Video ID nahi mili!");
+            }
         };
 
-        // --- QR & Video Upload Logic ---
+        // --- 🟢 User Activation ---
+        document.getElementById('activate-btn').onclick = async () => {
+            const uid = document.getElementById('act-uid').value.trim();
+            if(!uid) return alert("UID daalein!");
+            await updateDoc(doc(db, "users", uid), { subscription: "active" });
+            alert("✅ Account Activated!");
+        };
+
+        // --- QR & Video Uploads ---
         let qrF, vF;
         document.getElementById('qr-in').onchange = (e) => { qrF = e.target.files[0]; if(qrF) document.getElementById('qr-prev').src = URL.createObjectURL(qrF); };
         document.getElementById('v-in').onchange = (e) => { vF = e.target.files[0]; if(vF) document.getElementById('v-prev').src = URL.createObjectURL(vF); };
