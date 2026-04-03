@@ -1,41 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gajan Profile | Fixed</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajan Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        // Forcefully pichle page ke kisi bhi redirect ko rokne ke liye
-        if (window.history.replaceState) {
-            window.history.replaceState(null, null, window.location.href);
-        }
-    </script>
+    <style>
+        body { background-color: #000; color: white; }
+        .g-card { background: #111; border: 1px solid #222; border-radius: 20px; }
+    </style>
 </head>
-<body class="bg-black text-white">
+<body class="pb-24">
 
-    <div id="content" class="max-w-sm mx-auto p-10 text-center" style="display:none;">
-        <div class="w-24 h-24 rounded-full border-4 border-pink-600 mx-auto mb-4 overflow-hidden shadow-lg">
-            <img id="pfp" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+    <div class="p-8 flex flex-col items-center">
+        <div class="w-24 h-24 rounded-full border-2 border-pink-500 p-1 mb-4">
+            <img id="pfp" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover">
         </div>
-        
-        <h1 id="name" class="text-2xl font-black italic mb-1 text-pink-500">Loading Profile...</h1>
-        <p id="email" class="text-[10px] text-gray-500 mb-10 italic uppercase tracking-widest">Gajan Insta Core</p>
+        <h2 id="name" class="text-xl font-bold">Loading...</h2>
+        <p id="email" class="text-xs text-gray-500 mb-8 italic">Verified Member</p>
 
-        <div class="bg-zinc-900 rounded-3xl p-8 mb-10 border border-white/10">
-            <p id="tokens" class="text-5xl font-black text-yellow-500 italic">0</p>
-            <p class="text-[10px] uppercase tracking-widest text-gray-500 mt-2">G-Tokens Available</p>
+        <div class="g-card w-full max-w-sm p-6 text-center mb-8">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Your Tokens</p>
+            <h3 id="tokens" class="text-4xl font-black text-yellow-500">0</h3>
         </div>
 
-        <button id="logout-btn" class="w-full bg-red-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
-            Logout & Exit
+        <button id="logout-btn" class="w-full max-w-xs bg-zinc-800 py-4 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95">
+            Log Out
         </button>
     </div>
 
-    <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-white/5 flex justify-around items-center z-[999]">
-        <a href="reels.html" class="p-4 text-zinc-600"><i class="fa-solid fa-house"></i></a>
-        <a href="wallet.html" class="p-4 text-zinc-600"><i class="fa-solid fa-wallet"></i></a>
-        <a href="profile.html" class="p-4 text-white text-xl"><i class="fa-solid fa-user"></i></a>
+    <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-zinc-900 flex justify-around items-center">
+        <a href="reels.html" class="p-4"><i class="fa-solid fa-house text-zinc-500"></i></a>
+        <a href="wallet.html" class="p-4"><i class="fa-solid fa-wallet text-zinc-500"></i></a>
+        <a href="profile.html" class="p-4"><i class="fa-solid fa-user text-white"></i></a>
     </nav>
 
     <script type="module">
@@ -58,28 +56,26 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User milte hi page dikhao aur redirect band karo
-                document.getElementById('content').style.display = "block";
-                document.getElementById('name').innerText = user.displayName || "Gajan User";
+                document.getElementById('name').innerText = user.displayName || "User";
                 document.getElementById('email').innerText = user.email;
                 if(user.photoURL) document.getElementById('pfp').src = user.photoURL;
 
+                // Tokens Update
                 onSnapshot(doc(db, "wallets", user.uid), (s) => {
                     if(s.exists()) document.getElementById('tokens').innerText = s.data().balance || 0;
                 });
             } else {
-                // Redirect sirf tab hoga jab user sach mein logout ho chuka ho
-                setTimeout(() => { if(!auth.currentUser) window.location.replace("index.html"); }, 2000);
+                // Agar login nahi hai, tabhi bahar bhejo
+                window.location.href = "index.html";
             }
         });
 
+        // Logout logic
         document.getElementById('logout-btn').onclick = async () => {
-            try {
-                await signOut(auth);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace("index.html");
-            } catch (e) { alert(e.message); }
+            await signOut(auth);
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = "index.html";
         };
     </script>
 </body>
