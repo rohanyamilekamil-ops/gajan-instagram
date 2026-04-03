@@ -30,7 +30,7 @@
         <p class="text-[10px] text-orange-500 font-bold mb-4 italic">ONLY ₹100 - JOIN GAJAN CORE</p>
         
         <div class="bg-white p-2 rounded-xl inline-block mb-4 shadow-2xl">
-            <img id="login-qr" src="https://via.placeholder.com/150?text=Wait+for+QR" class="w-32 h-32 object-contain">
+            <img id="login-qr" src="https://via.placeholder.com/150?text=Wait+for+QR" class="w-32 h-32 object-contain text-black text-[10px]">
         </div>
         
         <p class="text-[9px] text-gray-500 leading-tight">1. Scan QR and Pay ₹100.<br>2. Take Screenshot.<br>3. Sign Up & Login to start earning.</p>
@@ -64,15 +64,23 @@
 
         document.getElementById('login-btn').onclick = async () => {
             const btn = document.getElementById('login-btn');
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('pass').value;
             
+            if(!email || !pass) return alert("Email aur Password bhariye!");
+
             btn.innerText = "Checking Subscription...";
             try {
                 const userCred = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCred.user;
 
-                // 🔐 Check Subscription Status
+                // ⭐ ADMIN BYPASS: Aapki email ke liye koi rok-tok nahi
+                if (email.toLowerCase() === "abdulgajan215@gmail.com") {
+                    location.href = "reels.html";
+                    return;
+                }
+
+                // 🔐 Baaki users ke liye Subscription check
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists() && userDoc.data().subscription === "active") {
                     location.href = "reels.html";
@@ -81,7 +89,10 @@
                     alert("🚫 Account Not Active! ₹100 Pay karein aur Admin ko UID bhej kar active karwayein.");
                     btn.innerText = "Login & Start Earning";
                 }
-            } catch (e) { alert(e.message); btn.innerText = "Login & Start Earning"; }
+            } catch (e) { 
+                alert("Galti: " + e.message); 
+                btn.innerText = "Login & Start Earning"; 
+            }
         };
     </script>
 </body>
