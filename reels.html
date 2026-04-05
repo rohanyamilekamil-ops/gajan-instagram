@@ -11,7 +11,7 @@
         .feed { height: 100dvh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
         .feed::-webkit-scrollbar { display: none; }
         .reel { height: 100dvh; width: 100vw; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
         .side-ui { position: absolute; right: 15px; bottom: 150px; z-index: 50; display: flex; flex-direction: column; gap: 22px; color: white; text-align: center; }
         .bottom-ui { position: absolute; bottom: 100px; left: 15px; z-index: 50; color: white; width: 85%; text-shadow: 0 1px 4px #000; }
         .g-gradient { background: linear-gradient(to right, #f09433, #dc2743, #bc1888); }
@@ -21,23 +21,13 @@
 
     <div class="feed" id="main-feed"></div>
 
-    <div id="token-buy-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-        <div class="bg-[#111] border border-white/10 w-full max-w-xs rounded-[30px] p-6 text-center">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-white font-black italic tracking-tighter">GAJAN STORE</h3>
-                <i onclick="document.getElementById('token-buy-modal').classList.add('hidden')" class="fa-solid fa-xmark text-gray-500 p-2 cursor-pointer"></i>
-            </div>
-            <div class="bg-white p-3 rounded-2xl inline-block mb-4"><img id="modal-qr" src="" class="w-32 h-32 object-contain"></div>
-            <button class="w-full g-gradient py-4 rounded-2xl text-white font-black text-xs uppercase tracking-widest active:scale-95 transition">I have Paid</button>
-        </div>
-    </div>
-
     <nav class="fixed bottom-0 w-full h-[65px] bg-black border-t border-gray-900 flex justify-around items-center z-[100]">
         <a href="reels.html"><i class="fa-solid fa-house text-xl text-white"></i></a>
         <i class="fa-solid fa-magnifying-glass text-xl text-gray-500"></i>
         <a href="reels.html"><i class="fa-solid fa-clapperboard text-xl text-gray-500"></i></a>
         <a href="wallet.html"><i class="fa-solid fa-wallet text-xl text-gray-500"></i></a>
-        <a href="profile.html">
+        
+        <a href="profile.html" class="flex items-center justify-center">
             <img id="nav-pfp" src="https://via.placeholder.com/30" class="w-7 h-7 rounded-full border border-white object-cover">
         </a>
     </nav>
@@ -54,35 +44,35 @@
 
         let isMuted = true;
 
-        // AUTH CHECK & PROTECT
-        onAuthStateChanged(auth, user => {
-            if(!user) {
-                window.location.replace("index.html");
-            } else {
+        // --- 🔐 AUTH PROTECTION ---
+        onAuthStateChanged(auth, user => { 
+            if(user) {
                 if(user.photoURL) document.getElementById('nav-pfp').src = user.photoURL;
+            } else {
+                window.location.replace("index.html");
             }
         });
 
-        // 🔊 Video Controls
+        // --- 🔊 Video Controls ---
         window.handleVideoTap = (v) => {
             isMuted = !isMuted;
             document.querySelectorAll('video').forEach(vid => vid.muted = isMuted);
             if (v.paused) v.play(); else v.pause();
         };
 
-        // Load Feed (Optimized)
+        // --- 🚀 Load Reels (One-time Sync) ---
         const q = query(collection(db, "reels"), orderBy("time", "desc"));
         onSnapshot(q, async (sn) => {
             const container = document.getElementById('main-feed');
-            let html = "";
+            let feedHTML = "";
             for (const rDoc of sn.docs) {
                 const d = rDoc.data(); const rid = rDoc.id;
                 const isLiked = d.likedBy?.includes(auth.currentUser?.uid);
-                html += `
+                
+                feedHTML += `
                     <div class="reel">
                         <video onclick="handleVideoTap(this)" class="rvid" loop playsinline muted src="${d.videoUrl}"></video>
                         <div class="side-ui">
-                            <div onclick="document.getElementById('token-buy-modal').classList.remove('hidden')"><i class="fa-solid fa-coins text-yellow-400 text-2xl"></i></div>
                             <div><i class="fa-solid fa-heart text-3xl ${isLiked ? 'text-red-500' : 'text-white'}"></i><p class="text-xs font-bold mt-1">${d.likedBy ? d.likedBy.length : 0}</p></div>
                             <i class="fa-solid fa-comment text-3xl"></i>
                             <i class="fa-solid fa-share text-2xl"></i>
@@ -96,7 +86,7 @@
                         </div>
                     </div>`;
             }
-            container.innerHTML = html;
+            container.innerHTML = feedHTML;
             setupObserver();
         });
 
@@ -109,8 +99,6 @@
             }, { threshold: 0.8 });
             document.querySelectorAll('.rvid').forEach(v => obs.observe(v));
         }
-
-        onSnapshot(doc(db, "app_settings", "payment_config"), (s) => { if(s.exists() && s.data().qr_url) document.getElementById('modal-qr').src = s.data().qr_url; });
     </script>
 </body>
 </html>
